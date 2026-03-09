@@ -8,8 +8,8 @@ class Entry {
     std::string title_;
 
   public:
-    auto setTitle(const std::string_view &title) -> void { title_ = title; }
+    auto setTitle(const std::string_view &title) -> void;
 
-    auto getTitle() -> std::string_view { return title_; }
+    auto getTitle() -> std::string_view;
 };
 } // namespace hbt
