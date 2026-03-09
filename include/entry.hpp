@@ -1,15 +1,30 @@
 #pragma once
 
+#include "occurence.hpp"
+
 #include <string>
+#include <string_view>
+#include <vector>
 
 namespace hbt {
 class Entry {
   private:
+    std::vector<hbt::Occurence> occurences_;
+
     std::string title_;
+    bool isCompleted_;
 
   public:
-    auto setTitle(const std::string_view &title) -> void;
+    Entry(std::string_view title, std::vector<hbt::Occurence> occurences);
 
-    auto getTitle() -> std::string_view;
+  public:
+    auto setTitle(std::string_view title) -> void;
+
+    auto toggleIsCompleted() -> void;
+
+  public:
+    [[nodiscard]] auto getTitle() const -> std::string_view;
+
+    [[nodiscard]] auto isCompleted() const -> bool;
 };
 } // namespace hbt
