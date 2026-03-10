@@ -1,16 +1,14 @@
 #pragma once
 
-#include "entry.hpp"
+#include <string>
 
-#include <vector>
-
-namespace hbt {
+namespace hbt::mods {
 class User {
   private:
-    std::vector<Entry> entries_;
+    std::string name_;
 
   public:
-    User() = default;
+    User(std::string name);
 
     User(const User &) = delete;
     User(User &&) = delete;
@@ -19,13 +17,8 @@ class User {
     auto operator=(User &&) -> User & = delete;
 
   public:
-    template <typename... Args> auto addEntry(Args &&...args) -> void {
-        entries_.emplace_back(std::forward<Args>(args)...);
-    }
+    [[nodiscard]] auto getName() const -> std::string_view;
 
-    auto deleteEntry(Entry::id_t id) -> void;
-
-  public:
-    [[nodiscard]] auto getEntries() & -> const std::vector<Entry> &;
+    auto setName(std::string_view) -> void;
 };
-} // namespace hbt
+} // namespace hbt::mods

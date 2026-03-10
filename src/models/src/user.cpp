@@ -1,20 +1,9 @@
 #include "../include/user.hpp"
-#include "../include/entry.hpp"
 
-#include <algorithm>
+namespace hbt::mods {
+User::User(std::string name) : name_{std::move(name)} {}
 
-namespace hbt {
-auto User::deleteEntry(Entry::id_t id) -> void {
-    auto it{std::ranges::find_if(entries_, [id](const Entry &entry) -> bool {
-        return entry.getID() == id;
-    })};
+[[nodiscard]] auto User::getName() const -> std::string_view { return name_; }
 
-    if (it != entries_.end()) {
-        entries_.erase(it);
-    }
-}
-
-[[nodiscard]] auto User::getEntries() & -> const std::vector<Entry> & {
-    return entries_;
-}
-} // namespace hbt
+auto User::setName(std::string_view name) -> void { name_ = name; }
+} // namespace hbt::mods

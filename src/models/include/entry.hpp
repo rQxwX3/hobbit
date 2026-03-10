@@ -5,7 +5,7 @@
 #include <string_view>
 #include <vector>
 
-namespace hbt {
+namespace hbt::mods {
 enum class DayPart : char {
     MORNING,
     AFTERNOON,
@@ -26,7 +26,7 @@ class Entry {
     inline static id_t sIDCounter{0};
 
   private:
-    std::vector<hbt::Occurence> occurences_;
+    std::vector<Occurence> occurences_;
 
     std::string title_;
     bool isCompleted_;
@@ -34,7 +34,7 @@ class Entry {
     id_t id_;
 
   public:
-    Entry(std::string_view title, std::vector<hbt::Occurence> occurences);
+    Entry(std::string_view title, std::vector<Occurence> occurences);
 
   public:
     auto setTitle(std::string_view title) -> void;
@@ -48,4 +48,4 @@ class Entry {
 
     [[nodiscard]] auto getID() const -> id_t;
 };
-} // namespace hbt
+} // namespace hbt::mods
