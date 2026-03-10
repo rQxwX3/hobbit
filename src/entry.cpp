@@ -2,7 +2,8 @@
 
 namespace hbt {
 Entry::Entry(std::string_view title, std::vector<hbt::Occurence> occurences)
-    : title_{title}, occurences_{std::move(occurences)}, isCompleted_{false} {}
+    : title_{title}, occurences_{std::move(occurences)}, isCompleted_{false},
+      id_{++Entry::sIDCounter} {}
 
 auto Entry::setTitle(std::string_view title) -> void { title_ = title; }
 
@@ -13,4 +14,6 @@ auto Entry::toggleIsCompleted() -> void { isCompleted_ = !isCompleted_; }
 }
 
 [[nodiscard]] auto Entry::isCompleted() const -> bool { return isCompleted_; }
+
+[[nodiscard]] auto Entry::getID() const -> id_t { return id_; }
 } // namespace hbt
