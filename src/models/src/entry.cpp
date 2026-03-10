@@ -2,8 +2,8 @@
 
 namespace hbt {
 Entry::Entry(std::string_view title, std::vector<hbt::Occurence> occurences)
-    : title_{title}, occurences_{std::move(occurences)}, isCompleted_{false},
-      id_{++Entry::sIDCounter} {}
+    : occurences_{std::move(occurences)}, title_{title}, isCompleted_{false},
+      id_{Entry::sIDCounter++} {}
 
 auto Entry::setTitle(std::string_view title) -> void { title_ = title; }
 

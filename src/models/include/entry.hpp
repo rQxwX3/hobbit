@@ -1,18 +1,29 @@
 #pragma once
 
-#include "occurence.hpp"
-
+#include <chrono>
 #include <string>
 #include <string_view>
 #include <vector>
 
 namespace hbt {
+enum class DayPart : char {
+    MORNING,
+    AFTERNOON,
+    EVENING,
+    NIGHT,
+};
+
+struct Occurence {
+    std::chrono::weekday weekday;
+    DayPart daypart;
+};
+
 class Entry {
   public:
     using id_t = size_t;
 
   private:
-    static id_t sIDCounter;
+    inline static id_t sIDCounter{0};
 
   private:
     std::vector<hbt::Occurence> occurences_;
