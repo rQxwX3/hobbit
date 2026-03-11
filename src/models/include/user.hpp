@@ -24,5 +24,7 @@ class User {
 
   public:
     [[nodiscard]] auto toJSON() const -> nlohmann::json;
+
+    [[nodiscard]] static auto fromJSON(const nlohmann::json &j) -> User;
 };
 } // namespace hbt::mods

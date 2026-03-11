@@ -1,3 +1,5 @@
+#include <nlohmann/json.hpp>
+
 #include <user.hpp>
 
 namespace hbt::mods {
@@ -9,5 +11,9 @@ auto User::setName(std::string_view name) -> void { name_ = name; }
 
 [[nodiscard]] auto User::toJSON() const -> nlohmann::json {
     return {{"name", name_}};
+}
+
+[[nodiscard]] auto User::fromJSON(const nlohmann::json &json) -> User {
+    return User{json["name"]};
 }
 } // namespace hbt::mods

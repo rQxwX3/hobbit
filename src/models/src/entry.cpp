@@ -29,4 +29,20 @@ auto Entry::toggleIsCompleted() -> void { isCompleted_ = !isCompleted_; }
             {"is_completed", isCompleted_},
             {"id", id_}};
 }
+
+[[nodiscard]] static auto fromJSON(const nlohmann::json &json) -> Entry {
+    auto jsonOccurences{json["occurences"]};
+    auto occurences{std::vector<Occurence>(jsonOccurences.size())};
+
+    for (const auto &jsonOccurence : jsonOccurences) {
+
+        // TODO Remove static_cast
+        occurences.push_back(Occurence{
+            .weekday =
+                static_cast<std::chrono::weekday>(jsonOccurence["weekday"]),
+            .daypart = jsonOccurence["daytime"]});
+    }
+
+    return Entry{json["title"].dump(), occurences};
+}
 } // namespace hbt::mods
