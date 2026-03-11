@@ -1,4 +1,4 @@
-#include "../include/entry.hpp"
+#include <entry.hpp>
 
 namespace hbt::mods {
 Entry::Entry(std::string_view title, std::vector<Occurence> occurences)

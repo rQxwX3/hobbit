@@ -1,4 +1,4 @@
-#include "../include/user.hpp"
+#include <user.hpp>
 
 namespace hbt::mods {
 User::User(std::string name) : name_{std::move(name)} {}

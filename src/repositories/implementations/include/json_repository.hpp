@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../../storage/storage_engine.hpp"
-#include "../../interfaces/repository.hpp"
+#include <repository.hpp>
+#include <storage_engine.hpp>
 
 #include <concepts>
 #include <cstddef>
