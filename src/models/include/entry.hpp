@@ -2,43 +2,13 @@
 
 #include <nlohmann/json.hpp>
 
-#include <chrono>
+#include <occurence.hpp>
+
 #include <string>
 #include <string_view>
 #include <vector>
 
 namespace hbt::mods {
-enum class DayPart : char {
-    MORNING,
-    AFTERNOON,
-    EVENING,
-    NIGHT,
-};
-
-enum class Weekday : char {
-    MONDAY,
-    TUESDAY,
-    WEDNESDAY,
-    THURSDAY,
-    FRIDAY,
-    SATURDAY,
-    SUNDAY,
-};
-
-struct Occurence {
-    Weekday weekday;
-    DayPart daypart;
-
-    [[nodiscard]] auto toJSON() const -> nlohmann::json {
-        return {{"weekday", weekday}, {"daypart", daypart}};
-    }
-
-    [[nodiscard]] static auto fromJSON(const nlohmann::json &json)
-        -> Occurence {
-        return {.weekday = json["weekday"], .daypart = json["daypart"]};
-    }
-};
-
 class Entry {
   public:
     using id_t = size_t;
@@ -64,6 +34,8 @@ class Entry {
 
   public:
     [[nodiscard]] auto getTitle() const -> std::string_view;
+
+    [[nodiscard]] auto getOccurences() const & -> std::vector<Occurence> &;
 
     [[nodiscard]] auto isCompleted() const -> bool;
 

@@ -32,7 +32,7 @@ auto Entry::toggleIsCompleted() -> void { isCompleted_ = !isCompleted_; }
 
 [[nodiscard]] static auto fromJSON(const nlohmann::json &json) -> Entry {
     auto jsonOccurences{json["occurences"]};
-    auto occurences{std::vector<Occurence>(jsonOccurences.size())};
+    auto occurences{std::vector<Occurence>()};
 
     for (const auto &jsonOccurence : jsonOccurences) {
         occurences.emplace_back(Occurence::fromJSON(jsonOccurence));
