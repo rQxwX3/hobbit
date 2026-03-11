@@ -12,7 +12,6 @@
 #include <string>
 
 namespace hbt::repo::json {
-
 template <typename T>
 concept JSONSerializable = requires(T t, nlohmann::json j) {
     { t.toJSON() } -> std::same_as<nlohmann::json>;

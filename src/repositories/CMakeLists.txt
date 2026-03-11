@@ -1,13 +1,11 @@
-add_library(repositories_lib STATIC
-    implementations/src/json_repository.cpp
-)
+add_library(repositories_lib STATIC implementations/json_repository.cpp)
 
-target_include_directories(repositories_lib PUBLIC
+target_include_directories(repositories_lib PRIVATE
     interfaces
-    implementations/include
+    implementations
 )
 
-target_link_libraries(repositories_lib PRIVATE 
-	storage_lib 
+target_link_libraries(repositories_lib PRIVATE
 	nlohmann_json::nlohmann_json
+	storage_lib
 )
