@@ -15,12 +15,27 @@ enum class DayPart : char {
     NIGHT,
 };
 
+enum class Weekday : char {
+    MONDAY,
+    TUESDAY,
+    WEDNESDAY,
+    THURSDAY,
+    FRIDAY,
+    SATURDAY,
+    SUNDAY,
+};
+
 struct Occurence {
-    std::chrono::weekday weekday;
+    Weekday weekday;
     DayPart daypart;
 
     [[nodiscard]] auto toJSON() const -> nlohmann::json {
-        return {{"weekday", weekday.c_encoding()}, {"daypart", daypart}};
+        return {{"weekday", weekday}, {"daypart", daypart}};
+    }
+
+    [[nodiscard]] static auto fromJSON(const nlohmann::json &json)
+        -> Occurence {
+        return {.weekday = json["weekday"], .daypart = json["daypart"]};
     }
 };
 

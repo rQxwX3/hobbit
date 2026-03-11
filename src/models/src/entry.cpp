@@ -21,7 +21,7 @@ auto Entry::toggleIsCompleted() -> void { isCompleted_ = !isCompleted_; }
     auto occurencesJSON{nlohmann::json::array()};
 
     for (const auto &occ : occurences_) {
-        occurencesJSON.push_back(occ.toJSON());
+        occurencesJSON.emplace_back(occ.toJSON());
     }
 
     return {{"occurences", occurencesJSON},
@@ -35,12 +35,7 @@ auto Entry::toggleIsCompleted() -> void { isCompleted_ = !isCompleted_; }
     auto occurences{std::vector<Occurence>(jsonOccurences.size())};
 
     for (const auto &jsonOccurence : jsonOccurences) {
-
-        // TODO Remove static_cast
-        occurences.push_back(Occurence{
-            .weekday =
-                static_cast<std::chrono::weekday>(jsonOccurence["weekday"]),
-            .daypart = jsonOccurence["daytime"]});
+        occurences.emplace_back(Occurence::fromJSON(jsonOccurence));
     }
 
     return Entry{json["title"].dump(), occurences};
