@@ -1,5 +1,7 @@
 #pragma once
 
+#include <nlohmann/json.hpp>
+
 #include <chrono>
 #include <string>
 #include <string_view>
@@ -16,6 +18,10 @@ enum class DayPart : char {
 struct Occurence {
     std::chrono::weekday weekday;
     DayPart daypart;
+
+    [[nodiscard]] auto toJSON() const -> nlohmann::json {
+        return {{"weekday", weekday.c_encoding()}, {"daypart", daypart}};
+    }
 };
 
 class Entry {
@@ -47,5 +53,8 @@ class Entry {
     [[nodiscard]] auto isCompleted() const -> bool;
 
     [[nodiscard]] auto getID() const -> id_t;
+
+  public:
+    [[nodiscard]] auto toJSON() const -> nlohmann::json;
 };
 } // namespace hbt::mods

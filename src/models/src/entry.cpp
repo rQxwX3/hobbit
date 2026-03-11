@@ -16,4 +16,17 @@ auto Entry::toggleIsCompleted() -> void { isCompleted_ = !isCompleted_; }
 [[nodiscard]] auto Entry::isCompleted() const -> bool { return isCompleted_; }
 
 [[nodiscard]] auto Entry::getID() const -> id_t { return id_; }
+
+[[nodiscard]] auto Entry::toJSON() const -> nlohmann::json {
+    auto occurencesJSON{nlohmann::json::array()};
+
+    for (const auto &occ : occurences_) {
+        occurencesJSON.push_back(occ.toJSON());
+    }
+
+    return {{"occurences", occurencesJSON},
+            {"title", title_},
+            {"is_completed", isCompleted_},
+            {"id", id_}};
+}
 } // namespace hbt::mods

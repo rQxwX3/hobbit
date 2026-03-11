@@ -6,4 +6,8 @@ User::User(std::string name) : name_{std::move(name)} {}
 [[nodiscard]] auto User::getName() const -> std::string_view { return name_; }
 
 auto User::setName(std::string_view name) -> void { name_ = name; }
+
+[[nodiscard]] auto User::toJSON() const -> nlohmann::json {
+    return {{"name", name_}};
+}
 } // namespace hbt::mods

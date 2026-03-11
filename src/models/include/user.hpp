@@ -1,5 +1,6 @@
 #pragma once
 
+#include <nlohmann/json.hpp>
 #include <string>
 
 namespace hbt::mods {
@@ -22,6 +23,6 @@ class User {
     auto setName(std::string_view) -> void;
 
   public:
-    // [[nodiscard]] auto toJSON() const ->
+    [[nodiscard]] auto toJSON() const -> nlohmann::json;
 };
 } // namespace hbt::mods
