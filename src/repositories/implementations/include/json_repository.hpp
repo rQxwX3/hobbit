@@ -23,6 +23,20 @@ template <JSONSerializable T> class Repository {
   protected:
     std::shared_ptr<hbt::store::StorageEngine> storage_;
 
+  protected:
+    [[nodiscard]] auto serialize(const T &data) const -> std::string {
+        return data.toJSON().dump();
+    }
+
+    [[nodiscard]] auto deserialize(const std::string &raw) const
+        -> std::optional<T> {
+        if (raw.empty()) {
+            return std::nullopt;
+        }
+
+        return T::fromJSON(nlohmann::json::parse(raw));
+    }
+
   public:
     Repository(std::shared_ptr<hbt::store::StorageEngine> storage);
 
@@ -31,7 +45,7 @@ template <JSONSerializable T> class Repository {
         std::vector<T> result;
 
         for (const auto &item : storage_->getAll()) {
-            result.push_back(T::fromJSON(nlohmann::json::parse(item)));
+            result.push_back(deserialize(item));
         }
 
         return result;
@@ -42,6 +56,9 @@ template <JSONSerializable T> class Repository {
     }
 
     auto clear() -> void { storage_->clear(); }
+
+  public:
+    virtual ~Repository() = default;
 };
 
 template <JSONSerializable T>
@@ -55,7 +72,7 @@ class SingleItemRepository : public hbt::repo::SingleItemRepository<T> {
 
   public:
     [[nodiscard]] auto save(const T &data) -> bool {
-        return base.storage_->write("1", data.toJSON().dump());
+        return base.storage_->write("1", base.serialize(data));
     }
 
     [[nodiscard]] auto load() const -> std::optional<T> {
@@ -65,10 +82,10 @@ class SingleItemRepository : public hbt::repo::SingleItemRepository<T> {
             return std::nullopt;
         }
 
-        return T::fromJSON(nlohmann::json::parse(*value));
+        return base.deserialize(*value);
     }
 
-    auto remove() -> void { base.storage_.remove("1"); }
+    auto remove() -> void { base.storage_->remove("1"); }
 
     [[nodiscard]] auto exists() const -> bool {
         return base.storage_->exists("1");
@@ -104,7 +121,7 @@ class MultiItemRepository : public hbt::repo::MultiItemRepository<T, TID> {
     [[nodiscard]] auto save(const T &data) -> TID {
         auto id{generateID()};
 
-        base.storage_->write(std::to_string(id), data.toJSON().dump);
+        base.storage_->write(std::to_string(id), base.serialize(data));
 
         return id;
     }
@@ -116,7 +133,7 @@ class MultiItemRepository : public hbt::repo::MultiItemRepository<T, TID> {
             return std::nullopt;
         }
 
-        return T::fromJSON(nlohmann::json::parse(*value));
+        return base.deserialize(*value);
     }
 
     auto remove(const TID &id) -> void {
