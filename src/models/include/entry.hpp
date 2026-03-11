@@ -10,19 +10,11 @@
 
 namespace hbt::mods {
 class Entry {
-  public:
-    using id_t = size_t;
-
-  private:
-    inline static id_t sIDCounter{0};
-
   private:
     std::vector<Occurence> occurences_;
 
     std::string title_;
     bool isCompleted_;
-
-    id_t id_;
 
   public:
     Entry(std::string_view title, std::vector<Occurence> occurences);
@@ -33,13 +25,12 @@ class Entry {
     auto toggleIsCompleted() -> void;
 
   public:
-    [[nodiscard]] auto getTitle() const -> std::string_view;
+    [[nodiscard]] auto getTitle() const & -> const std::string &;
 
-    [[nodiscard]] auto getOccurences() const & -> std::vector<Occurence> &;
+    [[nodiscard]] auto
+    getOccurences() const & -> const std::vector<Occurence> &;
 
     [[nodiscard]] auto isCompleted() const -> bool;
-
-    [[nodiscard]] auto getID() const -> id_t;
 
   public:
     [[nodiscard]] auto toJSON() const -> nlohmann::json;

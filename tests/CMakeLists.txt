@@ -5,6 +5,7 @@ add_executable(models_test unit/test_models.cpp)
 target_link_libraries(models_test PRIVATE 
 	gtest 
 	gtest_main 
+	nlohmann_json::nlohmann_json
 	models_lib
 )
 

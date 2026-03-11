@@ -26,6 +26,8 @@ class Occurence {
     Daypart daypart_;
 
   public:
+    Occurence();
+
     Occurence(Weekday weekday, Daypart daypart);
 
   public:

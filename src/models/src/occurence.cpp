@@ -1,6 +1,9 @@
 #include <occurence.hpp>
 
 namespace hbt::mods {
+Occurence::Occurence()
+    : weekday_{Weekday::MONDAY}, daypart_{Daypart::MORNING} {}
+
 Occurence::Occurence(Weekday weekday, Daypart daypart)
     : weekday_{weekday}, daypart_{daypart} {}
 
