@@ -1,7 +1,7 @@
 #include "../include/entry.hpp"
 
-namespace hbt {
-Entry::Entry(std::string_view title, std::vector<hbt::Occurence> occurences)
+namespace hbt::mods {
+Entry::Entry(std::string_view title, std::vector<Occurence> occurences)
     : occurences_{std::move(occurences)}, title_{title}, isCompleted_{false},
       id_{Entry::sIDCounter++} {}
 
@@ -16,4 +16,4 @@ auto Entry::toggleIsCompleted() -> void { isCompleted_ = !isCompleted_; }
 [[nodiscard]] auto Entry::isCompleted() const -> bool { return isCompleted_; }
 
 [[nodiscard]] auto Entry::getID() const -> id_t { return id_; }
-} // namespace hbt
+} // namespace hbt::mods

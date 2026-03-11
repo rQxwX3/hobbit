@@ -20,5 +20,8 @@ class User {
     [[nodiscard]] auto getName() const -> std::string_view;
 
     auto setName(std::string_view) -> void;
+
+  public:
+    // [[nodiscard]] auto toJSON() const ->
 };
 } // namespace hbt::mods

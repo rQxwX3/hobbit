@@ -16,6 +16,17 @@ template <typename T> class Repository {
 
   public:
     Repository(std::shared_ptr<hbt::store::StorageEngine> storage);
+
+  public:
+    [[nodiscard]] auto getAll() const -> std::vector<T> {
+        return storage_->getAll();
+    }
+
+    [[nodiscard]] auto getCount() const -> size_t {
+        return storage_->getCount();
+    }
+
+    auto clear() -> void { storage_->clear(); }
 };
 
 template <typename T>
@@ -24,16 +35,23 @@ class SingleItemRepository : public hbt::repo::SingleItemRepository<T> {
     hbt::repo::json::Repository<T> base;
 
   public:
-    SingleItemRepository(std::shared_ptr<hbt::store::StorageEngine> storage);
+    SingleItemRepository(std::shared_ptr<hbt::store::StorageEngine> storage)
+        : base{storage} {}
 
   public:
-    auto save(const T &data) -> bool;
+    [[nodiscard]] auto save(const T &data) -> bool {
+        return base.storage_->write(std::to_string(1));
+    }
 
-    auto load() const -> std::optional<T>;
+    [[nodiscard]] auto load() const -> std::optional<T> {
+        return base.storage_->read(std::to_string(1));
+    }
 
-    auto remove() -> void;
+    auto remove() -> void { base.storage_.remove(std::to_string(1)); }
 
-    auto exists() -> bool;
+    [[nodiscard]] auto exists() const -> bool {
+        return base.storage_->exists(std::to_string(1));
+    }
 };
 
 template <typename TID>
@@ -48,18 +66,28 @@ class MultiItemRepository : public hbt::repo::MultiItemRepository<T, TID> {
     hbt::repo::json::Repository<T> base;
 
   private:
-    [[nodiscard]] auto generateID() -> TID;
+    [[nodiscard]] auto generateID() -> TID {
+        auto counter{base.storage_->read(counterKey)};
+        auto nextID{counter ? std::stoull(*counter) + 1 : 1};
+
+        base.storage_->write(counterKey, std::to_string(nextID));
+
+        return nextID;
+    }
 
   public:
-    MultiItemRepository(std::shared_ptr<hbt::store::StorageEngine> storage);
+    MultiItemRepository(std::shared_ptr<hbt::store::StorageEngine> storage)
+        : base{storage} {}
 
   public:
-    auto save(const T &data) -> TID;
+    [[nodiscard]] auto save(const T &data) -> TID {
+        base.storage_->write(generateID(), "TODO");
+    }
 
-    auto load(const TID &id) -> std::optional<T>;
+    [[nodiscard]] auto load(const TID &id) const -> std::optional<T>;
 
     auto remove(const TID &id) -> void;
 
-    auto exists(const TID &id) -> bool;
+    [[nodiscard]] auto exists(const TID &id) const -> bool;
 };
 } // namespace hbt::repo::json
