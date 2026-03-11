@@ -1,8 +1,11 @@
 include(GoogleTest)
-message(STATUS "Loading tests from ${CMAKE_CURRENT_SOURCE_DIR}")
 
-add_executable(first_test unit/test_first.cpp)
+add_executable(models_test unit/test_models.cpp)
 
-target_link_libraries(first_test PRIVATE gtest gtest_main)
+target_link_libraries(models_test PRIVATE 
+	gtest 
+	gtest_main 
+	models_lib
+)
 
-gtest_discover_tests(first_test)
+gtest_discover_tests(models_test)
