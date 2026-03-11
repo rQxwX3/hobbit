@@ -7,4 +7,7 @@ target_include_directories(repositories_lib PUBLIC
     implementations/include
 )
 
-target_link_libraries(repositories_lib PRIVATE storage_lib)
+target_link_libraries(repositories_lib PRIVATE 
+	storage_lib 
+	nlohmann_json::nlohmann_json
+)

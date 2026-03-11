@@ -1,5 +1,7 @@
 #pragma once
 
+#include <nlohmann/json.hpp>
+
 #include <repository.hpp>
 #include <storage_engine.hpp>
 
@@ -10,7 +12,14 @@
 #include <string>
 
 namespace hbt::repo::json {
-template <typename T> class Repository {
+
+template <typename T>
+concept JSONSerializable = requires(T t, nlohmann::json j) {
+    { t.toJSON() } -> std::same_as<nlohmann::json>;
+    { T::fromJSON(j) } -> std::same_as<T>;
+};
+
+template <JSONSerializable T> class Repository {
   protected:
     std::shared_ptr<hbt::store::StorageEngine> storage_;
 
@@ -19,7 +28,13 @@ template <typename T> class Repository {
 
   public:
     [[nodiscard]] auto getAll() const -> std::vector<T> {
-        return storage_->getAll();
+        std::vector<T> result;
+
+        for (const auto &item : storage_->getAll()) {
+            result.push_back(T::fromJSON(nlohmann::json::parse(item)));
+        }
+
+        return result;
     }
 
     [[nodiscard]] auto getCount() const -> size_t {
@@ -29,7 +44,7 @@ template <typename T> class Repository {
     auto clear() -> void { storage_->clear(); }
 };
 
-template <typename T>
+template <JSONSerializable T>
 class SingleItemRepository : public hbt::repo::SingleItemRepository<T> {
   private:
     hbt::repo::json::Repository<T> base;
@@ -40,24 +55,30 @@ class SingleItemRepository : public hbt::repo::SingleItemRepository<T> {
 
   public:
     [[nodiscard]] auto save(const T &data) -> bool {
-        return base.storage_->write(std::to_string(1));
+        return base.storage_->write("1", data.toJSON().dump());
     }
 
     [[nodiscard]] auto load() const -> std::optional<T> {
-        return base.storage_->read(std::to_string(1));
+        auto value{base.storage_->read("1")};
+
+        if (!value) {
+            return std::nullopt;
+        }
+
+        return T::fromJSON(nlohmann::json::parse(*value));
     }
 
-    auto remove() -> void { base.storage_.remove(std::to_string(1)); }
+    auto remove() -> void { base.storage_.remove("1"); }
 
     [[nodiscard]] auto exists() const -> bool {
-        return base.storage_->exists(std::to_string(1));
+        return base.storage_->exists("1");
     }
 };
 
 template <typename TID>
 concept IDCompatible = std::same_as<TID, std::size_t>;
 
-template <typename T, IDCompatible TID = std::size_t>
+template <JSONSerializable T, IDCompatible TID = std::size_t>
 class MultiItemRepository : public hbt::repo::MultiItemRepository<T, TID> {
   private:
     constexpr static std::string counterKey{"counter"};
@@ -81,13 +102,29 @@ class MultiItemRepository : public hbt::repo::MultiItemRepository<T, TID> {
 
   public:
     [[nodiscard]] auto save(const T &data) -> TID {
-        base.storage_->write(generateID(), "TODO");
+        auto id{generateID()};
+
+        base.storage_->write(std::to_string(id), data.toJSON().dump);
+
+        return id;
     }
 
-    [[nodiscard]] auto load(const TID &id) const -> std::optional<T>;
+    [[nodiscard]] auto load(const TID &id) const -> std::optional<T> {
+        auto value{base.storage_.read(std::to_string(id))};
 
-    auto remove(const TID &id) -> void;
+        if (!value) {
+            return std::nullopt;
+        }
 
-    [[nodiscard]] auto exists(const TID &id) const -> bool;
+        return T::fromJSON(nlohmann::json::parse(*value));
+    }
+
+    auto remove(const TID &id) -> void {
+        base.storage_->remove(std::to_string(id));
+    }
+
+    [[nodiscard]] auto exists(const TID &id) const -> bool {
+        return base.storage_->exists(std::to_string(id));
+    }
 };
 } // namespace hbt::repo::json
