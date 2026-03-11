@@ -4,6 +4,9 @@ project(hobbit)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+add_subdirectory(libs/json)
 
 add_subdirectory(src/models)
 add_subdirectory(src/repositories)
@@ -11,4 +14,9 @@ add_subdirectory(src/storage)
 
 add_executable(hobbit src/main.cpp)
 
-target_link_libraries(hobbit PRIVATE models_lib repositories_lib storage_lib)
+target_link_libraries(hobbit PRIVATE 
+	models_lib 
+	repositories_lib 
+	storage_lib 
+	nlohmann_json::nlohmann_json
+)
