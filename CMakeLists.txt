@@ -7,10 +7,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_subdirectory(libs/json)
+add_subdirectory(libs/gtest)
 
 add_subdirectory(src/models)
 add_subdirectory(src/repositories)
 add_subdirectory(src/storage)
+
+add_subdirectory(tests)
 
 add_executable(hobbit src/main.cpp)
 
