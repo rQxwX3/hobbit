@@ -81,3 +81,16 @@ TEST(EntryTest, ToFromJSON) {
     EXPECT_EQ(restoredOccurences[0].getWeekday(), occurences[0].getWeekday());
     EXPECT_EQ(restoredOccurences[0].getDaypart(), occurences[0].getDaypart());
 }
+
+TEST(OccurenceTest, ToFromJSON) {
+    using hbt::mods::Occurence, hbt::mods::Weekday, hbt::mods::Daypart;
+
+    auto original{Occurence{Weekday::MONDAY, Daypart::MORNING}};
+    auto json{original.toJSON()};
+    EXPECT_EQ(json["weekday"], Weekday::MONDAY);
+    EXPECT_EQ(json["daypart"], Daypart::MORNING);
+
+    auto restored{Occurence::fromJSON(json)};
+    EXPECT_EQ(restored.getWeekday(), Weekday::MONDAY);
+    EXPECT_EQ(restored.getDaypart(), Daypart::MORNING);
+}
