@@ -67,20 +67,39 @@ class FakeStorageEngine : public hbt::store::StorageEngine {
     ~FakeStorageEngine() override = default;
 };
 
-class SingleItemRepositoryTest : public ::testing::Test {
-  protected:
-    std::shared_ptr<FakeStorageEngine> storage;
-    std::unique_ptr<hbt::repo::json::SingleItemRepository<hbt::mods::User>>
-        repo;
+class FakeModel {
+  public:
+    std::string field;
 
-    auto SetUp() -> void override {
-        storage = std::shared_ptr<FakeStorageEngine>();
-        repo = std::make_unique<
-            hbt::repo::json::SingleItemRepository<hbt::mods::User>>(storage);
+  public:
+    FakeModel(std::string field) : field{std::move(field)} {}
+
+  public:
+    [[nodiscard]] auto toJSON() const -> nlohmann::json {
+        return {{"field", field}};
+    }
+
+    [[nodiscard]] static auto fromJSON(const nlohmann::json &j) -> FakeModel {
+        return FakeModel{j["field"].get<std::string>()};
     }
 };
 
-//
-// TEST_F(SingleItemRepositoryTest, SaveAndLoad) {
-//     auto storage{std::make_shared < FakeStorageEngine()};
-// }
+class SingleItemRepositoryTest : public ::testing::Test {
+  protected:
+    std::shared_ptr<FakeStorageEngine> storage;
+    std::unique_ptr<hbt::repo::json::SingleItemRepository<FakeModel>> repo;
+
+    auto SetUp() -> void override {
+        storage = std::make_shared<FakeStorageEngine>();
+        repo =
+            std::make_unique<hbt::repo::json::SingleItemRepository<FakeModel>>(
+                storage);
+    }
+};
+
+TEST_F(SingleItemRepositoryTest, SaveAndLoad) {
+    repo->save(FakeModel{"test"});
+
+    auto result{repo->load()};
+    ASSERT_TRUE(result.has_value());
+}

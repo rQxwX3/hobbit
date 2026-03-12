@@ -13,6 +13,9 @@ template <typename T> class Repository {
     virtual auto clear() -> void = 0;
 
   public:
+    Repository() = default;
+
+  public:
     virtual ~Repository() = default;
 
   public:
@@ -25,13 +28,16 @@ template <typename T> class Repository {
 
 template <typename T> class SingleItemRepository : public Repository<T> {
   public:
-    [[nodiscard]] virtual auto save(const T &data) -> bool = 0;
+    virtual auto save(const T &data) -> void = 0;
 
     [[nodiscard]] virtual auto load() const -> std::optional<T> = 0;
 
     virtual auto remove() -> void = 0;
 
     [[nodiscard]] virtual auto exists() const -> bool = 0;
+
+  public:
+    SingleItemRepository() = default;
 
   public:
     virtual ~SingleItemRepository() = default;

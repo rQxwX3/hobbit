@@ -19,10 +19,14 @@ concept JSONSerializable = requires(T t, nlohmann::json j) {
 };
 
 template <JSONSerializable T> class Repository {
-  protected:
+  public:
     std::shared_ptr<hbt::store::StorageEngine> storage_;
 
-  protected:
+  public:
+    Repository(std::shared_ptr<hbt::store::StorageEngine> storage)
+        : storage_{std::move(storage)} {}
+
+  public:
     [[nodiscard]] auto serialize(const T &data) const -> std::string {
         return data.toJSON().dump();
     }
@@ -33,11 +37,8 @@ template <JSONSerializable T> class Repository {
             return std::nullopt;
         }
 
-        return T::fromJSON(nlohmann::json::parse(raw));
+        return std::optional<T>(T::fromJSON(nlohmann::json::parse(raw)));
     }
-
-  public:
-    Repository(std::shared_ptr<hbt::store::StorageEngine> storage);
 
   public:
     [[nodiscard]] auto getAll() const -> std::vector<T> {
@@ -69,11 +70,11 @@ class SingleItemRepository : public hbt::repo::SingleItemRepository<T> {
 
   public:
     SingleItemRepository(std::shared_ptr<hbt::store::StorageEngine> storage)
-        : base{storage} {}
+        : base{std::move(storage)} {}
 
   public:
-    [[nodiscard]] auto save(const T &data) -> bool override {
-        return base.storage_->write("1", base.serialize(data));
+    auto save(const T &data) -> void override {
+        base.storage_->write("1", base.serialize(data));
     }
 
     [[nodiscard]] auto load() const -> std::optional<T> override {
@@ -94,7 +95,15 @@ class SingleItemRepository : public hbt::repo::SingleItemRepository<T> {
 
   public:
     [[nodiscard]] auto getAll() const -> std::vector<T> override {
-        return base.storage_->getAll();
+        std::vector<T> result;
+
+        for (const auto &item : base.storage_->getAll()) {
+            if (auto obj{base.deserialize(item)}) {
+                result.push_back(obj.value());
+            }
+        }
+
+        return result;
     }
 
     [[nodiscard]] auto getCount() const -> size_t override {
