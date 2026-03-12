@@ -1,6 +1,6 @@
 add_library(repositories_lib STATIC implementations/json_repository.cpp)
 
-target_include_directories(repositories_lib PRIVATE
+target_include_directories(repositories_lib PUBLIC
     interfaces
     implementations
 )

@@ -8,6 +8,7 @@ target_link_libraries(models_test PRIVATE
 	nlohmann_json::nlohmann_json
 	models_lib
 	storage_lib
+	repositories_lib
 )
 
 gtest_discover_tests(models_test)

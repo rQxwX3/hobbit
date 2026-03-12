@@ -1,7 +1,11 @@
+#include <json_repository.hpp>
 #include <storage_engine.hpp>
+#include <user.hpp>
 
 #include <gtest/gtest.h>
+#include <nlohmann/json.hpp>
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -62,3 +66,21 @@ class FakeStorageEngine : public hbt::store::StorageEngine {
   public:
     ~FakeStorageEngine() override = default;
 };
+
+class SingleItemRepositoryTest : public ::testing::Test {
+  protected:
+    std::shared_ptr<FakeStorageEngine> storage;
+    std::unique_ptr<hbt::repo::json::SingleItemRepository<hbt::mods::User>>
+        repo;
+
+    auto SetUp() -> void override {
+        storage = std::shared_ptr<FakeStorageEngine>();
+        repo = std::make_unique<
+            hbt::repo::json::SingleItemRepository<hbt::mods::User>>(storage);
+    }
+};
+
+//
+// TEST_F(SingleItemRepositoryTest, SaveAndLoad) {
+//     auto storage{std::make_shared < FakeStorageEngine()};
+// }

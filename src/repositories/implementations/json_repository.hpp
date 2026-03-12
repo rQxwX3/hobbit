@@ -72,11 +72,11 @@ class SingleItemRepository : public hbt::repo::SingleItemRepository<T> {
         : base{storage} {}
 
   public:
-    [[nodiscard]] auto save(const T &data) -> bool {
+    [[nodiscard]] auto save(const T &data) -> bool override {
         return base.storage_->write("1", base.serialize(data));
     }
 
-    [[nodiscard]] auto load() const -> std::optional<T> {
+    [[nodiscard]] auto load() const -> std::optional<T> override {
         auto value{base.storage_->read("1")};
 
         if (!value) {
@@ -86,11 +86,22 @@ class SingleItemRepository : public hbt::repo::SingleItemRepository<T> {
         return base.deserialize(*value);
     }
 
-    auto remove() -> void { base.storage_->remove("1"); }
+    auto remove() -> void override { base.storage_->remove("1"); }
 
-    [[nodiscard]] auto exists() const -> bool {
+    [[nodiscard]] auto exists() const -> bool override {
         return base.storage_->exists("1");
     }
+
+  public:
+    [[nodiscard]] auto getAll() const -> std::vector<T> override {
+        return base.storage_->getAll();
+    }
+
+    [[nodiscard]] auto getCount() const -> size_t override {
+        return base.storage_->getCount();
+    }
+
+    auto clear() -> void override { base.storage_->clear(); }
 };
 
 template <typename TID>
