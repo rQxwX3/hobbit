@@ -57,6 +57,10 @@ template <JSONSerializable T> class Repository {
         return storage_->getCount();
     }
 
+    [[nodiscard]] auto getKeys() const -> std::vector<std::string> {
+        return storage_->getKeys();
+    }
+
     auto clear() -> void { storage_->clear(); }
 
   public:
@@ -108,6 +112,10 @@ class SingleItemRepository : public hbt::repo::SingleItemRepository<T> {
 
     [[nodiscard]] auto getCount() const -> size_t override {
         return base.storage_->getCount();
+    }
+
+    [[nodiscard]] auto getKeys() const -> std::vector<std::string> override {
+        return base.storage_->getKeys();
     }
 
     auto clear() -> void override { base.storage_->clear(); }

@@ -103,3 +103,37 @@ TEST_F(SingleItemRepositoryTest, SaveAndLoad) {
     auto result{repo->load()};
     ASSERT_TRUE(result.has_value());
 }
+
+TEST_F(SingleItemRepositoryTest, Exists) {
+    repo->save(FakeModel{"test"});
+
+    EXPECT_EQ(repo->exists(), true);
+}
+
+TEST_F(SingleItemRepositoryTest, Remove) {
+    repo->save(FakeModel{"test"});
+
+    repo->remove();
+
+    EXPECT_EQ(repo->exists(), false);
+}
+
+TEST_F(SingleItemRepositoryTest, GetCount) {
+    repo->save(FakeModel{"test"});
+
+    EXPECT_EQ(repo->getCount(), 1);
+}
+
+TEST_F(SingleItemRepositoryTest, GetAll) {
+    repo->save(FakeModel{"test"});
+
+    EXPECT_EQ(repo->getAll()[0].field, "test");
+}
+
+TEST_F(SingleItemRepositoryTest, Clear) {
+    repo->save(FakeModel{"test"});
+
+    repo->clear();
+
+    EXPECT_EQ(repo->getCount(), 0);
+}

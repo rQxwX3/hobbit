@@ -10,6 +10,8 @@ template <typename T> class Repository {
 
     [[nodiscard]] virtual auto getCount() const -> size_t = 0;
 
+    [[nodiscard]] virtual auto getKeys() const -> std::vector<std::string> = 0;
+
     virtual auto clear() -> void = 0;
 
   public:
