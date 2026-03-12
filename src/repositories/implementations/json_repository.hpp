@@ -44,7 +44,9 @@ template <JSONSerializable T> class Repository {
         std::vector<T> result;
 
         for (const auto &item : storage_->getAll()) {
-            result.push_back(deserialize(item));
+            if (auto obj{deserialize(item)}) {
+                result.push_back(obj);
+            }
         }
 
         return result;
