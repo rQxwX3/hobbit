@@ -44,8 +44,8 @@ template <JSONSerializable T> class Repository {
     [[nodiscard]] auto getAll() const -> std::vector<T> {
         std::vector<T> result;
 
-        for (const auto &item : storage_->getAll()) {
-            if (auto obj{deserialize(item)}) {
+        for (const auto &item : storage_->getKeyValuePairs()) {
+            if (auto obj{deserialize(item.second)}) {
                 result.push_back(obj);
             }
         }
@@ -55,10 +55,6 @@ template <JSONSerializable T> class Repository {
 
     [[nodiscard]] auto getCount() const -> size_t {
         return storage_->getCount();
-    }
-
-    [[nodiscard]] auto getKeys() const -> std::vector<std::string> {
-        return storage_->getKeys();
     }
 
     auto clear() -> void { storage_->clear(); }
@@ -101,8 +97,8 @@ class SingleItemRepository : public hbt::repo::SingleItemRepository<T> {
     [[nodiscard]] auto getAll() const -> std::vector<T> override {
         std::vector<T> result;
 
-        for (const auto &item : base.storage_->getAll()) {
-            if (auto obj{base.deserialize(item)}) {
+        for (const auto &item : base.storage_->getKeyValuePairs()) {
+            if (auto obj{base.deserialize(item.second)}) {
                 result.push_back(obj.value());
             }
         }
@@ -114,10 +110,6 @@ class SingleItemRepository : public hbt::repo::SingleItemRepository<T> {
         return base.storage_->getCount();
     }
 
-    [[nodiscard]] auto getKeys() const -> std::vector<std::string> override {
-        return base.storage_->getKeys();
-    }
-
     auto clear() -> void override { base.storage_->clear(); }
 };
 
@@ -127,50 +119,76 @@ concept IDCompatible = std::same_as<TID, std::size_t>;
 template <JSONSerializable T, IDCompatible TID = std::size_t>
 class MultiItemRepository : public hbt::repo::MultiItemRepository<T, TID> {
   private:
-    constexpr static std::string counterKey{"counter"};
-
-  private:
-    hbt::repo::json::Repository<T> base;
+    hbt::repo::json::Repository<T> base_;
+    std::string counterKey_;
 
   private:
     [[nodiscard]] auto generateID() -> TID {
-        auto counter{base.storage_->read(counterKey)};
-        auto nextID{counter ? std::stoull(*counter) + 1 : 1};
+        auto counter{base_.storage_->read(counterKey_)};
+        auto nextID{counter ? std::stoull(counter.value()) + 1 : 1};
 
-        base.storage_->write(counterKey, std::to_string(nextID));
+        base_.storage_->write(counterKey_, std::to_string(nextID));
 
         return nextID;
     }
 
   public:
-    MultiItemRepository(std::shared_ptr<hbt::store::StorageEngine> storage)
-        : base{storage} {}
+    MultiItemRepository(std::shared_ptr<hbt::store::StorageEngine> storage,
+                        std::string counterKey)
+        : base_{std::move(storage)}, counterKey_{std::move(counterKey)} {}
 
   public:
-    [[nodiscard]] auto save(const T &data) -> TID {
+    [[nodiscard]] auto save(const T &data) -> TID override {
         auto id{generateID()};
 
-        base.storage_->write(std::to_string(id), base.serialize(data));
+        base_.storage_->write(std::to_string(id), base_.serialize(data));
 
         return id;
     }
 
-    [[nodiscard]] auto load(const TID &id) const -> std::optional<T> {
-        auto value{base.storage_.read(std::to_string(id))};
+    [[nodiscard]] auto load(const TID &id) const -> std::optional<T> override {
+        auto value{base_.storage_->read(std::to_string(id))};
 
         if (!value) {
             return std::nullopt;
         }
 
-        return base.deserialize(*value);
+        return base_.deserialize(*value);
     }
 
-    auto remove(const TID &id) -> void {
-        base.storage_->remove(std::to_string(id));
+    auto remove(const TID &id) -> void override {
+        base_.storage_->remove(std::to_string(id));
     }
 
-    [[nodiscard]] auto exists(const TID &id) const -> bool {
-        return base.storage_->exists(std::to_string(id));
+    [[nodiscard]] auto exists(const TID &id) const -> bool override {
+        return base_.storage_->exists(std::to_string(id));
     }
+
+  public:
+    [[nodiscard]] auto getAll() const -> std::vector<T> override {
+        std::vector<T> result;
+
+        for (const auto &item : base_.storage_->getKeyValuePairs()) {
+            if (item.first == counterKey_) {
+                continue;
+            }
+
+            if (auto obj{base_.deserialize(item.second)}) {
+                result.push_back(obj.value());
+            }
+        }
+
+        return result;
+    }
+
+    [[nodiscard]] auto getCount() const -> size_t override {
+        auto storageCountIncludingCountKey{base_.storage_->getCount()};
+
+        return storageCountIncludingCountKey > 0
+                   ? storageCountIncludingCountKey - 1
+                   : 0;
+    }
+
+    auto clear() -> void override { base_.storage_->clear(); }
 };
 } // namespace hbt::repo::json

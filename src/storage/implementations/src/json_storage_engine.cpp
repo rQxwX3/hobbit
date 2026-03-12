@@ -63,24 +63,15 @@ auto StorageEngine::remove(const std::string &key) -> void {
     return data_.size();
 }
 
-[[nodiscard]] auto StorageEngine::getAll() const -> std::vector<std::string> {
-    std::vector<std::string> values;
+[[nodiscard]] auto StorageEngine::getKeyValuePairs() const
+    -> std::vector<std::pair<std::string, std::string>> {
+    std::vector<std::pair<std::string, std::string>> pairs;
 
     for (const auto &[key, value] : data_) {
-        values.push_back(value);
+        pairs.emplace_back(key, value);
     }
 
-    return values;
-}
-
-[[nodiscard]] auto StorageEngine::getKeys() const -> std::vector<std::string> {
-    std::vector<std::string> keys;
-
-    for (const auto &[key, value] : data_) {
-        keys.push_back(key);
-    }
-
-    return keys;
+    return pairs;
 }
 
 auto StorageEngine::clear() -> void {

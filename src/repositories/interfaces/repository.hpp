@@ -10,8 +10,6 @@ template <typename T> class Repository {
 
     [[nodiscard]] virtual auto getCount() const -> size_t = 0;
 
-    [[nodiscard]] virtual auto getKeys() const -> std::vector<std::string> = 0;
-
     virtual auto clear() -> void = 0;
 
   public:
@@ -55,6 +53,9 @@ template <typename T> class SingleItemRepository : public Repository<T> {
 
 template <typename T, typename TID>
 class MultiItemRepository : public Repository<T> {
+  public:
+    MultiItemRepository() = default;
+
   public:
     [[nodiscard]] virtual auto save(const T &data) -> TID = 0;
 

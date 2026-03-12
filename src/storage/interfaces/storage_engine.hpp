@@ -19,9 +19,8 @@ class StorageEngine {
   public:
     [[nodiscard]] virtual auto getCount() const -> size_t = 0;
 
-    [[nodiscard]] virtual auto getAll() const -> std::vector<std::string> = 0;
-
-    [[nodiscard]] virtual auto getKeys() const -> std::vector<std::string> = 0;
+    [[nodiscard]] virtual auto getKeyValuePairs() const
+        -> std::vector<std::pair<std::string, std::string>> = 0;
 
     virtual auto clear() -> void = 0;
 

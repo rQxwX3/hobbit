@@ -1,27 +1,10 @@
-#pragma once
-
 #include <storage_engine.hpp>
 
-#include <string>
 #include <unordered_map>
 
-namespace hbt::store::json {
-class StorageEngine : public hbt::store::StorageEngine {
+class FakeStorageEngine : public hbt::store::StorageEngine {
   private:
-    using data_t = std::unordered_map<std::string, std::string>;
-
-  private:
-    std::string filename_;
-
-    data_t data_;
-
-  private:
-    auto load() -> void;
-
-    auto save() -> void;
-
-  public:
-    explicit StorageEngine(std::string filename);
+    std::unordered_map<std::string, std::string> data_;
 
   public:
     auto write(const std::string &key, const std::string &value)
@@ -41,6 +24,7 @@ class StorageEngine : public hbt::store::StorageEngine {
         -> std::vector<std::pair<std::string, std::string>> override;
 
     auto clear() -> void override;
-};
 
-} // namespace hbt::store::json
+  public:
+    ~FakeStorageEngine() override = default;
+};
