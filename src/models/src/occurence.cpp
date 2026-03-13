@@ -19,4 +19,8 @@ Occurence::Occurence(Weekday weekday, Daypart daypart)
     -> Occurence {
     return {json["weekday"], json["daypart"]};
 }
+
+[[nodiscard]] auto Occurence::operator==(const Occurence &other) const -> bool {
+    return weekday_ == other.getWeekday() && daypart_ == other.getDaypart();
+}
 } // namespace hbt::mods

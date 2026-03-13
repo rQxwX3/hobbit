@@ -1,6 +1,7 @@
 #include <entry.hpp>
 #include <user.hpp>
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <nlohmann/json.hpp>
 
@@ -28,6 +29,19 @@ TEST(UserTest, ToFromJSON) {
     EXPECT_EQ(restored.getName(), "alice");
 }
 
+TEST(OccurenceTest, ToFromJSON) {
+    using hbt::mods::Occurence, hbt::mods::Weekday, hbt::mods::Daypart;
+
+    auto original{Occurence{Weekday::MONDAY, Daypart::MORNING}};
+    auto json{original.toJSON()};
+    EXPECT_EQ(json["weekday"], Weekday::MONDAY);
+    EXPECT_EQ(json["daypart"], Daypart::MORNING);
+
+    auto restored{Occurence::fromJSON(json)};
+    EXPECT_EQ(restored.getWeekday(), Weekday::MONDAY);
+    EXPECT_EQ(restored.getDaypart(), Daypart::MORNING);
+}
+
 TEST(EntryTest, GetSetTitle) {
     using hbt::mods::Entry, hbt::mods::Weekday, hbt::mods::Daypart;
 
@@ -53,7 +67,8 @@ TEST(EntryTest, ToFromJSON) {
         hbt::mods::Daypart;
 
     auto occurences{
-        std::vector<Occurence>(1, {Weekday::MONDAY, Daypart::MORNING})};
+        std::vector<Occurence>({{Weekday::MONDAY, Daypart::MORNING},
+                                {Weekday::TUESDAY, Daypart::AFTERNOON}})};
 
     auto jsonOccurences{nlohmann::json::array()};
     for (const auto &occ : occurences) {
@@ -61,36 +76,20 @@ TEST(EntryTest, ToFromJSON) {
     }
 
     auto original{Entry("todo", occurences)};
-
     auto json{original.toJSON()};
     EXPECT_EQ(json["title"], "todo");
-
-    EXPECT_EQ(json["occurences"].size(), 1);
-    EXPECT_EQ(jsonOccurences.size(), 1);
-
-    EXPECT_EQ(json["occurences"][0]["weekday"], jsonOccurences[0]["weekday"]);
-    EXPECT_EQ(json["occurences"][0]["daypart"], jsonOccurences[0]["daypart"]);
+    EXPECT_THAT(json["occurences"],
+                testing::UnorderedElementsAre(occurences[0].toJSON(),
+                                              occurences[1].toJSON()));
 
     auto restored{Entry::fromJSON(json)};
     const auto &restoredOccurences{restored.getOccurences()};
     EXPECT_EQ(restored.getTitle(), "todo");
+    EXPECT_THAT(restoredOccurences,
+                testing::UnorderedElementsAre(occurences[0], occurences[1]));
 
-    EXPECT_EQ(jsonOccurences.size(), 1);
-    EXPECT_EQ(restoredOccurences.size(), 1);
-
-    EXPECT_EQ(restoredOccurences[0].getWeekday(), occurences[0].getWeekday());
-    EXPECT_EQ(restoredOccurences[0].getDaypart(), occurences[0].getDaypart());
-}
-
-TEST(OccurenceTest, ToFromJSON) {
-    using hbt::mods::Occurence, hbt::mods::Weekday, hbt::mods::Daypart;
-
-    auto original{Occurence{Weekday::MONDAY, Daypart::MORNING}};
-    auto json{original.toJSON()};
-    EXPECT_EQ(json["weekday"], Weekday::MONDAY);
-    EXPECT_EQ(json["daypart"], Daypart::MORNING);
-
-    auto restored{Occurence::fromJSON(json)};
-    EXPECT_EQ(restored.getWeekday(), Weekday::MONDAY);
-    EXPECT_EQ(restored.getDaypart(), Daypart::MORNING);
+    // EXPECT_EQ(restoredOccurences[0].getWeekday(),
+    // occurences[0].getWeekday());
+    // EXPECT_EQ(restoredOccurences[0].getDaypart(),
+    // occurences[0].getDaypart());
 }

@@ -39,5 +39,8 @@ class Occurence {
     [[nodiscard]] auto toJSON() const -> nlohmann::json;
 
     [[nodiscard]] static auto fromJSON(const nlohmann::json &json) -> Occurence;
+
+  public:
+    [[nodiscard]] auto operator==(const Occurence &other) const -> bool;
 };
 } // namespace hbt::mods

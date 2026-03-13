@@ -10,6 +10,7 @@ add_executable(json_repositories_test
 
 target_link_libraries(models_test PRIVATE 
 	gtest 
+	gmock
 	gtest_main 
 	nlohmann_json::nlohmann_json
 	models_lib
