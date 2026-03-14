@@ -30,6 +30,15 @@ template <JSONSerializable T> class Repository {
     Repository(std::shared_ptr<hbt::store::StorageEngine> storage)
         : storage_{std::move(storage)} {}
 
+    virtual ~Repository() = default;
+
+  public:
+    Repository(const Repository &) = delete;
+    Repository(Repository &&) = delete;
+
+    auto operator=(const Repository &) -> Repository & = delete;
+    auto operator=(Repository &&) -> Repository & = delete;
+
   public:
     [[nodiscard]] auto serialize(const T &data) const -> std::string {
         return data.toJSON().dump();
@@ -66,9 +75,6 @@ template <JSONSerializable T> class Repository {
     }
 
     auto clear() -> void { storage_->clear(); }
-
-  public:
-    virtual ~Repository() = default;
 };
 
 template <JSONSerializable T>
@@ -77,7 +83,8 @@ class SingleItemRepository : public hbt::repo::SingleItemRepository<T> {
     hbt::repo::json::Repository<T> base;
 
   public:
-    SingleItemRepository(std::shared_ptr<hbt::store::StorageEngine> storage)
+    explicit SingleItemRepository(
+        std::shared_ptr<hbt::store::StorageEngine> storage)
         : base{std::move(storage)} {}
 
   public:
@@ -145,8 +152,9 @@ class MultiItemRepository : public hbt::repo::MultiItemRepository<T, TID> {
     }
 
   public:
-    MultiItemRepository(std::shared_ptr<hbt::store::StorageEngine> storage,
-                        std::string counterKey = "counter")
+    explicit MultiItemRepository(
+        std::shared_ptr<hbt::store::StorageEngine> storage,
+        std::string counterKey = "counter")
         : base_{std::move(storage)}, counterKey_{std::move(counterKey)} {}
 
   public:

@@ -76,7 +76,7 @@ TEST(EntryTest, ToFromJSON) {
     auto original{Entry("todo", occurences)};
     auto json{original.toJSON()};
     EXPECT_EQ(json["title"], "todo");
-    EXPECT_THAT(json["occurences"],
+    EXPECT_THAT(json["occurrences"],
                 testing::UnorderedElementsAre(occurences[0].toJSON(),
                                               occurences[1].toJSON()));
     auto restored{Entry::fromJSON(json)};

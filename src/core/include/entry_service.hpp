@@ -19,17 +19,18 @@ class EntryService {
 
   public:
     auto createEntry(std::string title,
-                     std::vector<hbt::mods::Occurence> occurences);
+                     std::vector<hbt::mods::Occurence> occurences) -> id_t;
 
-    auto deleteEntry(id_t id);
+    auto deleteEntry(id_t id) -> void;
 
   public:
-    auto changeEntryTitle(id_t id, std::string title);
+    auto changeEntryTitle(id_t id, std::string title) -> void;
 
     auto changeEntryOccurences(id_t id,
-                               std::vector<hbt::mods::Occurence> occurences);
+                               std::vector<hbt::mods::Occurence> occurences)
+        -> void;
 
-    auto completeEntry(id_t id);
+    auto completeEntry(id_t id) -> void;
 
   public:
     [[nodiscard]] auto getEntriesForDate() const

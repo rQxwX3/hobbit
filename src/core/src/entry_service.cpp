@@ -10,14 +10,15 @@ EntryService::EntryService(
     : repository_{std::move(repository)} {}
 
 auto EntryService::createEntry(std::string title,
-                               std::vector<hbt::mods::Occurence> occurences) {
-    repository_->save(
+                               std::vector<hbt::mods::Occurence> occurences)
+    -> id_t {
+    return repository_->save(
         hbt::mods::Entry{std::move(title), std::move(occurences)});
 }
 
-auto EntryService::deleteEntry(id_t id) { repository_->remove(id); }
+auto EntryService::deleteEntry(id_t id) -> void { repository_->remove(id); }
 
-auto EntryService::changeEntryTitle(id_t id, std::string title) {
+auto EntryService::changeEntryTitle(id_t id, std::string title) -> void {
     auto entryOpt{repository_->load(id)};
 
     if (entryOpt.has_value()) {
@@ -30,7 +31,7 @@ auto EntryService::changeEntryTitle(id_t id, std::string title) {
 }
 
 auto EntryService::changeEntryOccurences(
-    id_t id, std::vector<hbt::mods::Occurence> occurences) {
+    id_t id, std::vector<hbt::mods::Occurence> occurences) -> void {
     auto entryOpt{repository_->load(id)};
 
     if (entryOpt.has_value()) {
@@ -42,7 +43,7 @@ auto EntryService::changeEntryOccurences(
     }
 }
 
-auto EntryService::completeEntry(id_t id) {
+auto EntryService::completeEntry(id_t id) -> void {
     auto entryOpt{repository_->load(id)};
 
     if (entryOpt.has_value()) {

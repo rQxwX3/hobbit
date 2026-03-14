@@ -9,8 +9,11 @@ class User {
     std::string name_;
 
   public:
-    User(std::string name);
+    explicit User(std::string name);
 
+    ~User() = default;
+
+  public:
     User(const User &) = delete;
     User(User &&) = delete;
 

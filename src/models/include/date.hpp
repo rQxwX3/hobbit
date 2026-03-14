@@ -7,8 +7,11 @@ class Date {
   private:
     std::chrono::year_month_day ymd_;
 
+  private:
+    [[nodiscard]] auto getYMD() -> std::chrono::year_month_day;
+
   public:
-    Date(std::chrono::year_month_day ymd);
+    explicit Date(std::chrono::year_month_day ymd);
 
   public:
     [[nodiscard]] static auto today() -> Date;
