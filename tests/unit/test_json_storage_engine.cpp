@@ -173,3 +173,25 @@ TEST_F(StorageEngineTest, RemoveLastKeyCreatesEmptyJsonObject) {
     auto j = readFile();
     EXPECT_TRUE(j.empty());
 }
+
+TEST_F(StorageEngineTest, ExistsReturnsTrueForExistingKey) {
+    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    storage.write("key", "value");
+
+    EXPECT_TRUE(storage.exists("key"));
+}
+
+TEST_F(StorageEngineTest, ExistsReturnsFalseForNonExistingKey) {
+    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    storage.write("key", "value");
+
+    EXPECT_FALSE(storage.exists("nonexistent"));
+}
+
+TEST_F(StorageEngineTest, ExistsReturnsFalseForRemovedKey) {
+    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    storage.write("key", "value");
+
+    storage.remove("key");
+    EXPECT_FALSE(storage.exists("key"));
+}
