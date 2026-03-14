@@ -96,6 +96,8 @@ class SingleItemRepository : public hbt::repo::SingleItemRepository<T> {
         base.storage_->write("1", base.serialize(std::move(data)));
     }
 
+    auto update(const T &data) -> void override { save(data); }
+
     [[nodiscard]] auto load() const -> std::optional<T> override {
         auto value{base.storage_->read("1")};
 
@@ -173,6 +175,14 @@ class MultiItemRepository : public hbt::repo::MultiItemRepository<T, TID> {
                               base_.serialize(std::move(data)));
 
         return id;
+    }
+
+    auto update(const TID &id, const T &data) -> void override {
+        if (!exists(id)) {
+            return;
+        }
+
+        base_.storage_->write(std::to_string(id), base_.serialize(data));
     }
 
     [[nodiscard]] auto load(const TID &id) const -> std::optional<T> override {
