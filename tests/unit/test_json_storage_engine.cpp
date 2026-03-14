@@ -320,3 +320,24 @@ TEST_F(StorageEngineTest, HandlesLargeNumberOfKeys) {
                   "value" + std::to_string(i));
     }
 }
+
+TEST_F(StorageEngineTest, SaveUsesIndentedFormat) {
+    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    storage.write("key", "value");
+
+    std::ifstream file(test_filename);
+    std::string content((std::istreambuf_iterator<char>(file)),
+                        std::istreambuf_iterator<char>());
+
+    EXPECT_TRUE(content.find("    \"key\"") != std::string::npos);
+}
+
+TEST_F(StorageEngineTest, LoadHandlesMinifiedJson) {
+    std::ofstream file(test_filename);
+    file << R"({"key":"value"})";
+    file.close();
+
+    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    EXPECT_EQ(storage.getCount(), 1);
+    EXPECT_EQ(storage.read("key"), "value");
+}
