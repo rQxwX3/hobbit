@@ -1,8 +1,9 @@
 #include <entry.hpp>
 
 namespace hbt::mods {
-Entry::Entry(std::string_view title, std::vector<Occurence> occurences)
-    : occurences_{std::move(occurences)}, title_{title}, isCompleted_{false} {}
+Entry::Entry(std::string title, std::vector<Occurence> occurences)
+    : occurences_{std::move(occurences)}, title_{std::move(title)},
+      isCompleted_{false} {}
 
 auto Entry::setTitle(std::string_view title) -> void { title_ = title; }
 

@@ -51,7 +51,7 @@ template <typename T> class SingleItemRepository : public Repository<T> {
     auto operator=(SingleItemRepository &&) -> SingleItemRepository & = delete;
 };
 
-template <typename T, typename TID>
+template <typename T, typename TID = size_t>
 class MultiItemRepository : public Repository<T> {
   public:
     MultiItemRepository() = default;

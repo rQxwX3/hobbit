@@ -17,7 +17,7 @@ class Entry {
     bool isCompleted_;
 
   public:
-    Entry(std::string_view title, std::vector<Occurence> occurences);
+    Entry(std::string title, std::vector<Occurence> occurences);
 
   public:
     auto setTitle(std::string_view title) -> void;
