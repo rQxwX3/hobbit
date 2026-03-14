@@ -132,3 +132,44 @@ TEST_F(StorageEngineTest, ReadWorksWithEmptyStringValue) {
     ASSERT_TRUE(result.has_value());
     EXPECT_EQ(result.value(), "");
 }
+
+TEST_F(StorageEngineTest, RemoveExistingKey) {
+    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    storage.write("key1", "value1");
+    storage.write("key2", "value2");
+
+    storage.remove("key1");
+    EXPECT_EQ(storage.getCount(), 1);
+    EXPECT_FALSE(storage.exists("key1"));
+    EXPECT_TRUE(storage.exists("key2"));
+
+    auto j = readFile();
+    EXPECT_EQ(j.size(), 1);
+    EXPECT_FALSE(j.contains("key1"));
+    EXPECT_EQ(j["key2"], "value2");
+}
+
+TEST_F(StorageEngineTest, RemoveNonExistingKeyDoesNothing) {
+    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    storage.write("key1", "value1");
+
+    storage.remove("nonexistent");
+
+    EXPECT_EQ(storage.getCount(), 1);
+    EXPECT_TRUE(storage.exists("key1"));
+
+    auto j = readFile();
+    EXPECT_EQ(j.size(), 1);
+    EXPECT_EQ(j["key1"], "value1");
+}
+
+TEST_F(StorageEngineTest, RemoveLastKeyCreatesEmptyJsonObject) {
+    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    storage.write("key", "value");
+
+    storage.remove("key");
+    EXPECT_EQ(storage.getCount(), 0);
+
+    auto j = readFile();
+    EXPECT_TRUE(j.empty());
+}
