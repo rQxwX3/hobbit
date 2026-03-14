@@ -54,6 +54,29 @@ target_link_libraries(json_storage_engine_test PRIVATE
 	storage_lib
 )
 
+#test entry service
+add_executable(entry_service_test 
+	unit/test_entry_service.cpp
+	unit/util/src/fake_storage_engine.cpp
+	unit/util/src/fake_model.cpp
+)
+
+target_link_libraries(entry_service_test PRIVATE 
+	gtest 
+	gmock
+	gtest_main 
+	nlohmann_json::nlohmann_json
+	models_lib
+	core_lib
+	repositories_lib
+	storage_lib
+)
+
+target_include_directories(entry_service_test PRIVATE
+	unit/util/include	
+)
+
 gtest_discover_tests(models_test)
 gtest_discover_tests(json_repositories_test)
 gtest_discover_tests(json_storage_engine_test)
+gtest_discover_tests(entry_service_test)

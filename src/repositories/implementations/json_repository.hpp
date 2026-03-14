@@ -146,11 +146,11 @@ class MultiItemRepository : public hbt::repo::MultiItemRepository<T, TID> {
 
   public:
     MultiItemRepository(std::shared_ptr<hbt::store::StorageEngine> storage,
-                        std::string counterKey)
+                        std::string counterKey = "counter")
         : base_{std::move(storage)}, counterKey_{std::move(counterKey)} {}
 
   public:
-    [[nodiscard]] auto save(const T &data) -> TID override {
+    auto save(const T &data) -> TID override {
         auto id{generateID()};
 
         base_.storage_->write(std::to_string(id), base_.serialize(data));
@@ -158,7 +158,7 @@ class MultiItemRepository : public hbt::repo::MultiItemRepository<T, TID> {
         return id;
     }
 
-    [[nodiscard]] auto save(T &&data) -> TID override {
+    auto save(T &&data) -> TID override {
         auto id{generateID()};
 
         base_.storage_->write(std::to_string(id),

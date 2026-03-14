@@ -59,9 +59,9 @@ class MultiItemRepository : public Repository<T> {
     MultiItemRepository() = default;
 
   public:
-    [[nodiscard]] virtual auto save(const T &data) -> TID = 0;
+    virtual auto save(const T &data) -> TID = 0;
 
-    [[nodiscard]] virtual auto save(T &&data) -> TID = 0;
+    virtual auto save(T &&data) -> TID = 0;
 
     [[nodiscard]] virtual auto load(const TID &id) const
         -> std::optional<T> = 0;

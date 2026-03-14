@@ -30,5 +30,9 @@ class EntryService {
                                std::vector<hbt::mods::Occurence> occurences);
 
     auto completeEntry(id_t id);
+
+  public:
+    [[nodiscard]] auto getEntriesForDate() const
+        -> std::vector<hbt::mods::Entry>;
 };
 } // namespace hbt::core

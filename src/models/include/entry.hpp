@@ -2,10 +2,10 @@
 
 #include <nlohmann/json.hpp>
 
+#include <date.hpp>
 #include <occurence.hpp>
 
 #include <string>
-#include <string_view>
 #include <vector>
 
 namespace hbt::mods {
@@ -40,5 +40,8 @@ class Entry {
     [[nodiscard]] auto toJSON() && -> nlohmann::json;
 
     [[nodiscard]] static auto fromJSON(const nlohmann::json &json) -> Entry;
+
+  public:
+    [[nodiscard]] auto isForDate(hbt::mods::Date date) -> bool;
 };
 } // namespace hbt::mods

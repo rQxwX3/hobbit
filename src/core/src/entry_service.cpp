@@ -1,3 +1,6 @@
+#include <algorithm>
+
+#include <date.hpp>
 #include <entry_service.hpp>
 
 namespace hbt::core {
@@ -8,8 +11,8 @@ EntryService::EntryService(
 
 auto EntryService::createEntry(std::string title,
                                std::vector<hbt::mods::Occurence> occurences) {
-    auto id{repository_->save(
-        hbt::mods::Entry{std::move(title), std::move(occurences)})};
+    repository_->save(
+        hbt::mods::Entry{std::move(title), std::move(occurences)});
 }
 
 auto EntryService::deleteEntry(id_t id) { repository_->remove(id); }
@@ -22,7 +25,7 @@ auto EntryService::changeEntryTitle(id_t id, std::string title) {
 
         entry.setTitle(std::move(title));
 
-        auto id{repository_->save(std::move(entry))};
+        repository_->save(std::move(entry));
     }
 }
 
@@ -35,7 +38,7 @@ auto EntryService::changeEntryOccurences(
 
         entry.setOccurences(std::move(occurences));
 
-        auto id{repository_->save(std::move(entry))};
+        repository_->save(std::move(entry));
     }
 }
 
@@ -47,7 +50,19 @@ auto EntryService::completeEntry(id_t id) {
 
         entry.toggleIsCompleted();
 
-        auto id{repository_->save(std::move(entry))};
+        repository_->save(std::move(entry));
     }
+}
+
+[[nodiscard]] auto EntryService::getEntriesForDate() const
+    -> std::vector<hbt::mods::Entry> {
+    auto entriesForDate{std::vector<hbt::mods::Entry>()};
+
+    std::ranges::copy_if(repository_->getAll(), entriesForDate.begin(),
+                         [](hbt::mods::Entry entry) -> bool {
+                             return entry.isForDate(mods::Date::today());
+                         });
+
+    return entriesForDate;
 }
 } // namespace hbt::core

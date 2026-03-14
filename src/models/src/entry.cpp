@@ -62,4 +62,11 @@ Entry::getOccurences() const & -> const std::vector<Occurence> & {
 
     return Entry{json["title"].get<std::string>(), occurences};
 }
+
+[[nodiscard]] auto Entry::isForDate(hbt::mods::Date date) -> bool {
+    return std::ranges::any_of(occurences_.begin(), occurences_.end(),
+                               [date](hbt::mods::Occurence occ) -> bool {
+                                   return occ.getWeekday() == date.getWeekday();
+                               });
+}
 } // namespace hbt::mods
