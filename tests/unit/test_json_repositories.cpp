@@ -31,6 +31,16 @@ TEST_F(SingleItemRepositoryTest, SaveAndLoad) {
 
     auto result{repo->load()};
     ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(result.value().field, "test");
+}
+
+TEST_F(SingleItemRepositoryTest, Update) {
+    repo->save(FakeModel{"test"});
+    repo->update(FakeModel{"field"});
+
+    auto result{repo->load()};
+    ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(result.value().field, "field");
 }
 
 TEST_F(SingleItemRepositoryTest, Exists) {
@@ -91,6 +101,24 @@ TEST_F(MultiItemRepositoryTest, SaveAndLoad) {
     auto result2{repo->load(id2)};
     ASSERT_TRUE(result1.has_value());
     ASSERT_TRUE(result2.has_value());
+}
+
+TEST_F(MultiItemRepositoryTest, Update) {
+    auto id{repo->save(FakeModel{"test"})};
+    repo->update(id, FakeModel{"field"});
+
+    auto result{repo->load(id)};
+    ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(result.value().field, "field");
+}
+
+TEST_F(MultiItemRepositoryTest, UpdatingNonExistentDataDoesNothing) {
+    auto id{repo->save(FakeModel{"test"})};
+    repo->update(id + 1, FakeModel{"field"});
+
+    auto result{repo->load(id)};
+    ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(result.value().field, "test");
 }
 
 TEST_F(MultiItemRepositoryTest, Exists) {

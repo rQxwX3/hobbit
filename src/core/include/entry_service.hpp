@@ -1,3 +1,4 @@
+#include <date.hpp>
 #include <entry.hpp>
 #include <repository.hpp>
 
@@ -35,7 +36,7 @@ class EntryService {
     auto uncompleteEntry(id_t id) -> void;
 
   public:
-    [[nodiscard]] auto getEntriesForDate() const
+    [[nodiscard]] auto getEntriesForDate(const mods::Date &date) const
         -> std::vector<hbt::mods::Entry>;
 
     [[nodiscard]] auto getCount() const -> size_t;

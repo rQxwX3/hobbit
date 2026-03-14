@@ -67,13 +67,14 @@ auto EntryService::uncompleteEntry(id_t id) -> void {
     }
 }
 
-[[nodiscard]] auto EntryService::getEntriesForDate() const
+[[nodiscard]] auto EntryService::getEntriesForDate(const mods::Date &date) const
     -> std::vector<hbt::mods::Entry> {
     auto entriesForDate{std::vector<hbt::mods::Entry>()};
+    const auto &allEntries{repository_->getAll()};
 
-    std::ranges::copy_if(repository_->getAll(), entriesForDate.begin(),
-                         [](hbt::mods::Entry entry) -> bool {
-                             return entry.isForDate(mods::Date::today());
+    std::ranges::copy_if(allEntries, std::back_inserter(entriesForDate),
+                         [date](const hbt::mods::Entry &entry) -> bool {
+                             return entry.isForDate(date);
                          });
 
     return entriesForDate;

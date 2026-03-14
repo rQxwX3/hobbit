@@ -33,7 +33,7 @@ class Entry {
     [[nodiscard]] auto getTitle() const & -> const std::string &;
 
     [[nodiscard]] auto
-    getOccurrences() const & -> const std::vector<Occurrence> &;
+    getOccurrences() const & -> const std::vector<hbt::mods::Occurrence> &;
 
     [[nodiscard]] auto isCompleted() const -> bool;
 
@@ -45,6 +45,6 @@ class Entry {
     [[nodiscard]] static auto fromJSON(const nlohmann::json &json) -> Entry;
 
   public:
-    [[nodiscard]] auto isForDate(hbt::mods::Date date) -> bool;
+    [[nodiscard]] auto isForDate(hbt::mods::Date date) const -> bool;
 };
 } // namespace hbt::mods

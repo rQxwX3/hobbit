@@ -51,13 +51,13 @@ TEST(EntryTest, GetSetTitle) {
     EXPECT_EQ(entry.getTitle(), "ornottodo");
 }
 
-TEST(EntryTest, ToggleIsCompleted) {
+TEST(EntryTest, SetIsCompleted) {
     using hbt::mods::Entry, hbt::mods::Daypart;
 
     auto entry{Entry("todo", {{std::chrono::weekday(), Daypart::MORNING}})};
     EXPECT_EQ(entry.isCompleted(), false);
 
-    entry.toggleIsCompleted();
+    entry.setIsCompleted(true);
     EXPECT_EQ(entry.isCompleted(), true);
 }
 
