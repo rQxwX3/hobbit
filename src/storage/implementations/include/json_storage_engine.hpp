@@ -37,8 +37,7 @@ class StorageEngine : public hbt::store::StorageEngine {
   public:
     [[nodiscard]] auto getCount() const -> size_t override;
 
-    [[nodiscard]] auto getKeyValuePairs() const
-        -> std::vector<std::pair<std::string, std::string>> override;
+    [[nodiscard]] auto getKeyValuePairs() const -> data_t override;
 
     auto clear() -> void override;
 };

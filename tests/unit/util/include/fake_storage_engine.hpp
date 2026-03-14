@@ -21,7 +21,7 @@ class FakeStorageEngine : public hbt::store::StorageEngine {
     [[nodiscard]] auto getCount() const -> size_t override;
 
     [[nodiscard]] auto getKeyValuePairs() const
-        -> std::vector<std::pair<std::string, std::string>> override;
+        -> std::unordered_map<std::string, std::string> override;
 
     auto clear() -> void override;
 

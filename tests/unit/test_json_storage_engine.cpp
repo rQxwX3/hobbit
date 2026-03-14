@@ -213,3 +213,4 @@ TEST_F(StorageEngineTest, GetCountReturnsCorrectNumberOfKeys) {
     storage.clear();
     EXPECT_EQ(storage.getCount(), 0);
 }
+

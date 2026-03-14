@@ -44,8 +44,8 @@ template <JSONSerializable T> class Repository {
     [[nodiscard]] auto getAll() const -> std::vector<T> {
         std::vector<T> result;
 
-        for (const auto &item : storage_->getKeyValuePairs()) {
-            if (auto obj{deserialize(item.second)}) {
+        for (const auto &[key, value] : storage_->getKeyValuePairs()) {
+            if (auto obj{deserialize(value)}) {
                 result.push_back(obj);
             }
         }

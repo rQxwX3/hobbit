@@ -32,12 +32,12 @@ auto FakeStorageEngine::remove(const std::string &key) -> void {
 }
 
 [[nodiscard]] auto FakeStorageEngine::getKeyValuePairs() const
-    -> std::vector<std::pair<std::string, std::string>> {
-    auto result{std::vector<std::pair<std::string, std::string>>()};
+    -> std::unordered_map<std::string, std::string> {
+    auto result{std::unordered_map<std::string, std::string>()};
     result.reserve(data_.size());
 
     for (const auto &[key, value] : data_) {
-        result.emplace_back(key, value);
+        result[key] = value;
     }
 
     return result;

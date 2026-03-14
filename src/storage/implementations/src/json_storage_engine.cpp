@@ -63,12 +63,11 @@ auto StorageEngine::remove(const std::string &key) -> void {
     return data_.size();
 }
 
-[[nodiscard]] auto StorageEngine::getKeyValuePairs() const
-    -> std::vector<std::pair<std::string, std::string>> {
-    std::vector<std::pair<std::string, std::string>> pairs;
+[[nodiscard]] auto StorageEngine::getKeyValuePairs() const -> data_t {
+    std::unordered_map<std::string, std::string> pairs;
 
     for (const auto &[key, value] : data_) {
-        pairs.emplace_back(key, value);
+        pairs[key] = value;
     }
 
     return pairs;

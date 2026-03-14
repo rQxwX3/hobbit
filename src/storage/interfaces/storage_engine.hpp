@@ -1,6 +1,7 @@
 #pragma once
 
 #include <optional>
+#include <unordered_map>
 #include <vector>
 
 namespace hbt::store {
@@ -20,7 +21,7 @@ class StorageEngine {
     [[nodiscard]] virtual auto getCount() const -> size_t = 0;
 
     [[nodiscard]] virtual auto getKeyValuePairs() const
-        -> std::vector<std::pair<std::string, std::string>> = 0;
+        -> std::unordered_map<std::string, std::string> = 0;
 
     virtual auto clear() -> void = 0;
 
