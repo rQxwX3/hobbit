@@ -12,7 +12,7 @@ enum class Daypart : char {
     NIGHT,
 };
 
-class Occurence {
+class Occurrence {
   private:
     using daypart_t = Daypart;
     using weekday_t = std::chrono::weekday;
@@ -22,9 +22,9 @@ class Occurence {
     daypart_t daypart_;
 
   public:
-    Occurence();
+    Occurrence();
 
-    Occurence(weekday_t weekday, daypart_t daypart);
+    Occurrence(weekday_t weekday, daypart_t daypart);
 
   public:
     [[nodiscard]] auto getWeekday() const -> weekday_t;
@@ -34,9 +34,10 @@ class Occurence {
   public:
     [[nodiscard]] auto toJSON() const -> nlohmann::json;
 
-    [[nodiscard]] static auto fromJSON(const nlohmann::json &json) -> Occurence;
+    [[nodiscard]] static auto fromJSON(const nlohmann::json &json)
+        -> Occurrence;
 
   public:
-    [[nodiscard]] auto operator==(const Occurence &other) const -> bool;
+    [[nodiscard]] auto operator==(const Occurrence &other) const -> bool;
 };
 } // namespace hbt::mods

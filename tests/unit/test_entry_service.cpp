@@ -20,7 +20,7 @@ class EntryServiceTest : public ::testing::Test {
 
     std::shared_ptr<FakeStorageEngine> storage;
 
-    std::vector<hbt::mods::Occurence> occurrances;
+    std::vector<hbt::mods::Occurrence> occurrences;
 
     auto SetUp() -> void override {
         storage = std::make_shared<FakeStorageEngine>();
@@ -32,14 +32,14 @@ class EntryServiceTest : public ::testing::Test {
 
         service = std::make_unique<hbt::core::EntryService>(std::move(repo));
 
-        occurrances = {{std::chrono::weekday{1}, hbt::mods::Daypart::AFTERNOON},
+        occurrences = {{std::chrono::weekday{1}, hbt::mods::Daypart::AFTERNOON},
                        {std::chrono::weekday{2}, hbt::mods::Daypart::MORNING},
                        {std::chrono::weekday{3}, hbt::mods::Daypart::NIGHT}};
     }
 };
 
 TEST_F(EntryServiceTest, CreatesEntry) {
-    auto id{service->createEntry("entry", occurrances)};
+    auto id{service->createEntry("entry", occurrences)};
     auto result{repoPtr->load(id)};
 
     ASSERT_TRUE(result.has_value());

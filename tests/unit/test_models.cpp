@@ -28,15 +28,15 @@ TEST(UserTest, ToFromJSON) {
     EXPECT_EQ(restored.getName(), "alice");
 }
 
-TEST(OccurenceTest, ToFromJSON) {
-    using hbt::mods::Occurence, hbt::mods::Daypart;
+TEST(OccurrenceTest, ToFromJSON) {
+    using hbt::mods::Occurrence, hbt::mods::Daypart;
 
-    auto original{Occurence{std::chrono::weekday(), Daypart::MORNING}};
+    auto original{Occurrence{std::chrono::weekday(), Daypart::MORNING}};
     auto json{original.toJSON()};
     EXPECT_EQ(json["weekday"], std::chrono::weekday().iso_encoding());
     EXPECT_EQ(json["daypart"], Daypart::MORNING);
 
-    auto restored{Occurence::fromJSON(json)};
+    auto restored{Occurrence::fromJSON(json)};
     EXPECT_EQ(restored.getWeekday(), std::chrono::weekday());
     EXPECT_EQ(restored.getDaypart(), Daypart::MORNING);
 }
@@ -62,27 +62,27 @@ TEST(EntryTest, ToggleIsCompleted) {
 }
 
 TEST(EntryTest, ToFromJSON) {
-    using hbt::mods::Entry, hbt::mods::Occurence, hbt::mods::Daypart;
+    using hbt::mods::Entry, hbt::mods::Occurrence, hbt::mods::Daypart;
 
-    auto occurences{
-        std::vector<Occurence>({{std::chrono::weekday(), Daypart::MORNING},
-                                {std::chrono::weekday(), Daypart::AFTERNOON}})};
+    auto occurrences{std::vector<Occurrence>(
+        {{std::chrono::weekday(), Daypart::MORNING},
+         {std::chrono::weekday(), Daypart::AFTERNOON}})};
 
-    auto jsonOccurences{nlohmann::json::array()};
-    for (const auto &occ : occurences) {
-        jsonOccurences.emplace_back(occ.toJSON());
+    auto jsonOccurrences{nlohmann::json::array()};
+    for (const auto &occ : occurrences) {
+        jsonOccurrences.emplace_back(occ.toJSON());
     }
 
-    auto original{Entry("todo", occurences)};
+    auto original{Entry("todo", occurrences)};
     auto json{original.toJSON()};
     EXPECT_EQ(json["title"], "todo");
     EXPECT_THAT(json["occurrences"],
-                testing::UnorderedElementsAre(occurences[0].toJSON(),
-                                              occurences[1].toJSON()));
+                testing::UnorderedElementsAre(occurrences[0].toJSON(),
+                                              occurrences[1].toJSON()));
     auto restored{Entry::fromJSON(json)};
-    const auto &restoredOccurences{restored.getOccurences()};
+    const auto &restoredOccurrences{restored.getOccurrences()};
     EXPECT_EQ(restored.getTitle(), "todo");
-    EXPECT_THAT(restoredOccurences,
-                testing::UnorderedElementsAre(occurences[0], occurences[1]));
+    EXPECT_THAT(restoredOccurrences,
+                testing::UnorderedElementsAre(occurrences[0], occurrences[1]));
 }
 } // namespace test::mods

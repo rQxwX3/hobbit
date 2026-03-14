@@ -3,7 +3,7 @@
 #include <nlohmann/json.hpp>
 
 #include <date.hpp>
-#include <occurence.hpp>
+#include <occurrence.hpp>
 
 #include <string>
 #include <vector>
@@ -11,18 +11,18 @@
 namespace hbt::mods {
 class Entry {
   private:
-    std::vector<Occurence> occurences_;
+    std::vector<Occurrence> occurrences_;
 
     std::string title_;
     bool isCompleted_;
 
   public:
-    Entry(std::string title, std::vector<Occurence> occurences);
+    Entry(std::string title, std::vector<Occurrence> occurrences);
 
   public:
     auto setTitle(std::string title) -> void;
 
-    auto setOccurences(std::vector<Occurence> occurences) -> void;
+    auto setOccurrences(std::vector<Occurrence> occurrences) -> void;
 
     auto toggleIsCompleted() -> void;
 
@@ -30,7 +30,7 @@ class Entry {
     [[nodiscard]] auto getTitle() const & -> const std::string &;
 
     [[nodiscard]] auto
-    getOccurences() const & -> const std::vector<Occurence> &;
+    getOccurrences() const & -> const std::vector<Occurrence> &;
 
     [[nodiscard]] auto isCompleted() const -> bool;
 

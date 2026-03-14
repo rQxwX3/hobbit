@@ -1,14 +1,15 @@
+#include "occurrence.hpp"
 #include <entry.hpp>
 
 namespace hbt::mods {
-Entry::Entry(std::string title, std::vector<Occurence> occurences)
-    : occurences_{std::move(occurences)}, title_{std::move(title)},
+Entry::Entry(std::string title, std::vector<Occurrence> occurrences)
+    : occurrences_{std::move(occurrences)}, title_{std::move(title)},
       isCompleted_{false} {}
 
 auto Entry::setTitle(std::string title) -> void { title_ = std::move(title); }
 
-auto Entry::setOccurences(std::vector<Occurence> occurences) -> void {
-    occurences_ = std::move(occurences);
+auto Entry::setOccurrences(std::vector<Occurrence> occurrences) -> void {
+    occurrences_ = std::move(occurrences);
 }
 
 auto Entry::toggleIsCompleted() -> void { isCompleted_ = !isCompleted_; }
@@ -20,19 +21,19 @@ auto Entry::toggleIsCompleted() -> void { isCompleted_ = !isCompleted_; }
 [[nodiscard]] auto Entry::isCompleted() const -> bool { return isCompleted_; }
 
 [[nodiscard]] auto
-Entry::getOccurences() const & -> const std::vector<Occurence> & {
-    return occurences_;
+Entry::getOccurrences() const & -> const std::vector<Occurrence> & {
+    return occurrences_;
 }
 
 [[nodiscard]] auto Entry::toJSON() const & -> nlohmann::json {
-    auto occurencesJSON{nlohmann::json::array()};
+    auto occurrencesJSON{nlohmann::json::array()};
 
-    for (const auto &occ : occurences_) {
-        occurencesJSON.emplace_back(occ.toJSON());
+    for (const auto &occ : occurrences_) {
+        occurrencesJSON.emplace_back(occ.toJSON());
     }
 
     return {
-        {"occurrences", occurencesJSON},
+        {"occurrences", occurrencesJSON},
         {"title", title_},
         {"is_completed", isCompleted_},
     };
@@ -41,7 +42,7 @@ Entry::getOccurences() const & -> const std::vector<Occurence> & {
 [[nodiscard]] auto Entry::toJSON() && -> nlohmann::json {
     auto occurrencesJSON{nlohmann::json::array()};
 
-    for (const auto &occ : occurences_) {
+    for (const auto &occ : occurrences_) {
         occurrencesJSON.emplace_back(occ.toJSON());
     }
 
@@ -57,19 +58,19 @@ Entry::getOccurences() const & -> const std::vector<Occurence> & {
         throw std::runtime_error("Missing required fields");
     }
 
-    auto jsonOccurences{json["occurrences"]};
-    auto occurences{std::vector<Occurence>()};
+    auto jsonOccurrences{json["occurrences"]};
+    auto occurrences{std::vector<Occurrence>()};
 
-    for (const auto &jsonOccurence : jsonOccurences) {
-        occurences.emplace_back(Occurence::fromJSON(jsonOccurence));
+    for (const auto &jsonOccurrence : jsonOccurrences) {
+        occurrences.emplace_back(Occurrence::fromJSON(jsonOccurrence));
     }
 
-    return Entry{json["title"].get<std::string>(), occurences};
+    return Entry{json["title"].get<std::string>(), occurrences};
 }
 
 [[nodiscard]] auto Entry::isForDate(hbt::mods::Date date) -> bool {
-    return std::ranges::any_of(occurences_.begin(), occurences_.end(),
-                               [date](hbt::mods::Occurence occ) -> bool {
+    return std::ranges::any_of(occurrences_.begin(), occurrences_.end(),
+                               [date](hbt::mods::Occurrence occ) -> bool {
                                    return occ.getWeekday() == date.getWeekday();
                                });
 }

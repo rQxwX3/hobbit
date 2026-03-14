@@ -1,7 +1,7 @@
 add_library(models_lib STATIC
     src/entry.cpp
     src/user.cpp
-	src/occurence.cpp
+	src/occurrence.cpp
 	src/date.cpp
 )
 

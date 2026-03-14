@@ -19,15 +19,15 @@ class EntryService {
 
   public:
     auto createEntry(std::string title,
-                     std::vector<hbt::mods::Occurence> occurences) -> id_t;
+                     std::vector<hbt::mods::Occurrence> occurrences) -> id_t;
 
     auto deleteEntry(id_t id) -> void;
 
   public:
     auto changeEntryTitle(id_t id, std::string title) -> void;
 
-    auto changeEntryOccurences(id_t id,
-                               std::vector<hbt::mods::Occurence> occurences)
+    auto changeEntryOccurrences(id_t id,
+                                std::vector<hbt::mods::Occurrence> occurrences)
         -> void;
 
     auto completeEntry(id_t id) -> void;
