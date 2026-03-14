@@ -292,3 +292,31 @@ TEST_F(StorageEngineTest, HandlesSpecialCharactersInValues) {
     EXPECT_EQ(storage.read("key"), specialValue);
     EXPECT_EQ(readFile()["key"], specialValue);
 }
+
+TEST_F(StorageEngineTest, HandlesLargeValues) {
+    constexpr size_t largeInteger{10000};
+
+    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    std::string largeValue(largeInteger, 'a');
+
+    storage.write("key", largeValue);
+    EXPECT_EQ(storage.read("key"), largeValue);
+    EXPECT_EQ(readFile()["key"], largeValue);
+}
+
+TEST_F(StorageEngineTest, HandlesLargeNumberOfKeys) {
+    constexpr size_t largeInteger{1000};
+
+    auto storage{hbt::store::json::StorageEngine(test_filename)};
+
+    for (int i = 0; i < largeInteger; ++i) {
+        storage.write("key" + std::to_string(i), "value" + std::to_string(i));
+    }
+
+    EXPECT_EQ(storage.getCount(), largeInteger);
+
+    for (int i = 0; i < largeInteger; ++i) {
+        EXPECT_EQ(storage.read("key" + std::to_string(i)),
+                  "value" + std::to_string(i));
+    }
+}
