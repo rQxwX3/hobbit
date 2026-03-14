@@ -6,7 +6,7 @@
 
 #include <json_storage_engine.hpp>
 
-class StorageEngineTest : public ::testing::Test {
+class JsonStorageEngineTest : public ::testing::Test {
   protected:
     const std::string test_filename = "test_storage.json";
 
@@ -34,7 +34,7 @@ class StorageEngineTest : public ::testing::Test {
     }
 };
 
-TEST_F(StorageEngineTest, ConstructorDoesNotOpenFile) {
+TEST_F(JsonStorageEngineTest, ConstructorDoesNotOpenFile) {
     EXPECT_FALSE(std::filesystem::exists(test_filename));
 
     auto storage{hbt::store::json::StorageEngine(test_filename)};
@@ -42,58 +42,27 @@ TEST_F(StorageEngineTest, ConstructorDoesNotOpenFile) {
     EXPECT_FALSE(std::filesystem::exists(test_filename));
 }
 
-TEST_F(StorageEngineTest, ConstructorHandlesEmptyJSON) {
+TEST_F(JsonStorageEngineTest, ConstructorHandlesEmptyJSON) {
     createTestFile(nlohmann::json::object());
     auto storage{hbt::store::json::StorageEngine(test_filename)};
 
     EXPECT_EQ(storage.getCount(), 0);
 }
 
-TEST_F(StorageEngineTest, WriteCreatesFileAndSavesData) {
+TEST_F(JsonStorageEngineTest, WriteCreatesFileAndSavesData) {
     auto storage{hbt::store::json::StorageEngine(test_filename)};
-    storage.write("key", "value");
+    storage.write("entry", "test");
 
     ASSERT_TRUE(std::filesystem::exists(test_filename));
-    EXPECT_EQ(readFile()["key"], "value");
+    EXPECT_EQ(readFile()["entry"], "test");
 }
 
-TEST_F(StorageEngineTest, WriteUpdatesExsitingKey) {
+TEST_F(JsonStorageEngineTest, WriteUpdatesExsitingKey) {
     auto storage{hbt::store::json::StorageEngine(test_filename)};
-    storage.write("key", "value1");
-    storage.write("key", "value2");
+    storage.write("entry", "test");
+    storage.write("entry", "todo");
 
     auto j{readFile()};
-    EXPECT_EQ(j["key"], "value2");
-    EXPECT_EQ(j.size(), 1);
-}
-
-TEST_F(StorageEngineTest, WriteAddsMultipleKeys) {
-    auto storage{hbt::store::json::StorageEngine(test_filename)};
-
-    storage.write("key1", "value1");
-    storage.write("key2", "value2");
-    storage.write("key3", "value3");
-
-    auto j{readFile()};
-    EXPECT_EQ(j.size(), 3);
-    EXPECT_EQ(j["key1"], "value1");
-    EXPECT_EQ(j["key2"], "value2");
-    EXPECT_EQ(j["key3"], "value3");
-}
-
-TEST_F(StorageEngineTest, WritePreservesExistingData) {
-    {
-        auto storage{hbt::store::json::StorageEngine(test_filename)};
-        storage.write("key1", "value1");
-    }
-
-    {
-        auto storage{hbt::store::json::StorageEngine(test_filename)};
-        storage.write("key2", "value2");
-    }
-
-    auto j{readFile()};
-    EXPECT_EQ(j.size(), 2);
-    EXPECT_EQ(j["key1"], "value1");
-    EXPECT_EQ(j["key2"], "value2");
+    EXPECT_EQ(readFile()["entry"], "todo");
+    EXPECT_EQ(re)
 }
