@@ -32,6 +32,8 @@ class EntryService {
 
     auto completeEntry(id_t id) -> void;
 
+    auto uncompleteEntry(id_t id) -> void;
+
   public:
     [[nodiscard]] auto getEntriesForDate() const
         -> std::vector<hbt::mods::Entry>;

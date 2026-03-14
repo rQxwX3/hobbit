@@ -19,12 +19,15 @@ class Entry {
   public:
     Entry(std::string title, std::vector<Occurrence> occurrences);
 
+    Entry(std::string title, std::vector<Occurrence> occurrences,
+          bool isCompleted);
+
   public:
     auto setTitle(std::string title) -> void;
 
     auto setOccurrences(std::vector<Occurrence> occurrences) -> void;
 
-    auto toggleIsCompleted() -> void;
+    auto setIsCompleted(bool isCompleted) -> void;
 
   public:
     [[nodiscard]] auto getTitle() const & -> const std::string &;

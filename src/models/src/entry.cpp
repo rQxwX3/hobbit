@@ -6,13 +6,20 @@ Entry::Entry(std::string title, std::vector<Occurrence> occurrences)
     : occurrences_{std::move(occurrences)}, title_{std::move(title)},
       isCompleted_{false} {}
 
+Entry::Entry(std::string title, std::vector<Occurrence> occurrences,
+             bool isCompleted)
+    : occurrences_{std::move(occurrences)}, title_{std::move(title)},
+      isCompleted_{isCompleted} {}
+
 auto Entry::setTitle(std::string title) -> void { title_ = std::move(title); }
 
 auto Entry::setOccurrences(std::vector<Occurrence> occurrences) -> void {
     occurrences_ = std::move(occurrences);
 }
 
-auto Entry::toggleIsCompleted() -> void { isCompleted_ = !isCompleted_; }
+auto Entry::setIsCompleted(bool isCompleted) -> void {
+    isCompleted_ = isCompleted;
+}
 
 [[nodiscard]] auto Entry::getTitle() const & -> const std::string & {
     return title_;
@@ -54,7 +61,8 @@ Entry::getOccurrences() const & -> const std::vector<Occurrence> & {
 }
 
 [[nodiscard]] auto Entry::fromJSON(const nlohmann::json &json) -> Entry {
-    if (!json.contains("title") || !json.contains("occurrences")) {
+    if (!json.contains("title") || !json.contains("occurrences") ||
+        !json.contains("is_completed")) {
         throw std::runtime_error("Missing required fields");
     }
 
@@ -65,7 +73,8 @@ Entry::getOccurrences() const & -> const std::vector<Occurrence> & {
         occurrences.emplace_back(Occurrence::fromJSON(jsonOccurrence));
     }
 
-    return Entry{json["title"].get<std::string>(), occurrences};
+    return Entry{json["title"].get<std::string>(), occurrences,
+                 json["is_completed"].get<bool>()};
 }
 
 [[nodiscard]] auto Entry::isForDate(hbt::mods::Date date) -> bool {

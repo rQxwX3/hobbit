@@ -49,7 +49,19 @@ auto EntryService::completeEntry(id_t id) -> void {
     if (entryOpt.has_value()) {
         auto entry{std::move(entryOpt.value())};
 
-        entry.toggleIsCompleted();
+        entry.setIsCompleted(true);
+
+        repository_->update(id, entry);
+    }
+}
+
+auto EntryService::uncompleteEntry(id_t id) -> void {
+    auto entryOpt{repository_->load(id)};
+
+    if (entryOpt.has_value()) {
+        auto entry{std::move(entryOpt.value())};
+
+        entry.setIsCompleted(false);
 
         repository_->update(id, entry);
     }
