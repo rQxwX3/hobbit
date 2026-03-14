@@ -35,5 +35,7 @@ class EntryService {
   public:
     [[nodiscard]] auto getEntriesForDate() const
         -> std::vector<hbt::mods::Entry>;
+
+    [[nodiscard]] auto getCount() const -> size_t;
 };
 } // namespace hbt::core

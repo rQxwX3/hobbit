@@ -66,4 +66,8 @@ auto EntryService::completeEntry(id_t id) -> void {
 
     return entriesForDate;
 }
+
+[[nodiscard]] auto EntryService::getCount() const -> size_t {
+    return repository_->getCount();
+}
 } // namespace hbt::core
