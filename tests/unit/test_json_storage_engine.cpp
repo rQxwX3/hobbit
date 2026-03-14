@@ -214,3 +214,23 @@ TEST_F(StorageEngineTest, GetCountReturnsCorrectNumberOfKeys) {
     EXPECT_EQ(storage.getCount(), 0);
 }
 
+TEST_F(StorageEngineTest, GetKeyValuePairsReturnsAllPairs) {
+    auto storage{hbt::store::json::StorageEngine(test_filename)};
+
+    storage.write("key1", "value1");
+    storage.write("key2", "value2");
+    storage.write("key3", "value3");
+
+    auto data{storage.getKeyValuePairs()};
+    EXPECT_EQ(data.size(), 3);
+    EXPECT_EQ(data["key1"], "value1");
+    EXPECT_EQ(data["key2"], "value2");
+    EXPECT_EQ(data["key3"], "value3");
+}
+
+TEST_F(StorageEngineTest, GetKeyValuePairsReturnsEmptyForEmptyStorage) {
+    auto storage{hbt::store::json::StorageEngine(test_filename)};
+
+    auto data{storage.getKeyValuePairs()};
+    EXPECT_TRUE(data.empty());
+}
