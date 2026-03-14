@@ -1,46 +1,24 @@
-#include <occurence.hpp>
+#include <chrono>
 
 namespace hbt::mods {
-enum class Month {
-    JANUARY,
-    FEBRUARY,
-    MARCH,
-    APRIL,
-    MAY,
-    JUNE,
-    JULY,
-    AUGUST,
-    SEPTEMBER,
-    OCTOBER,
-    NOVEMBER,
-    DECEMBER,
-};
-
 class Date {
   private:
-    using year_t = int;
-    using month_t = Month;
-    using day_t = int;
-
-  private:
-    year_t year_;
-    month_t month;
-    day_t day;
+    std::chrono::year_month_day ymd_;
 
   public:
-    Date(year_t year, month_t month, day_t day);
+    Date(std::chrono::year_month_day ymd);
 
   public:
     [[nodiscard]] static auto today() -> Date;
 
   public:
-    [[nodiscard]] auto getYear() const -> year_t;
+    [[nodiscard]] auto getYear() const -> std::chrono::year;
 
-    [[nodiscard]] auto getMonth() const -> month_t;
+    [[nodiscard]] auto getMonth() const -> std::chrono::month;
 
-    [[nodiscard]] auto getDay() const -> day_t;
+    [[nodiscard]] auto getDay() const -> std::chrono::day;
 
-    [[nodiscard]] auto getWeekday() const -> Weekday;
+    [[nodiscard]] auto getWeekday() const -> std::chrono::weekday;
 
   public:
     [[nodiscard]] auto operator<=>(const Date &other) const -> bool = default;
