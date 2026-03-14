@@ -97,3 +97,38 @@ TEST_F(StorageEngineTest, WritePreservesExistingData) {
     EXPECT_EQ(j["key1"], "value1");
     EXPECT_EQ(j["key2"], "value2");
 }
+
+TEST_F(StorageEngineTest, ReadReturnsValueForExistingKey) {
+    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    storage.write("key", "value");
+
+    auto result{storage.read("key")};
+    ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(result.value(), "value");
+}
+
+TEST_F(StorageEngineTest, ReadReturnsNulloptForMissingKey) {
+    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    storage.write("key", "value");
+
+    auto result{storage.read("nonexistent")};
+    EXPECT_FALSE(result.has_value());
+}
+
+TEST_F(StorageEngineTest, ReadWorksWithEmptyStringKey) {
+    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    storage.write("", "value");
+
+    auto result{storage.read("")};
+    ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(result.value(), "value");
+}
+
+TEST_F(StorageEngineTest, ReadWorksWithEmptyStringValue) {
+    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    storage.write("key", "");
+
+    auto result{storage.read("key")};
+    ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(result.value(), "");
+}
