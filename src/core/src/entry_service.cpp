@@ -26,7 +26,7 @@ auto EntryService::changeEntryTitle(id_t id, std::string title) -> void {
 
         entry.setTitle(std::move(title));
 
-        repository_->save(std::move(entry));
+        repository_->update(id, entry);
     }
 }
 
@@ -39,7 +39,7 @@ auto EntryService::changeEntryOccurrences(
 
         entry.setOccurrences(std::move(occurrences));
 
-        repository_->save(std::move(entry));
+        repository_->update(id, entry);
     }
 }
 
@@ -51,7 +51,7 @@ auto EntryService::completeEntry(id_t id) -> void {
 
         entry.toggleIsCompleted();
 
-        repository_->save(std::move(entry));
+        repository_->update(id, entry);
     }
 }
 
