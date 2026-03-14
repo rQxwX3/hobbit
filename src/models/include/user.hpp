@@ -23,7 +23,9 @@ class User {
     auto setName(std::string_view) -> void;
 
   public:
-    [[nodiscard]] auto toJSON() const -> nlohmann::json;
+    [[nodiscard]] auto toJSON() const & -> nlohmann::json;
+
+    [[nodiscard]] auto toJSON() && -> nlohmann::json;
 
     [[nodiscard]] static auto fromJSON(const nlohmann::json &j) -> User;
 };

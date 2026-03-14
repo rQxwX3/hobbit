@@ -10,7 +10,7 @@ class EntryService {
 
   private:
     std::unique_ptr<hbt::repo::MultiItemRepository<hbt::mods::Entry>>
-        _repository;
+        repository_;
 
   public:
     explicit EntryService(
@@ -24,10 +24,10 @@ class EntryService {
     auto deleteEntry(id_t id);
 
   public:
-    auto changeEntryTitle(const std::string &title);
+    auto changeEntryTitle(id_t id, std::string title);
 
-    auto
-    changeEntryOccurences(const std::vector<hbt::mods::Occurence> &occurences);
+    auto changeEntryOccurences(id_t id,
+                               std::vector<hbt::mods::Occurence> occurences);
 
     auto completeEntry(id_t id);
 };

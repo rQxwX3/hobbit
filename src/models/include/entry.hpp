@@ -20,7 +20,9 @@ class Entry {
     Entry(std::string title, std::vector<Occurence> occurences);
 
   public:
-    auto setTitle(std::string_view title) -> void;
+    auto setTitle(std::string title) -> void;
+
+    auto setOccurences(std::vector<Occurence> occurences) -> void;
 
     auto toggleIsCompleted() -> void;
 
@@ -33,7 +35,9 @@ class Entry {
     [[nodiscard]] auto isCompleted() const -> bool;
 
   public:
-    [[nodiscard]] auto toJSON() const -> nlohmann::json;
+    [[nodiscard]] auto toJSON() const & -> nlohmann::json;
+
+    [[nodiscard]] auto toJSON() && -> nlohmann::json;
 
     [[nodiscard]] static auto fromJSON(const nlohmann::json &json) -> Entry;
 };

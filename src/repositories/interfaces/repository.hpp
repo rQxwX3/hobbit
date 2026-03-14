@@ -30,6 +30,8 @@ template <typename T> class SingleItemRepository : public Repository<T> {
   public:
     virtual auto save(const T &data) -> void = 0;
 
+    virtual auto save(T &&data) -> void = 0;
+
     [[nodiscard]] virtual auto load() const -> std::optional<T> = 0;
 
     virtual auto remove() -> void = 0;
@@ -58,6 +60,8 @@ class MultiItemRepository : public Repository<T> {
 
   public:
     [[nodiscard]] virtual auto save(const T &data) -> TID = 0;
+
+    [[nodiscard]] virtual auto save(T &&data) -> TID = 0;
 
     [[nodiscard]] virtual auto load(const TID &id) const
         -> std::optional<T> = 0;

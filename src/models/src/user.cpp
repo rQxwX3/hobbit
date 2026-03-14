@@ -9,8 +9,12 @@ User::User(std::string name) : name_{std::move(name)} {}
 
 auto User::setName(std::string_view name) -> void { name_ = name; }
 
-[[nodiscard]] auto User::toJSON() const -> nlohmann::json {
+[[nodiscard]] auto User::toJSON() const & -> nlohmann::json {
     return {{"name", name_}};
+}
+
+[[nodiscard]] auto User::toJSON() && -> nlohmann::json {
+    return {{"name", std::move(name_)}};
 }
 
 [[nodiscard]] auto User::fromJSON(const nlohmann::json &json) -> User {

@@ -15,6 +15,8 @@ add_subdirectory(src/models)
 add_subdirectory(src/repositories)
 add_subdirectory(src/storage)
 
+add_subdirectory(src/core)
+
 add_subdirectory(tests)
 
 add_executable(hobbit src/main.cpp)
@@ -23,5 +25,6 @@ target_link_libraries(hobbit PRIVATE
 	models_lib 
 	repositories_lib 
 	storage_lib 
+	core_lib
 	nlohmann_json::nlohmann_json
 )

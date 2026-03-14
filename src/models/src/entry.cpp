@@ -5,7 +5,11 @@ Entry::Entry(std::string title, std::vector<Occurence> occurences)
     : occurences_{std::move(occurences)}, title_{std::move(title)},
       isCompleted_{false} {}
 
-auto Entry::setTitle(std::string_view title) -> void { title_ = title; }
+auto Entry::setTitle(std::string title) -> void { title_ = std::move(title); }
+
+auto Entry::setOccurences(std::vector<Occurence> occurences) -> void {
+    occurences_ = std::move(occurences);
+}
 
 auto Entry::toggleIsCompleted() -> void { isCompleted_ = !isCompleted_; }
 
@@ -20,7 +24,7 @@ Entry::getOccurences() const & -> const std::vector<Occurence> & {
     return occurences_;
 }
 
-[[nodiscard]] auto Entry::toJSON() const -> nlohmann::json {
+[[nodiscard]] auto Entry::toJSON() const & -> nlohmann::json {
     auto occurencesJSON{nlohmann::json::array()};
 
     for (const auto &occ : occurences_) {
@@ -30,6 +34,20 @@ Entry::getOccurences() const & -> const std::vector<Occurence> & {
     return {
         {"occurences", occurencesJSON},
         {"title", title_},
+        {"is_completed", isCompleted_},
+    };
+}
+
+[[nodiscard]] auto Entry::toJSON() && -> nlohmann::json {
+    auto occurrencesJSON{nlohmann::json::array()};
+
+    for (const auto &occ : occurences_) {
+        occurrencesJSON.emplace_back(occ.toJSON());
+    }
+
+    return {
+        {"occurrences", occurrencesJSON},
+        {"title", std::move(title_)},
         {"is_completed", isCompleted_},
     };
 }

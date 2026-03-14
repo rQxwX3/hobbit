@@ -1,5 +1,6 @@
 #include <storage_engine.hpp>
 
+#include <string>
 #include <unordered_map>
 
 namespace test::util {

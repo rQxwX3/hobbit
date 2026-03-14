@@ -2,7 +2,6 @@
 
 #include <optional>
 #include <unordered_map>
-#include <vector>
 
 namespace hbt::store {
 class StorageEngine {

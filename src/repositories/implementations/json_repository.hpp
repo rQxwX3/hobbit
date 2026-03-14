@@ -13,10 +13,14 @@
 
 namespace hbt::repo::json {
 template <typename T>
-concept JSONSerializable = requires(T t, nlohmann::json j) {
-    { t.toJSON() } -> std::same_as<nlohmann::json>;
-    { T::fromJSON(j) } -> std::same_as<T>;
-};
+concept JSONSerializable =
+    requires(const T &const_t, T &t, T &&rvalue_t, nlohmann::json j) {
+        { const_t.toJSON() } -> std::convertible_to<nlohmann::json>;
+
+        { std::move(rvalue_t).toJSON() } -> std::convertible_to<nlohmann::json>;
+
+        { T::fromJSON(j) } -> std::same_as<T>;
+    };
 
 template <JSONSerializable T> class Repository {
   public:
@@ -29,6 +33,10 @@ template <JSONSerializable T> class Repository {
   public:
     [[nodiscard]] auto serialize(const T &data) const -> std::string {
         return data.toJSON().dump();
+    }
+
+    [[nodiscard]] auto serialize(T &&data) const -> std::string {
+        return std::move(data).toJSON().dump();
     }
 
     [[nodiscard]] auto deserialize(const std::string &raw) const
@@ -75,6 +83,10 @@ class SingleItemRepository : public hbt::repo::SingleItemRepository<T> {
   public:
     auto save(const T &data) -> void override {
         base.storage_->write("1", base.serialize(data));
+    }
+
+    auto save(T &&data) -> void override {
+        base.storage_->write("1", base.serialize(std::move(data)));
     }
 
     [[nodiscard]] auto load() const -> std::optional<T> override {
@@ -142,6 +154,15 @@ class MultiItemRepository : public hbt::repo::MultiItemRepository<T, TID> {
         auto id{generateID()};
 
         base_.storage_->write(std::to_string(id), base_.serialize(data));
+
+        return id;
+    }
+
+    [[nodiscard]] auto save(T &&data) -> TID override {
+        auto id{generateID()};
+
+        base_.storage_->write(std::to_string(id),
+                              base_.serialize(std::move(data)));
 
         return id;
     }
