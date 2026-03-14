@@ -195,3 +195,21 @@ TEST_F(StorageEngineTest, ExistsReturnsFalseForRemovedKey) {
     storage.remove("key");
     EXPECT_FALSE(storage.exists("key"));
 }
+
+TEST_F(StorageEngineTest, GetCountReturnsCorrectNumberOfKeys) {
+    auto storage{hbt::store::json::StorageEngine(test_filename)};
+
+    EXPECT_EQ(storage.getCount(), 0);
+
+    storage.write("key1", "value1");
+    EXPECT_EQ(storage.getCount(), 1);
+
+    storage.write("key2", "value2");
+    EXPECT_EQ(storage.getCount(), 2);
+
+    storage.remove("key1");
+    EXPECT_EQ(storage.getCount(), 1);
+
+    storage.clear();
+    EXPECT_EQ(storage.getCount(), 0);
+}
