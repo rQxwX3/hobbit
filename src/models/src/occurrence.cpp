@@ -23,8 +23,11 @@ Occurrence::Occurrence(weekday_t weekday, daypart_t daypart)
 
 [[nodiscard]] auto Occurrence::fromJSON(const nlohmann::json &json)
     -> Occurrence {
-    auto isoVal{json["weekday"]};
+    if (!json.contains("weekday") || !json.contains("daypart")) {
+        throw std::runtime_error("Missing required fields");
+    }
 
+    auto isoVal{json["weekday"]};
     return {std::chrono::weekday(isoVal), json["daypart"]};
 }
 

@@ -18,6 +18,10 @@ auto User::setName(std::string_view name) -> void { name_ = name; }
 }
 
 [[nodiscard]] auto User::fromJSON(const nlohmann::json &json) -> User {
+    if (!json.contains("name")) {
+        throw std::runtime_error("Missing required fields");
+    }
+
     return User{json["name"]};
 }
 } // namespace hbt::mods
