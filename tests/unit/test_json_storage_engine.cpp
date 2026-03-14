@@ -256,7 +256,39 @@ TEST_F(StorageEngineTest, ClearOnEmptyStorageDoesNothing) {
     EXPECT_EQ(storage.getCount(), 0);
 
     if (std::filesystem::exists(test_filename)) {
-        auto j = readFile();
-        EXPECT_TRUE(j.empty());
+        EXPECT_TRUE(readFile().empty());
     }
+}
+
+TEST_F(StorageEngineTest, HandlesSpecialCharactersInKeys) {
+    auto storage{hbt::store::json::StorageEngine(test_filename)};
+
+    std::vector<std::string> specialKeys{
+        {"key with spaces", "key!@#$%^&*()", "key.with.dots", "key-with-dashes",
+         "key_with_underscores", "123numeric", "🚀emoji", "привет",
+         "안녕하세요", "🌍🌎🌏"}};
+
+    for (const auto &key : specialKeys) {
+        storage.write(key, "value");
+    }
+
+    EXPECT_EQ(storage.getCount(), specialKeys.size());
+
+    for (const auto &key : specialKeys) {
+        ASSERT_TRUE(storage.exists(key));
+        EXPECT_EQ(storage.read(key), "value");
+    }
+
+    EXPECT_EQ(readFile().size(), specialKeys.size());
+}
+
+TEST_F(StorageEngineTest, HandlesSpecialCharactersInValues) {
+    auto storage{hbt::store::json::StorageEngine(test_filename)};
+
+    std::string specialValue{
+        "Value with spaces!@#$%^&*() and emojis 🚀 and unicode 你好"};
+    storage.write("key", specialValue);
+
+    EXPECT_EQ(storage.read("key"), specialValue);
+    EXPECT_EQ(readFile()["key"], specialValue);
 }
