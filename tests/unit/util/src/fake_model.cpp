@@ -3,6 +3,7 @@
 #include <nlohmann/json.hpp>
 #include <utility>
 
+namespace test::util {
 FakeModel::FakeModel(std::string field) : field{std::move(field)} {}
 
 [[nodiscard]] auto FakeModel::toJSON() const -> nlohmann::json {
@@ -16,3 +17,4 @@ FakeModel::FakeModel(std::string field) : field{std::move(field)} {}
 
     return FakeModel{j["field"]};
 }
+} // namespace test::util

@@ -9,6 +9,10 @@
 #include <fake_model.hpp>
 #include <fake_storage_engine.hpp>
 
+namespace test::repo::json {
+using test::util::FakeModel;
+using test::util::FakeStorageEngine;
+
 class SingleItemRepositoryTest : public ::testing::Test {
   protected:
     std::shared_ptr<FakeStorageEngine> storage;
@@ -154,3 +158,4 @@ TEST_F(MultiItemRepositoryTest, Clear) {
 
     EXPECT_EQ(repo->getCount(), 0);
 }
+} // namespace test::repo::json

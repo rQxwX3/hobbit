@@ -7,6 +7,7 @@
 
 #include <vector>
 
+namespace test::mods {
 TEST(UserTest, GetSetName) {
     using hbt::mods::User;
 
@@ -87,9 +88,5 @@ TEST(EntryTest, ToFromJSON) {
     EXPECT_EQ(restored.getTitle(), "todo");
     EXPECT_THAT(restoredOccurences,
                 testing::UnorderedElementsAre(occurences[0], occurences[1]));
-
-    // EXPECT_EQ(restoredOccurences[0].getWeekday(),
-    // occurences[0].getWeekday());
-    // EXPECT_EQ(restoredOccurences[0].getDaypart(),
-    // occurences[0].getDaypart());
 }
+} // namespace test::mods

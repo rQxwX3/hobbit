@@ -6,6 +6,7 @@
 
 #include <json_storage_engine.hpp>
 
+namespace test::store::json {
 class StorageEngineTest : public ::testing::Test {
   protected:
     const std::string test_filename = "test_storage.json";
@@ -341,3 +342,4 @@ TEST_F(StorageEngineTest, LoadHandlesMinifiedJson) {
     EXPECT_EQ(storage.getCount(), 1);
     EXPECT_EQ(storage.read("key"), "value");
 }
+} // namespace test::store::json

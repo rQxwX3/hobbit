@@ -2,6 +2,7 @@
 
 #include <fake_storage_engine.hpp>
 
+namespace test::util {
 auto FakeStorageEngine::write(const std::string &key, const std::string &value)
     -> void {
     data_[key] = value;
@@ -44,3 +45,4 @@ auto FakeStorageEngine::remove(const std::string &key) -> void {
 }
 
 auto FakeStorageEngine::clear() -> void { data_.clear(); }
+} // namespace test::util

@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 
+namespace test::util {
 class FakeStorageEngine : public hbt::store::StorageEngine {
   private:
     std::unordered_map<std::string, std::string> data_;
@@ -28,3 +29,4 @@ class FakeStorageEngine : public hbt::store::StorageEngine {
   public:
     ~FakeStorageEngine() override = default;
 };
+} // namespace test::util

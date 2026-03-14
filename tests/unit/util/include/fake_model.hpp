@@ -2,6 +2,7 @@
 
 #include <string>
 
+namespace test::util {
 class FakeModel {
   public:
     std::string field;
@@ -14,3 +15,4 @@ class FakeModel {
 
     [[nodiscard]] static auto fromJSON(const nlohmann::json &j) -> FakeModel;
 };
+} // namespace test::util
