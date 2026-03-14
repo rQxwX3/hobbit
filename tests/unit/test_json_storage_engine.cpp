@@ -234,3 +234,29 @@ TEST_F(StorageEngineTest, GetKeyValuePairsReturnsEmptyForEmptyStorage) {
     auto data{storage.getKeyValuePairs()};
     EXPECT_TRUE(data.empty());
 }
+
+TEST_F(StorageEngineTest, ClearRemovesAllData) {
+    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    storage.write("key1", "value1");
+    storage.write("key2", "value2");
+
+    storage.clear();
+
+    EXPECT_EQ(storage.getCount(), 0);
+    EXPECT_FALSE(storage.exists("key1"));
+    EXPECT_FALSE(storage.exists("key2"));
+
+    EXPECT_TRUE(readFile().empty());
+}
+
+TEST_F(StorageEngineTest, ClearOnEmptyStorageDoesNothing) {
+    auto storage{hbt::store::json::StorageEngine(test_filename)};
+
+    storage.clear();
+    EXPECT_EQ(storage.getCount(), 0);
+
+    if (std::filesystem::exists(test_filename)) {
+        auto j = readFile();
+        EXPECT_TRUE(j.empty());
+    }
+}
