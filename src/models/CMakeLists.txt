@@ -2,6 +2,7 @@ add_library(models_lib STATIC
     src/entry.cpp
     src/user.cpp
 	src/occurence.cpp
+	src/date.cpp
 )
 
 target_include_directories(models_lib PUBLIC include)
