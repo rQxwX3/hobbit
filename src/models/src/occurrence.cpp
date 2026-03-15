@@ -3,30 +3,32 @@
 #include <chrono>
 
 namespace hbt::mods {
-Occurrence::Occurrence() : weekday_{std::chrono::weekday()} {}
+Occurrence::Occurrence(hbt::mods::Date date) : date_{date} {}
 
-Occurrence::Occurrence(weekday_t weekday) : weekday_{weekday} {}
-
-[[nodiscard]] auto Occurrence::getWeekday() const -> weekday_t {
-    return weekday_;
+[[nodiscard]] auto Occurrence::getWeekday() const -> std::chrono::weekday {
+    return date_.getWeekday();
 }
 
-[[nodiscard]] auto Occurrence::toJSON() const -> nlohmann::json {
-    return {{"weekday", weekday_.iso_encoding()}};
-}
+// TODO implement date.toJSON()
+// [[nodiscard]] auto Occurrence::toJSON() const -> nlohmann::json {
+//     return {{"date", date_.toJSON()}};
+// }
 
-[[nodiscard]] auto Occurrence::fromJSON(const nlohmann::json &json)
-    -> Occurrence {
-    if (!json.contains("weekday")) {
-        throw std::runtime_error("Missing required fields");
-    }
+// [[nodiscard]] auto Occurrence::fromJSON(const nlohmann::json &json)
+//     -> Occurrence {
+//     if (!json.contains("date")) {
+//         throw std::runtime_error("Missing required fields");
+//     }
+//
+//     return {json[date]};
+// }
 
-    auto isoVal{json["weekday"]};
-    return {std::chrono::weekday(isoVal)};
+[[nodiscard]] auto Occurrence::getDate() const -> hbt::mods::Date {
+    return date_;
 }
 
 [[nodiscard]] auto Occurrence::operator==(const Occurrence &other) const
     -> bool {
-    return weekday_ == other.getWeekday();
+    return date_ == other.getDate();
 }
 } // namespace hbt::mods

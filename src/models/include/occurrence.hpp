@@ -2,23 +2,24 @@
 
 #include <nlohmann/json.hpp>
 
+#include <date.hpp>
+
 #include <chrono>
 
 namespace hbt::mods {
 class Occurrence {
   private:
-    using weekday_t = std::chrono::weekday;
-
-  private:
-    weekday_t weekday_;
+    hbt::mods::Date date_;
 
   public:
     Occurrence();
 
-    Occurrence(weekday_t weekday);
+    Occurrence(hbt::mods::Date date);
 
   public:
-    [[nodiscard]] auto getWeekday() const -> weekday_t;
+    [[nodiscard]] auto getDate() const -> hbt::mods::Date;
+
+    [[nodiscard]] auto getWeekday() const -> std::chrono::weekday;
 
   public:
     [[nodiscard]] auto toJSON() const -> nlohmann::json;
