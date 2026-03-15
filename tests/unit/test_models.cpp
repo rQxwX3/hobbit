@@ -29,22 +29,20 @@ TEST(UserTest, ToFromJSON) {
 }
 
 TEST(OccurrenceTest, ToFromJSON) {
-    using hbt::mods::Occurrence, hbt::mods::Daypart;
+    using hbt::mods::Occurrence;
 
-    auto original{Occurrence{std::chrono::weekday(), Daypart::MORNING}};
+    auto original{Occurrence{std::chrono::weekday()}};
     auto json{original.toJSON()};
     EXPECT_EQ(json["weekday"], std::chrono::weekday().iso_encoding());
-    EXPECT_EQ(json["daypart"], Daypart::MORNING);
 
     auto restored{Occurrence::fromJSON(json)};
     EXPECT_EQ(restored.getWeekday(), std::chrono::weekday());
-    EXPECT_EQ(restored.getDaypart(), Daypart::MORNING);
 }
 
 TEST(EntryTest, GetSetTitle) {
-    using hbt::mods::Entry, hbt::mods::Daypart;
+    using hbt::mods::Entry;
 
-    auto entry{Entry("todo", {{std::chrono::weekday(), Daypart::MORNING}})};
+    auto entry{Entry("todo", {{std::chrono::weekday()}})};
     EXPECT_EQ(entry.getTitle(), "todo");
 
     entry.setTitle("ornottodo");
@@ -52,9 +50,9 @@ TEST(EntryTest, GetSetTitle) {
 }
 
 TEST(EntryTest, SetIsCompleted) {
-    using hbt::mods::Entry, hbt::mods::Daypart;
+    using hbt::mods::Entry;
 
-    auto entry{Entry("todo", {{std::chrono::weekday(), Daypart::MORNING}})};
+    auto entry{Entry("todo", {{std::chrono::weekday()}})};
     EXPECT_EQ(entry.isCompleted(), false);
 
     entry.setIsCompleted(true);
@@ -62,11 +60,10 @@ TEST(EntryTest, SetIsCompleted) {
 }
 
 TEST(EntryTest, ToFromJSON) {
-    using hbt::mods::Entry, hbt::mods::Occurrence, hbt::mods::Daypart;
+    using hbt::mods::Entry, hbt::mods::Occurrence;
 
     auto occurrences{std::vector<Occurrence>(
-        {{std::chrono::weekday(), Daypart::MORNING},
-         {std::chrono::weekday(), Daypart::AFTERNOON}})};
+        {{std::chrono::weekday()}, {std::chrono::weekday()}})};
 
     auto jsonOccurrences{nlohmann::json::array()};
     for (const auto &occ : occurrences) {

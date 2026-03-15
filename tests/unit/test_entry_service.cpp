@@ -36,12 +36,9 @@ class EntryServiceTest : public ::testing::Test {
 
         service = std::make_unique<hbt::core::EntryService>(std::move(repo));
 
-        occurrences1 = {
-            {std::chrono::weekday{1}, hbt::mods::Daypart::AFTERNOON},
-            {std::chrono::weekday{2}, hbt::mods::Daypart::MORNING}};
+        occurrences1 = {std::chrono::weekday{1}, std::chrono::weekday{2}};
 
-        occurrences2 = {{std::chrono::weekday{3}, hbt::mods::Daypart::NIGHT},
-                        {std::chrono::weekday{4}, hbt::mods::Daypart::EVENING}};
+        occurrences2 = {std::chrono::weekday{3}, std::chrono::weekday{4}};
     }
 };
 
