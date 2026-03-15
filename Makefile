@@ -4,8 +4,8 @@ clean:
 	rm -rf build
 
 build:
-	cmake -B build -S . && \
-	cmake --build build
+	cmake -B build -S . -DCMAKE_CXX_COMPILER=g++-15 && \
+	cmake --build build 
 
 rebuild: clean build
 

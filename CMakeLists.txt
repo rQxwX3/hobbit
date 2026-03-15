@@ -8,6 +8,30 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    message(FATAL_ERROR "
+    ========================================================
+    This project requires GCC (GNU Compiler Collection)
+    Detected compiler: ${CMAKE_CXX_COMPILER_ID}
+    
+    Please use GCC to compile this project:
+      - Install GCC 15 or later
+      - Configure CMake with: -DCMAKE_CXX_COMPILER=g++-15
+    ========================================================
+    ")
+endif()
+
+if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 15.0)
+    message(FATAL_ERROR "
+    ========================================================
+    This project requires GCC 14 or later for C++23 support.
+    Detected GCC version: ${CMAKE_CXX_COMPILER_VERSION}
+    
+    Please upgrade your GCC compiler.
+    ========================================================
+    ")
+endif()
+
 add_subdirectory(libs/json)
 add_subdirectory(libs/gtest)
 
