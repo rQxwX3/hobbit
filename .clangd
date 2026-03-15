@@ -1,0 +1,11 @@
+CompileFlags:
+  Compiler: g++-15
+  CompilationDatabase: build
+  Add: [-std=c++23]
+
+Diagnostics:
+  UnusedIncludes: Strict
+  MissingIncludes: None
+  Suppress: [
+    "readability-redundant-access-specifiers"
+  ]
