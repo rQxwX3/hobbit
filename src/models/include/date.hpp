@@ -9,9 +9,6 @@ class Date {
   private:
     std::chrono::year_month_day ymd_;
 
-  private:
-    [[nodiscard]] auto getYMD() const -> std::chrono::year_month_day;
-
   public:
     Date();
 
@@ -26,6 +23,8 @@ class Date {
     [[nodiscard]] auto getMonth() const -> std::chrono::month;
 
     [[nodiscard]] auto getDay() const -> std::chrono::day;
+
+    [[nodiscard]] auto getYMD() const -> std::chrono::year_month_day;
 
     [[nodiscard]] auto getWeekday() const -> std::chrono::weekday;
 

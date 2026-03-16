@@ -40,4 +40,15 @@ Occurrence::Occurrence(hbt::mods::Date date, int intervalDays)
         hbt::mods::Date::fromYMDString(json["date"].get<std::string>()),
         json["interval_days"].get<int>()};
 }
+
+[[nodiscard]] auto Occurrence::isForDate(Date date) const -> bool {
+    auto ymdDiff{std::chrono::sys_days{date.getYMD()} -
+                 std::chrono::sys_days{date_.getYMD()}};
+
+    if (ymdDiff.count() < 0) {
+        return false;
+    }
+
+    return ymdDiff.count() % intervalDays_.count() == 0;
+}
 } // namespace hbt::mods

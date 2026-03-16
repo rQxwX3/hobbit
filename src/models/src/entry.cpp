@@ -84,7 +84,7 @@ Entry::getOccurrences() const & -> const std::vector<Occurrence> & {
 [[nodiscard]] auto Entry::isForDate(hbt::mods::Date date) const -> bool {
     return std::ranges::any_of(occurrences_.begin(), occurrences_.end(),
                                [date](hbt::mods::Occurrence occ) -> bool {
-                                   return occ.getWeekday() == date.getWeekday();
+                                   return occ.isForDate(date);
                                });
 }
 } // namespace hbt::mods

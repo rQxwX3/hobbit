@@ -36,6 +36,9 @@ class Occurrence {
         -> Occurrence;
 
   public:
+    [[nodiscard]] auto isForDate(Date date) const -> bool;
+
+  public:
     [[nodiscard]] auto operator<=>(const Occurrence &other) const
         -> bool = default;
 };
