@@ -34,6 +34,11 @@ class Date {
     [[nodiscard]] auto isToday() const -> bool;
 
   public:
+    [[nodiscard]] auto toYMDString() const -> std::string;
+
+    [[nodiscard]] static auto fromYMDString(const std::string &string) -> Date;
+
+  public:
     [[nodiscard]] auto toJSON() const & -> nlohmann::json;
 
     [[nodiscard]] static auto fromJSON(const nlohmann::json &json) -> Date;

@@ -39,17 +39,11 @@ Date::Date(std::chrono::year_month_day ymd) : ymd_{ymd} {}
     return Date::today().getYMD() == ymd_;
 }
 
-[[nodiscard]] auto Date::toJSON() const & -> nlohmann::json {
-    return {{"date", std::format("{:%Y-%m-%d}", ymd_)}};
+[[nodiscard]] auto Date::toYMDString() const -> std::string {
+    return std::format("{:%Y-%m-%d}", ymd_);
 }
 
-[[nodiscard]] auto Date::fromJSON(const nlohmann::json &json) -> Date {
-    if (!json.contains("date")) {
-        throw std::runtime_error("Missing required fields");
-    }
-
-    std::string ymdString{json.at("date").get<std::string>()};
-
+[[nodiscard]] auto Date::fromYMDString(const std::string &ymdString) -> Date {
     constexpr int yearDigits{4};
     constexpr int monthDigits{2};
     constexpr int dayDigits{2};
@@ -67,6 +61,20 @@ Date::Date(std::chrono::year_month_day ymd) : ymd_{ymd} {}
                                     std::chrono::day{dayString}};
 
     return Date{ymd};
+}
+
+[[nodiscard]] auto Date::toJSON() const & -> nlohmann::json {
+    return {{"date", this->toYMDString()}};
+}
+
+[[nodiscard]] auto Date::fromJSON(const nlohmann::json &json) -> Date {
+    if (!json.contains("date")) {
+        throw std::runtime_error("Missing required fields");
+    }
+
+    std::string ymdString{json.at("date").get<std::string>()};
+
+    return Date::fromYMDString(ymdString);
 }
 
 }; // namespace hbt::mods
