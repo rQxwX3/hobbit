@@ -36,9 +36,15 @@ class EntryServiceTest : public ::testing::Test {
 
         service = std::make_unique<hbt::core::EntryService>(std::move(repo));
 
-        occurrences1 = {std::chrono::weekday{1}, std::chrono::weekday{2}};
+        using namespace std::chrono;
 
-        occurrences2 = {std::chrono::weekday{3}, std::chrono::weekday{4}};
+        occurrences1 = {
+            {hbt::mods::Date{year_month_day{year{2026}, month{3}, day{16}}}},
+            {hbt::mods::Date{year_month_day{year{2026}, month{3}, day{18}}}}};
+
+        occurrences2 = {
+            {hbt::mods::Date{year_month_day{year{2026}, month{3}, day{17}}}},
+            {hbt::mods::Date{year_month_day{year{2026}, month{3}, day{19}}}}};
     }
 };
 
@@ -250,18 +256,16 @@ TEST_F(EntryServiceTest, GetsEntriesForDate) {
     auto id3{service->createEntry("entry3", occurrences1)};
     auto id4{service->createEntry("entry4", occurrences2)};
 
-    // wednesday
-    auto ymd{std::chrono::year_month_day{
-        std::chrono::year{2024}, std::chrono::month{3}, std::chrono::day{13}}};
-    auto date{hbt::mods::Date{ymd}};
-
+    auto date{hbt::mods::Date{occurrences1[0].getDate()}}; // wednesday
     auto results{service->getEntriesForDate(date)};
+
     ASSERT_EQ(results.size(), 2);
-    EXPECT_THAT(
-        results[0].getOccurrences(),
-        testing::UnorderedElementsAre(occurrences2[0], occurrences2[1]));
-    EXPECT_THAT(
-        results[1].getOccurrences(),
-        testing::UnorderedElementsAre(occurrences2[0], occurrences2[1]));
+
+    auto resultTitles{std::vector<std::string>()};
+    resultTitles.push_back(results[0].getTitle());
+    resultTitles.push_back(results[1].getTitle());
+
+    EXPECT_THAT(resultTitles,
+                testing::UnorderedElementsAre("entry1", "entry3"));
 }
 } // namespace test::core

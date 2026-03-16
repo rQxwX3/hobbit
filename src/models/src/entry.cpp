@@ -1,5 +1,5 @@
-#include "occurrence.hpp"
 #include <entry.hpp>
+#include <occurrence.hpp>
 
 namespace hbt::mods {
 Entry::Entry(std::string title, std::vector<Occurrence> occurrences)
@@ -33,40 +33,44 @@ Entry::getOccurrences() const & -> const std::vector<Occurrence> & {
 }
 
 [[nodiscard]] auto Entry::toJSON() const & -> nlohmann::json {
-    auto occurrencesJSON{nlohmann::json::array()};
+    auto occurrencesJSON = nlohmann::json::array();
 
     for (const auto &occ : occurrences_) {
-        occurrencesJSON.emplace_back(occ.toJSON());
+        occurrencesJSON.push_back(occ.toJSON());
     }
 
-    return {
+    nlohmann::json json = {
         {"occurrences", occurrencesJSON},
         {"title", title_},
         {"is_completed", isCompleted_},
     };
+
+    return json;
 }
 
 [[nodiscard]] auto Entry::toJSON() && -> nlohmann::json {
-    auto occurrencesJSON{nlohmann::json::array()};
+    auto occurrencesJSON = nlohmann::json::array();
 
-    for (const auto &occ : occurrences_) {
-        occurrencesJSON.emplace_back(occ.toJSON());
+    for (auto occ : std::move(occurrences_)) {
+        occurrencesJSON.push_back(occ.toJSON());
     }
 
-    return {
+    nlohmann::json json = {
         {"occurrences", occurrencesJSON},
         {"title", std::move(title_)},
         {"is_completed", isCompleted_},
     };
+
+    return json;
 }
 
 [[nodiscard]] auto Entry::fromJSON(const nlohmann::json &json) -> Entry {
     if (!json.contains("title") || !json.contains("occurrences") ||
         !json.contains("is_completed")) {
-        throw std::runtime_error("Missing required fields");
+        throw std::runtime_error("Missing required fields ENTRY");
     }
 
-    auto jsonOccurrences{json["occurrences"]};
+    auto jsonOccurrences = json["occurrences"];
     auto occurrences{std::vector<Occurrence>()};
 
     for (const auto &jsonOccurrence : jsonOccurrences) {

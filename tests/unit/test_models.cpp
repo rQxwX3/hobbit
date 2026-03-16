@@ -21,22 +21,40 @@ TEST(UserTest, ToFromJSON) {
 
     auto original{User{"alice"}};
 
-    auto json{original.toJSON()};
-    EXPECT_EQ(json["name"], "alice");
+    auto json = original.toJSON();
+    ASSERT_EQ(std::string(json.type_name()), "object");
+    EXPECT_EQ(json["name"].get<std::string>(), "alice");
 
     auto restored{User::fromJSON(json)};
     EXPECT_EQ(restored.getName(), "alice");
+}
+
+TEST(DateTest, ToFromYMDString) {
+    using hbt::mods::Date;
+
+    auto original{Date{}};
+
+    auto ymdString{original.toYMDString()};
+
+    auto restored{Date::fromYMDString(ymdString)};
+    EXPECT_EQ(restored.getYear(), original.getYear());
+    EXPECT_EQ(restored.getMonth(), original.getMonth());
+    EXPECT_EQ(restored.getDay(), original.getDay());
 }
 
 TEST(OccurrenceTest, ToFromJSON) {
     using hbt::mods::Occurrence;
 
     auto original{Occurrence{}};
-    auto json{original.toJSON()};
-    EXPECT_EQ(json["weekday"], std::chrono::weekday().iso_encoding());
+    auto json = original.toJSON();
+    ASSERT_EQ(std::string(json.type_name()), "object");
+
+    EXPECT_EQ(json["date"], original.getDate().toYMDString());
 
     auto restored{Occurrence::fromJSON(json)};
-    EXPECT_EQ(restored.getWeekday(), std::chrono::weekday());
+    EXPECT_EQ(restored.getDate().toYMDString(),
+              original.getDate().toYMDString());
+    EXPECT_EQ(restored.getWeekday(), original.getWeekday());
 }
 
 TEST(EntryTest, GetSetTitle) {
@@ -64,17 +82,22 @@ TEST(EntryTest, ToFromJSON) {
 
     auto occurrences{std::vector<Occurrence>({{}, {}})};
 
-    auto jsonOccurrences{nlohmann::json::array()};
+    auto jsonOccurrences = nlohmann::json::array();
     for (const auto &occ : occurrences) {
-        jsonOccurrences.emplace_back(occ.toJSON());
+        jsonOccurrences.push_back(occ.toJSON());
     }
 
     auto original{Entry("todo", occurrences)};
-    auto json{original.toJSON()};
+
+    auto json = original.toJSON();
+    ASSERT_EQ(std::string(json.type_name()), "object");
+
     EXPECT_EQ(json["title"], "todo");
+    EXPECT_EQ(json["occurrences"].size(), occurrences.size());
     EXPECT_THAT(json["occurrences"],
                 testing::UnorderedElementsAre(occurrences[0].toJSON(),
                                               occurrences[1].toJSON()));
+
     auto restored{Entry::fromJSON(json)};
     const auto &restoredOccurrences{restored.getOccurrences()};
     EXPECT_EQ(restored.getTitle(), "todo");

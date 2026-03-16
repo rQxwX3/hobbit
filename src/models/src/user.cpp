@@ -22,6 +22,6 @@ auto User::setName(std::string_view name) -> void { name_ = name; }
         throw std::runtime_error("Missing required fields");
     }
 
-    return User{json["name"]};
+    return User{json["name"].get<std::string>()};
 }
 } // namespace hbt::mods

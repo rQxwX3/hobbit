@@ -4,6 +4,9 @@
 #include <format>
 
 namespace hbt::mods {
+Date::Date()
+    : ymd_{floor<std::chrono::days>(std::chrono::system_clock::now())} {}
+
 Date::Date(std::chrono::year_month_day ymd) : ymd_{ymd} {}
 
 [[nodiscard]] auto Date::getYMD() const -> std::chrono::year_month_day {
@@ -53,8 +56,8 @@ Date::Date(std::chrono::year_month_day ymd) : ymd_{ymd} {}
     auto monthString{static_cast<unsigned>(
         std::stoi(ymdString.substr(yearDigits + 1, monthDigits)))};
 
-    auto dayString{static_cast<unsigned>(
-        std::stoi(ymdString.substr(yearDigits + monthDigits + 1, dayDigits)))};
+    auto dayString{static_cast<unsigned>(std::stoi(
+        ymdString.substr(yearDigits + 1 + monthDigits + 1, dayDigits)))};
 
     std::chrono::year_month_day ymd{std::chrono::year{yearString},
                                     std::chrono::month{monthString},
@@ -62,19 +65,4 @@ Date::Date(std::chrono::year_month_day ymd) : ymd_{ymd} {}
 
     return Date{ymd};
 }
-
-[[nodiscard]] auto Date::toJSON() const & -> nlohmann::json {
-    return {{"date", this->toYMDString()}};
-}
-
-[[nodiscard]] auto Date::fromJSON(const nlohmann::json &json) -> Date {
-    if (!json.contains("date")) {
-        throw std::runtime_error("Missing required fields");
-    }
-
-    std::string ymdString{json.at("date").get<std::string>()};
-
-    return Date::fromYMDString(ymdString);
-}
-
 }; // namespace hbt::mods

@@ -30,6 +30,6 @@ class User {
 
     [[nodiscard]] auto toJSON() && -> nlohmann::json;
 
-    [[nodiscard]] static auto fromJSON(const nlohmann::json &j) -> User;
+    [[nodiscard]] static auto fromJSON(const nlohmann::json &json) -> User;
 };
 } // namespace hbt::mods

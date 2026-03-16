@@ -26,10 +26,10 @@ auto StorageEngine::load() -> void {
 }
 
 auto StorageEngine::save() -> void {
-    auto j{nlohmann::json(data_)};
+    auto json = nlohmann::json(data_);
     auto file{std::ofstream(filename_)};
 
-    file << j.dump(4);
+    file << json.dump(4);
 }
 
 auto StorageEngine::write(const std::string &key, const std::string &value)

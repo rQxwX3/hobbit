@@ -3,6 +3,8 @@
 #include <chrono>
 
 namespace hbt::mods {
+Occurrence::Occurrence() = default;
+
 Occurrence::Occurrence(hbt::mods::Date date) : date_{date} {}
 
 [[nodiscard]] auto Occurrence::getWeekday() const -> std::chrono::weekday {
@@ -10,16 +12,17 @@ Occurrence::Occurrence(hbt::mods::Date date) : date_{date} {}
 }
 
 [[nodiscard]] auto Occurrence::toJSON() const -> nlohmann::json {
-    return {{"date", date_.toJSON()}};
+    return {{"date", date_.toYMDString()}};
 }
 
 [[nodiscard]] auto Occurrence::fromJSON(const nlohmann::json &json)
     -> Occurrence {
     if (!json.contains("date")) {
-        throw std::runtime_error("Missing required fields");
+        throw std::runtime_error("Missing required fields OCCURRENCE");
     }
 
-    return Occurrence{hbt::mods::Date::fromJSON(json["date"])};
+    return Occurrence{
+        hbt::mods::Date::fromYMDString(json["date"].get<std::string>())};
 }
 
 [[nodiscard]] auto Occurrence::getDate() const -> hbt::mods::Date {

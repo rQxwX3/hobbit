@@ -53,9 +53,11 @@ TEST_F(StorageEngineTest, ConstructorHandlesEmptyJSON) {
 TEST_F(StorageEngineTest, WriteCreatesFileAndSavesData) {
     auto storage{hbt::store::json::StorageEngine(test_filename)};
     storage.write("key", "value");
-
     ASSERT_TRUE(std::filesystem::exists(test_filename));
-    EXPECT_EQ(readFile()["key"], "value");
+
+    auto json = readFile();
+    ASSERT_EQ(std::string(json.type_name()), "object");
+    EXPECT_EQ(json["key"], "value");
 }
 
 TEST_F(StorageEngineTest, WriteUpdatesExsitingKey) {
@@ -63,9 +65,9 @@ TEST_F(StorageEngineTest, WriteUpdatesExsitingKey) {
     storage.write("key", "value1");
     storage.write("key", "value2");
 
-    auto j{readFile()};
-    EXPECT_EQ(j["key"], "value2");
-    EXPECT_EQ(j.size(), 1);
+    auto json = readFile();
+    EXPECT_EQ(json["key"], "value2");
+    EXPECT_EQ(json.size(), 1);
 }
 
 TEST_F(StorageEngineTest, WriteAddsMultipleKeys) {
@@ -75,11 +77,11 @@ TEST_F(StorageEngineTest, WriteAddsMultipleKeys) {
     storage.write("key2", "value2");
     storage.write("key3", "value3");
 
-    auto j{readFile()};
-    EXPECT_EQ(j.size(), 3);
-    EXPECT_EQ(j["key1"], "value1");
-    EXPECT_EQ(j["key2"], "value2");
-    EXPECT_EQ(j["key3"], "value3");
+    auto json = readFile();
+    EXPECT_EQ(json.size(), 3);
+    EXPECT_EQ(json["key1"], "value1");
+    EXPECT_EQ(json["key2"], "value2");
+    EXPECT_EQ(json["key3"], "value3");
 }
 
 TEST_F(StorageEngineTest, WritePreservesExistingData) {
@@ -93,10 +95,10 @@ TEST_F(StorageEngineTest, WritePreservesExistingData) {
         storage.write("key2", "value2");
     }
 
-    auto j{readFile()};
-    EXPECT_EQ(j.size(), 2);
-    EXPECT_EQ(j["key1"], "value1");
-    EXPECT_EQ(j["key2"], "value2");
+    auto json = readFile();
+    EXPECT_EQ(json.size(), 2);
+    EXPECT_EQ(json["key1"], "value1");
+    EXPECT_EQ(json["key2"], "value2");
 }
 
 TEST_F(StorageEngineTest, ReadReturnsValueForExistingKey) {
@@ -144,10 +146,10 @@ TEST_F(StorageEngineTest, RemoveExistingKey) {
     EXPECT_FALSE(storage.exists("key1"));
     EXPECT_TRUE(storage.exists("key2"));
 
-    auto j = readFile();
-    EXPECT_EQ(j.size(), 1);
-    EXPECT_FALSE(j.contains("key1"));
-    EXPECT_EQ(j["key2"], "value2");
+    auto json = readFile();
+    EXPECT_EQ(json.size(), 1);
+    EXPECT_FALSE(json.contains("key1"));
+    EXPECT_EQ(json["key2"], "value2");
 }
 
 TEST_F(StorageEngineTest, RemoveNonExistingKeyDoesNothing) {
@@ -159,9 +161,9 @@ TEST_F(StorageEngineTest, RemoveNonExistingKeyDoesNothing) {
     EXPECT_EQ(storage.getCount(), 1);
     EXPECT_TRUE(storage.exists("key1"));
 
-    auto j = readFile();
-    EXPECT_EQ(j.size(), 1);
-    EXPECT_EQ(j["key1"], "value1");
+    auto json = readFile();
+    EXPECT_EQ(json.size(), 1);
+    EXPECT_EQ(json["key1"], "value1");
 }
 
 TEST_F(StorageEngineTest, RemoveLastKeyCreatesEmptyJsonObject) {
@@ -171,8 +173,8 @@ TEST_F(StorageEngineTest, RemoveLastKeyCreatesEmptyJsonObject) {
     storage.remove("key");
     EXPECT_EQ(storage.getCount(), 0);
 
-    auto j = readFile();
-    EXPECT_TRUE(j.empty());
+    auto json = readFile();
+    EXPECT_TRUE(json.empty());
 }
 
 TEST_F(StorageEngineTest, ExistsReturnsTrueForExistingKey) {

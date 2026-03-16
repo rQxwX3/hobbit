@@ -13,6 +13,8 @@ class Date {
     [[nodiscard]] auto getYMD() const -> std::chrono::year_month_day;
 
   public:
+    Date();
+
     explicit Date(std::chrono::year_month_day ymd);
 
   public:
