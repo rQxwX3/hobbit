@@ -12,5 +12,8 @@ rebuild: clean build
 test: build
 	cd build && ctest --output-on-failure
 
+test-strict: build
+	cd build && ctest --output-on-failure --stop-on-failure
+
 test-clean: rebuild
 	cd build && ctest --output-on-failure
