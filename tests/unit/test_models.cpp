@@ -31,7 +31,7 @@ TEST(UserTest, ToFromJSON) {
 TEST(OccurrenceTest, ToFromJSON) {
     using hbt::mods::Occurrence;
 
-    auto original{Occurrence{std::chrono::weekday()}};
+    auto original{Occurrence{}};
     auto json{original.toJSON()};
     EXPECT_EQ(json["weekday"], std::chrono::weekday().iso_encoding());
 
@@ -42,7 +42,7 @@ TEST(OccurrenceTest, ToFromJSON) {
 TEST(EntryTest, GetSetTitle) {
     using hbt::mods::Entry;
 
-    auto entry{Entry("todo", {{std::chrono::weekday()}})};
+    auto entry{Entry("todo", {})};
     EXPECT_EQ(entry.getTitle(), "todo");
 
     entry.setTitle("ornottodo");
@@ -52,7 +52,7 @@ TEST(EntryTest, GetSetTitle) {
 TEST(EntryTest, SetIsCompleted) {
     using hbt::mods::Entry;
 
-    auto entry{Entry("todo", {{std::chrono::weekday()}})};
+    auto entry{Entry("todo", {})};
     EXPECT_EQ(entry.isCompleted(), false);
 
     entry.setIsCompleted(true);
@@ -62,8 +62,7 @@ TEST(EntryTest, SetIsCompleted) {
 TEST(EntryTest, ToFromJSON) {
     using hbt::mods::Entry, hbt::mods::Occurrence;
 
-    auto occurrences{std::vector<Occurrence>(
-        {{std::chrono::weekday()}, {std::chrono::weekday()}})};
+    auto occurrences{std::vector<Occurrence>({{}, {}})};
 
     auto jsonOccurrences{nlohmann::json::array()};
     for (const auto &occ : occurrences) {

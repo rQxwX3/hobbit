@@ -1,5 +1,7 @@
 #pragma once
 
+#include <nlohmann/json.hpp>
+
 #include <chrono>
 
 namespace hbt::mods {
@@ -8,7 +10,7 @@ class Date {
     std::chrono::year_month_day ymd_;
 
   private:
-    [[nodiscard]] auto getYMD() -> std::chrono::year_month_day;
+    [[nodiscard]] auto getYMD() const -> std::chrono::year_month_day;
 
   public:
     explicit Date(std::chrono::year_month_day ymd);
@@ -30,5 +32,10 @@ class Date {
 
   public:
     [[nodiscard]] auto isToday() const -> bool;
+
+  public:
+    [[nodiscard]] auto toJSON() const & -> nlohmann::json;
+
+    [[nodiscard]] static auto fromJSON(const nlohmann::json &json) -> Date;
 };
 } // namespace hbt::mods
