@@ -9,6 +9,12 @@ Date::Date()
 
 Date::Date(std::chrono::year_month_day ymd) : ymd_{ymd} {}
 
+Date::Date(std::chrono::year year, std::chrono::month month,
+           std::chrono::day day)
+    : ymd_{std::chrono::year_month_day{std::chrono::year{year},
+                                       std::chrono::month{month},
+                                       std::chrono::day{day}}} {}
+
 [[nodiscard]] auto Date::getYMD() const -> std::chrono::year_month_day {
     return ymd_;
 }

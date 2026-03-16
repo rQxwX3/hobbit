@@ -14,6 +14,9 @@ class Date {
 
     explicit Date(std::chrono::year_month_day ymd);
 
+    explicit Date(std::chrono::year year, std::chrono::month month,
+                  std::chrono::day day);
+
   public:
     [[nodiscard]] static auto today() -> Date;
 

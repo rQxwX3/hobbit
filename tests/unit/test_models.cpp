@@ -57,6 +57,80 @@ TEST(OccurrenceTest, ToFromJSON) {
     EXPECT_EQ(restored.getWeekday(), original.getWeekday());
 }
 
+TEST(OccurrenceTest, IsForDateTrueForFutureDate) {
+    using hbt::mods::Occurrence, hbt::mods::Date;
+
+    auto date1{Date{
+        std::chrono::year{2026},
+        std::chrono::month{3},
+        std::chrono::day{16},
+    }};
+
+    auto date2{Date{
+        std::chrono::year{2026},
+        std::chrono::month{3},
+        std::chrono::day{23},
+    }};
+
+    auto original{Occurrence{date1, 7}};
+
+    EXPECT_TRUE(original.isForDate(date2));
+}
+
+TEST(OccurrenceTest, IsForDateTrueForSelf) {
+    using hbt::mods::Occurrence, hbt::mods::Date;
+
+    auto date1{Date{
+        std::chrono::year{2026},
+        std::chrono::month{3},
+        std::chrono::day{16},
+    }};
+
+    auto original{Occurrence{date1, 7}};
+
+    EXPECT_TRUE(original.isForDate(date1));
+}
+
+TEST(OccurrenceTest, IsForDateFalseForPastDate) {
+    using hbt::mods::Occurrence, hbt::mods::Date;
+
+    auto date1{Date{
+        std::chrono::year{2026},
+        std::chrono::month{3},
+        std::chrono::day{23},
+    }};
+
+    auto date2{Date{
+        std::chrono::year{2026},
+        std::chrono::month{3},
+        std::chrono::day{16},
+    }};
+
+    auto original{Occurrence{date1, 7}};
+
+    EXPECT_FALSE(original.isForDate(date2));
+}
+
+TEST(OccurrenceTest, IsForDateFalseForWrongDate) {
+    using hbt::mods::Occurrence, hbt::mods::Date;
+
+    auto date1{Date{
+        std::chrono::year{2026},
+        std::chrono::month{3},
+        std::chrono::day{16},
+    }};
+
+    auto date2{Date{
+        std::chrono::year{2026},
+        std::chrono::month{3},
+        std::chrono::day{17},
+    }};
+
+    auto original{Occurrence{date1, 7}};
+
+    EXPECT_FALSE(original.isForDate(date2));
+}
+
 TEST(EntryTest, GetSetTitle) {
     using hbt::mods::Entry;
 
