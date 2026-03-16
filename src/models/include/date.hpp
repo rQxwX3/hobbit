@@ -44,5 +44,8 @@ class Date {
     [[nodiscard]] auto toJSON() const & -> nlohmann::json;
 
     [[nodiscard]] static auto fromJSON(const nlohmann::json &json) -> Date;
+
+  public:
+    [[nodiscard]] auto operator+(std::chrono::days days) const -> Date;
 };
 } // namespace hbt::mods

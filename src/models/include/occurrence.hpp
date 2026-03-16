@@ -11,21 +11,23 @@ class Occurrence {
   private:
     hbt::mods::Date date_;
 
-    size_t intervalDays_;
+    std::chrono::days intervalDays_;
 
   public:
     Occurrence();
 
     Occurrence(hbt::mods::Date date);
 
-    Occurrence(hbt::mods::Date date, size_t intervalDays);
+    Occurrence(hbt::mods::Date date, std::chrono::days intervalDays);
+
+    Occurrence(hbt::mods::Date date, int intervalDays);
 
   public:
     [[nodiscard]] auto getDate() const -> hbt::mods::Date;
 
     [[nodiscard]] auto getWeekday() const -> std::chrono::weekday;
 
-    [[nodiscard]] auto getIntervalDays() const -> size_t;
+    [[nodiscard]] auto getIntervalDays() const -> std::chrono::days;
 
   public:
     [[nodiscard]] auto toJSON() const -> nlohmann::json;
