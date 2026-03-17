@@ -18,7 +18,12 @@ class Occurrence {
 
     Occurrence(hbt::mods::Date date);
 
-    Occurrence(hbt::mods::Date date, std::chrono::days intervalDays);
+    template <typename Rep, typename Period>
+    Occurrence(hbt::mods::Date date,
+               std::chrono::duration<Rep, Period> interval)
+        : date_{date},
+          intervalDays_{
+              std::chrono::duration_cast<std::chrono::days>(interval)} {}
 
     Occurrence(hbt::mods::Date date, int intervalDays);
 

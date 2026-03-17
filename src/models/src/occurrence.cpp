@@ -7,9 +7,6 @@ Occurrence::Occurrence() : date_{Date{}}, intervalDays_{0} {}
 
 Occurrence::Occurrence(hbt::mods::Date date) : date_{date}, intervalDays_{0} {}
 
-Occurrence::Occurrence(hbt::mods::Date date, std::chrono::days intervalDays)
-    : date_{date}, intervalDays_{intervalDays} {}
-
 Occurrence::Occurrence(hbt::mods::Date date, int intervalDays)
     : date_{date}, intervalDays_{intervalDays} {}
 
