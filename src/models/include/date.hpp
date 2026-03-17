@@ -48,6 +48,12 @@ class Date {
     [[nodiscard]] static auto fromJSON(const nlohmann::json &json) -> Date;
 
   public:
-    [[nodiscard]] auto operator+(std::chrono::days days) const -> Date;
+    template <typename Rep, typename Period>
+    [[nodiscard]] auto
+    operator+(std::chrono::duration<Rep, Period> interval) const -> Date {
+        auto currentYMD{this->getYMD()};
+
+        return Date{std::chrono::sys_days{currentYMD} + interval};
+    }
 };
 } // namespace hbt::mods

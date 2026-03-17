@@ -71,10 +71,4 @@ Date::Date(std::chrono::year year, std::chrono::month month,
 
     return Date{ymd};
 }
-
-[[nodiscard]] auto Date::operator+(std::chrono::days days) const -> Date {
-    auto currentYMD{this->getYMD()};
-
-    return Date{std::chrono::sys_days{currentYMD} + days};
-}
 }; // namespace hbt::mods
