@@ -20,6 +20,13 @@ class DurationUnits {
     using array_t = std::array<value_t, unit_t::COUNT_>;
 
   private:
+    static constexpr value_t monthsInYear{12};
+    static constexpr value_t weeksInMonth{4};
+    static constexpr value_t daysInWeek{7};
+    static constexpr value_t hoursInDay{24};
+    static constexpr value_t minutesInHour{60};
+
+  private:
     array_t units_;
 
   public:
@@ -52,5 +59,8 @@ class DurationUnits {
     [[nodiscard]] auto getHours() const -> value_t;
 
     [[nodiscard]] auto getMinutes() const -> value_t;
+
+  public:
+    [[nodiscard]] auto operator+(const DurationUnits &other) -> DurationUnits;
 };
 } // namespace hbt::mods::util
