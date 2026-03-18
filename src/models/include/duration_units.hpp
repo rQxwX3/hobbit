@@ -2,6 +2,8 @@
 
 #include <array>
 #include <cstdint>
+#include <optional>
+#include <regex>
 
 namespace hbt::mods::util {
 class DurationUnits {
@@ -61,6 +63,16 @@ class DurationUnits {
     [[nodiscard]] auto getMinutes() const -> value_t;
 
   public:
-    [[nodiscard]] auto operator+(const DurationUnits &other) -> DurationUnits;
+    [[nodiscard]] auto isZero() const -> bool;
+
+  public:
+    [[nodiscard]] auto operator+(const DurationUnits &other) const
+        -> DurationUnits;
+
+  public:
+    [[nodiscard]] auto toISO8601String() const -> std::string;
+
+    [[nodiscard]] static auto fromISO8601String(const std::string &string)
+        -> std::optional<DurationUnits>;
 };
 } // namespace hbt::mods::util

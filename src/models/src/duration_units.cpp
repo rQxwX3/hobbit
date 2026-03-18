@@ -1,5 +1,7 @@
 #include <duration_units.hpp>
 
+#include <algorithm>
+
 namespace hbt::mods::util {
 DurationUnits::DurationUnits() : units_{array_t{}} {}
 
@@ -63,7 +65,12 @@ auto DurationUnits::addMinutes(value_t value) -> void {
     return units_[unit_t::MINUTE];
 }
 
-[[nodiscard]] auto DurationUnits::operator+(const DurationUnits &other)
+[[nodiscard]] auto DurationUnits::isZero() const -> bool {
+    return std::ranges::all_of(units_.begin(), units_.end(),
+                               [](auto value) -> bool { return value == 0; });
+}
+
+[[nodiscard]] auto DurationUnits::operator+(const DurationUnits &other) const
     -> DurationUnits {
     auto result{DurationUnits{*this}};
 
@@ -73,6 +80,111 @@ auto DurationUnits::addMinutes(value_t value) -> void {
     result.addDays(other.getDays());
     result.addHours(other.getHours());
     result.addMinutes(other.getMinutes());
+
+    return result;
+}
+
+[[nodiscard]] auto DurationUnits::toISO8601String() -> std::string {
+    if (this->isZero()) {
+        return "PT0M";
+    }
+
+    std::string result{"P"};
+    bool timeSectionStarted{false};
+
+    if (const auto years{getYears()}; years) {
+        result += std::to_string(years);
+        result += "Y";
+    }
+
+    if (const auto months{getMonths()}; months) {
+        result += std::to_string(months);
+        result += "M";
+    }
+
+    if (const auto weeks{getWeeks()}; weeks) {
+        result += std::to_string(weeks);
+        result += "W";
+    }
+
+    if (const auto days{getDays()}; days) {
+        result += std::to_string(days);
+        result += "D";
+    }
+
+    if (const auto hours{getHours()}; hours) {
+        if (!timeSectionStarted) {
+            result += "T";
+            timeSectionStarted = true;
+        }
+
+        result += std::to_string(hours);
+        result += "H";
+    }
+
+    if (const auto minutes{durationUnits_.getMinutes()}; minutes) {
+        if (!timeSectionStarted) {
+            result += "T";
+            timeSectionStarted = true;
+        }
+
+        result += std::to_string(minutes);
+        result += "M";
+    }
+
+    return result;
+}
+
+[[nodiscard]] auto DurationUnits::fromISO8601String(const std::string &string)
+    -> std::optional<DurationUnits> {
+    const std::regex pattern(R"(^P(?=.)"
+                             "(?:(\\d+)Y)?"
+                             "(?:(\\d+)M)?"
+                             "(?:(\\d+)W)?"
+                             "(?:(\\d+)D)?"
+                             "(?:T(?="
+                             "(?:(\\d+)H)?"
+                             "(?:(\\d+)M)?"
+                             "))?"
+                             "$)");
+
+    constexpr size_t yearsGroup{1};
+    constexpr size_t monthsGroup{2};
+    constexpr size_t weeksGroup{3};
+    constexpr size_t daysGroup{4};
+    constexpr size_t hoursGroup{5};
+    constexpr size_t minutesGroup{5};
+
+    std::smatch matches;
+    if (!std::regex_match(string, matches, pattern)) {
+        return std::nullopt;
+    }
+
+    DurationUnits result;
+
+    if (matches[yearsGroup].matched) {
+        result.addYears(std::stoll(matches[yearsGroup].str()));
+    }
+
+    if (matches[monthsGroup].matched) {
+        result.addMonths(std::stoll(matches[monthsGroup].str()));
+    }
+
+    if (matches[weeksGroup].matched) {
+        result.addWeeks(std::stoll(matches[weeksGroup].str()));
+    }
+
+    if (matches[daysGroup].matched) {
+        result.addDays(std::stoll(matches[daysGroup].str()));
+    }
+
+    if (matches[hoursGroup].matched) {
+        result.addHours(std::stoll(matches[hoursGroup].str()));
+    }
+
+    if (matches[minutesGroup].matched) {
+        result.addMinutes(std::stoll(matches[minutesGroup].str()));
+    }
 
     return result;
 }
