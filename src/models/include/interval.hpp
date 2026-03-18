@@ -1,48 +1,48 @@
 #pragma once
 
-#include <chrono>
-#include <variant>
+#include <nlohmann/json.hpp>
+
+#include <duration_units.hpp>
+
+#include <optional>
 
 namespace hbt::mods {
-template <typename T>
-concept SupportedDuration = std::is_same_v<T, std::chrono::minutes> ||
-                            std::is_same_v<T, std::chrono::hours> ||
-                            std::is_same_v<T, std::chrono::days> ||
-                            std::is_same_v<T, std::chrono::weeks> ||
-                            std::is_same_v<T, std::chrono::months> ||
-                            std::is_same_v<T, std::chrono::years>;
-
 class Interval {
-  private:
-    using duration_t = std::variant<std::chrono::minutes, std::chrono::hours,
-                                    std::chrono::days, std::chrono::weeks,
-                                    std::chrono::months, std::chrono::years>;
+  public:
+    using value_t = hbt::mods::util::DurationUnits::value_t;
 
   private:
-    duration_t duration_;
+    hbt::mods::util::DurationUnits durationUnits_;
 
   public:
-    Interval() = delete;
+    Interval();
 
-    template <SupportedDuration T>
-    explicit Interval(T duration) : duration_{duration} {}
+  private:
+    Interval(hbt::mods::util::DurationUnits durationUnits);
 
   public:
-    [[nodiscard]] auto toMinutes() -> std::chrono::minutes;
+    [[nodiscard]] static auto years(value_t value) -> Interval;
 
-    [[nodiscard]] auto toHours() -> std::chrono::hours;
+    [[nodiscard]] static auto months(value_t value) -> Interval;
 
-    [[nodiscard]] auto toDays() -> std::chrono::days;
+    [[nodiscard]] static auto weeks(value_t value) -> Interval;
 
-    [[nodiscard]] auto toWeeks() -> std::chrono::weeks;
+    [[nodiscard]] static auto days(value_t value) -> Interval;
 
-    [[nodiscard]] auto toMonths() -> std::chrono::months;
+    [[nodiscard]] static auto hours(value_t value) -> Interval;
 
-    [[nodiscard]] auto toYears() -> std::chrono::years;
+    [[nodiscard]] static auto minutes(value_t value) -> Interval;
 
-    template <typename Rep, typename Period>
-    [[nodiscard]] auto getDuration() -> std::chrono::duration<Rep, Period> {
-        return duration_;
-    }
+  public:
+    [[nodiscard]] auto operator+(const Interval &other) const -> Interval;
+
+  public:
+    [[nodiscard]] auto isZero() const -> bool;
+
+  public:
+    [[nodiscard]] auto toISO8601String() const -> std::string;
+
+    [[nodiscard]] static auto fromISO8601String(const std::string &string)
+        -> std::optional<Interval>;
 };
 } // namespace hbt::mods
