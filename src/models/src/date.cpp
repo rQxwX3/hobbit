@@ -73,10 +73,9 @@ Date::Date(std::chrono::year year, std::chrono::month month,
 }
 
 [[nodiscard]] auto Date::operator+(Interval interval) const -> Date {
-    auto clampToMonthEnd = [](auto ymd) {
+    auto clampToMonthEnd = [](auto ymd) -> auto {
         return std::chrono::year_month_day_last{
-            ymd.year(), std::chrono::month_day_last{ymd.month()}
-        };
+            ymd.year(), std::chrono::month_day_last{ymd.month()}};
     };
 
     auto newYMD{ymd_ + std::chrono::years{interval.getYears()} +
@@ -92,5 +91,10 @@ Date::Date(std::chrono::year year, std::chrono::month month,
                   std::chrono::days{interval.getDays()};
 
     return Date{newSysDays};
+}
+
+auto Date::operator+=(Interval interval) -> Date & {
+    *this = *this + interval;
+    return *this;
 }
 }; // namespace hbt::mods
