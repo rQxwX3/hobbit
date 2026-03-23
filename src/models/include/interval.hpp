@@ -8,12 +8,12 @@
 
 namespace hbt::mods {
 class Interval {
-  private:
-    enum class MonthHandling : char { NONE, CUT_OFF, WRAP_AROUND };
+  public:
+    enum class MonthHandling : char { CUT_OFF, WRAP_AROUND };
 
   private:
     Interval(hbt::mods::util::DurationUnits durationUnits,
-             MonthHandling monthHandling = MonthHandling::NONE);
+             MonthHandling monthHandling = MonthHandling::CUT_OFF);
 
   private:
     hbt::mods::util::DurationUnits durationUnits_;
@@ -23,7 +23,7 @@ class Interval {
     using value_t = hbt::mods::util::DurationUnits::value_t;
 
   public:
-    Interval(MonthHandling monthHandling = MonthHandling::NONE);
+    Interval(MonthHandling monthHandling = MonthHandling::CUT_OFF);
 
   public:
     [[nodiscard]] static auto years(value_t value) -> Interval;
@@ -50,6 +50,12 @@ class Interval {
     [[nodiscard]] auto getHours() const -> value_t;
 
     [[nodiscard]] auto getMinutes() const -> value_t;
+
+  public:
+    [[nodiscard]] auto getMonthHandling() const -> MonthHandling;
+
+  public:
+    auto setMonthHandling(MonthHandling monthHandling) -> void;
 
   public:
     [[nodiscard]] auto operator+(const Interval &other) const -> Interval;

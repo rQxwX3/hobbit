@@ -81,6 +81,14 @@ Interval::Interval(hbt::mods::util::DurationUnits durationUnits,
     return durationUnits_.getMinutes();
 }
 
+[[nodiscard]] auto Interval::getMonthHandling() const -> MonthHandling {
+    return monthHandling_;
+}
+
+auto Interval::setMonthHandling(MonthHandling monthHandling) -> void {
+    monthHandling_ = monthHandling;
+}
+
 [[nodiscard]] auto Interval::operator+(const Interval &other) const
     -> Interval {
     return Interval{this->durationUnits_ + other.durationUnits_};

@@ -40,7 +40,7 @@ Date::Date(std::chrono::year year, std::chrono::month month,
     return ymd_.day();
 }
 
-[[nodiscard]] auto Date::getWeekday() const -> std::chrono::weekday {
+[[nodiscard]] auto Date::getWeekday() const -> weekday_t {
     return std::chrono::weekday{ymd_};
 }
 
@@ -70,5 +70,27 @@ Date::Date(std::chrono::year year, std::chrono::month month,
                                     std::chrono::day{dayString}};
 
     return Date{ymd};
+}
+
+[[nodiscard]] auto Date::operator+(Interval interval) const -> Date {
+    auto clampToMonthEnd = [](auto ymd) {
+        return std::chrono::year_month_day_last{
+            ymd.year(), std::chrono::month_day_last{ymd.month()}
+        };
+    };
+
+    auto newYMD{ymd_ + std::chrono::years{interval.getYears()} +
+                std::chrono::months{interval.getMonths()}};
+
+    if (Interval::MonthHandling::CUT_OFF == interval.getMonthHandling() &&
+        !newYMD.ok()) {
+        newYMD = clampToMonthEnd(newYMD);
+    }
+
+    auto newSysDays{std::chrono::sys_days{newYMD}};
+    newSysDays += std::chrono::weeks{interval.getWeeks()} +
+                  std::chrono::days{interval.getDays()};
+
+    return Date{newSysDays};
 }
 }; // namespace hbt::mods
