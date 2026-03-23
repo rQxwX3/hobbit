@@ -1,5 +1,7 @@
 #include <interval.hpp>
 
+#include <string>
+
 namespace hbt::mods {
 Interval::Interval(MonthHandling monthHandling)
     : durationUnits_{hbt::mods::DurationUnits{}},
@@ -97,20 +99,29 @@ auto Interval::setMonthHandling(MonthHandling monthHandling) -> void {
 [[nodiscard]] auto Interval::isZero() const -> bool {
     return durationUnits_.isZero();
 }
-
-[[nodiscard]] auto Interval::toISO8601String() const -> std::string {
-    return durationUnits_.toISO8601String();
+[[nodiscard]] auto Interval::toJSON() const -> nlohmann::json {
+    return {
+        {"duration_units", durationUnits_.toISO8601String()},
+        {"month_handling", std::to_string(static_cast<int>(monthHandling_))}};
 }
 
-[[nodiscard]] auto Interval::fromISO8601String(const std::string &string)
+[[nodiscard]] auto Interval::fromJSON(const nlohmann::json &json)
     -> std::optional<Interval> {
-    auto durationUnitsFromISO8601String{
-        hbt::mods::DurationUnits::fromISO8601String(string)};
-
-    if (durationUnitsFromISO8601String.has_value()) {
-        return Interval{durationUnitsFromISO8601String.value()};
+    if (!json.contains("duration_units") || !json.contains("month_handling")) {
+        return std::nullopt;
     }
 
-    return std::nullopt;
+    auto durationUnitsFromISO8601String{
+        hbt::mods::DurationUnits::fromISO8601String(
+            json["duration_units"].get<std::string>())};
+
+    if (!durationUnitsFromISO8601String.has_value()) {
+        return std::nullopt;
+    }
+
+    auto monthHandling{static_cast<Interval::MonthHandling>(
+        std::stoi(json["month_handling"].get<std::string>()))};
+
+    return Interval{durationUnitsFromISO8601String.value(), monthHandling};
 }
 } // namespace hbt::mods

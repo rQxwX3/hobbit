@@ -11,19 +11,21 @@ class Interval {
   public:
     enum class MonthHandling : char { CUT_OFF, WRAP_AROUND };
 
-  private:
-    Interval(hbt::mods::DurationUnits durationUnits,
-             MonthHandling monthHandling = MonthHandling::CUT_OFF);
+  public:
+    constexpr static auto defaultMonthHandling{MonthHandling::WRAP_AROUND};
+
+  public:
+    using value_t = hbt::mods::DurationUnits::value_t;
 
   private:
     hbt::mods::DurationUnits durationUnits_;
     MonthHandling monthHandling_;
 
   public:
-    using value_t = hbt::mods::DurationUnits::value_t;
+    Interval(MonthHandling monthHandling = defaultMonthHandling);
 
-  public:
-    Interval(MonthHandling monthHandling = MonthHandling::CUT_OFF);
+    Interval(hbt::mods::DurationUnits durationUnits,
+             MonthHandling monthHandling = defaultMonthHandling);
 
   public:
     [[nodiscard]] static auto years(value_t value) -> Interval;
@@ -70,9 +72,9 @@ class Interval {
     [[nodiscard]] auto isZero() const -> bool;
 
   public:
-    [[nodiscard]] auto toISO8601String() const -> std::string;
+    [[nodiscard]] auto toJSON() const -> nlohmann::json;
 
-    [[nodiscard]] static auto fromISO8601String(const std::string &string)
+    [[nodiscard]] static auto fromJSON(const nlohmann::json &json)
         -> std::optional<Interval>;
 };
 } // namespace hbt::mods
