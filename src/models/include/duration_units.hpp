@@ -3,9 +3,9 @@
 #include <array>
 #include <cstdint>
 #include <optional>
-#include <regex>
+#include <string>
 
-namespace hbt::mods::util {
+namespace hbt::mods {
 class DurationUnits {
   public:
     using unit_t = enum : uint8_t {
@@ -69,10 +69,16 @@ class DurationUnits {
     [[nodiscard]] auto operator+(const DurationUnits &other) const
         -> DurationUnits;
 
+    [[nodiscard]] auto operator<=>(const DurationUnits &other) const
+        -> std::strong_ordering;
+
+    [[nodiscard]] auto operator==(const DurationUnits &other) const
+        -> bool = default;
+
   public:
     [[nodiscard]] auto toISO8601String() const -> std::string;
 
     [[nodiscard]] static auto fromISO8601String(const std::string &string)
         -> std::optional<DurationUnits>;
 };
-} // namespace hbt::mods::util
+} // namespace hbt::mods

@@ -3,36 +3,51 @@
 #include <nlohmann/json.hpp>
 
 #include <date.hpp>
+#include <interval.hpp>
 
-#include <chrono>
+#include <optional>
 
 namespace hbt::mods {
+
 class Occurrence {
+  private:
+    template <typename T>
+    [[nodiscard]] auto compareOptional(const std::optional<T> &first,
+                                       const std::optional<T> &second) const
+        -> bool {
+        if (first.has_value() && !second.has_value()) {
+            return false;
+        }
+        if (!first.has_value() && second.has_value()) {
+            return false;
+        }
+        if (!first.has_value() && !second.has_value()) {
+            return true;
+        }
+        return first.value() == second.value();
+    }
+
+  private:
+    using interval_t = std::optional<hbt::mods::Interval>;
+
   private:
     hbt::mods::Date date_;
 
-    std::chrono::days intervalDays_;
+    interval_t interval_;
 
   public:
     Occurrence();
 
     Occurrence(hbt::mods::Date date);
 
-    template <typename Rep, typename Period>
-    Occurrence(hbt::mods::Date date,
-               std::chrono::duration<Rep, Period> interval)
-        : date_{date},
-          intervalDays_{
-              std::chrono::duration_cast<std::chrono::days>(interval)} {}
-
-    Occurrence(hbt::mods::Date date, int intervalDays);
+    Occurrence(hbt::mods::Date date, interval_t interval);
 
   public:
     [[nodiscard]] auto getDate() const -> hbt::mods::Date;
 
-    [[nodiscard]] auto getWeekday() const -> std::chrono::weekday;
+    [[nodiscard]] auto getInterval() const -> interval_t;
 
-    [[nodiscard]] auto getIntervalDays() const -> std::chrono::days;
+    [[nodiscard]] auto getWeekday() const -> hbt::mods::Date::weekday_t;
 
   public:
     [[nodiscard]] auto toJSON() const -> nlohmann::json;
@@ -44,7 +59,6 @@ class Occurrence {
     [[nodiscard]] auto isForDate(Date date) const -> bool;
 
   public:
-    [[nodiscard]] auto operator<=>(const Occurrence &other) const
-        -> bool = default;
+    [[nodiscard]] auto operator==(const Occurrence &other) const -> bool;
 };
 } // namespace hbt::mods

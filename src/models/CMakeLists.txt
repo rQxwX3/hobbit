@@ -3,6 +3,8 @@ add_library(models_lib STATIC
     src/user.cpp
 	src/occurrence.cpp
 	src/date.cpp
+	src/interval.cpp
+	src/duration_units.cpp
 )
 
 target_include_directories(models_lib PUBLIC include)

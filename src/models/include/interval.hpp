@@ -12,15 +12,15 @@ class Interval {
     enum class MonthHandling : char { CUT_OFF, WRAP_AROUND };
 
   private:
-    Interval(hbt::mods::util::DurationUnits durationUnits,
+    Interval(hbt::mods::DurationUnits durationUnits,
              MonthHandling monthHandling = MonthHandling::CUT_OFF);
 
   private:
-    hbt::mods::util::DurationUnits durationUnits_;
+    hbt::mods::DurationUnits durationUnits_;
     MonthHandling monthHandling_;
 
   public:
-    using value_t = hbt::mods::util::DurationUnits::value_t;
+    using value_t = hbt::mods::DurationUnits::value_t;
 
   public:
     Interval(MonthHandling monthHandling = MonthHandling::CUT_OFF);
@@ -59,6 +59,12 @@ class Interval {
 
   public:
     [[nodiscard]] auto operator+(const Interval &other) const -> Interval;
+
+    [[nodiscard]] auto operator<=>(const Interval &other) const
+        -> std::strong_ordering = default;
+
+    [[nodiscard]] auto operator==(const Interval &other) const
+        -> bool = default;
 
   public:
     [[nodiscard]] auto isZero() const -> bool;

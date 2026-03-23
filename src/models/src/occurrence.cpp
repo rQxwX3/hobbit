@@ -41,7 +41,7 @@ Occurrence::Occurrence(hbt::mods::Date date, interval_t interval)
 }
 
 [[nodiscard]] auto Occurrence::isForDate(Date date) const -> bool {
-    if (!interval_.has_value()) {
+    if (!interval_.has_value() && date_ != date) {
         return false;
     }
 
@@ -52,5 +52,11 @@ Occurrence::Occurrence(hbt::mods::Date date, interval_t interval)
     }
 
     return false;
+}
+
+[[nodiscard]] auto Occurrence::operator==(const Occurrence &other) const
+    -> bool {
+    return date_ == date_ &&
+           Occurrence::compareOptional(interval_, other.interval_);
 }
 } // namespace hbt::mods

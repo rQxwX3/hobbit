@@ -1,8 +1,10 @@
 #include <duration_units.hpp>
 
 #include <algorithm>
+#include <regex>
+#include <string>
 
-namespace hbt::mods::util {
+namespace hbt::mods {
 DurationUnits::DurationUnits() : units_{array_t{}} {}
 
 DurationUnits::DurationUnits(array_t units) : units_{units} {}
@@ -84,7 +86,36 @@ auto DurationUnits::addMinutes(value_t value) -> void {
     return result;
 }
 
-[[nodiscard]] auto DurationUnits::toISO8601String() -> std::string {
+[[nodiscard]] auto DurationUnits::operator<=>(const DurationUnits &other) const
+    -> std::strong_ordering {
+    if (auto cmp = getYears() <=> other.getYears(); cmp != 0) {
+        return cmp;
+    }
+
+    if (auto cmp = getMonths() <=> other.getMonths(); cmp != 0) {
+        return cmp;
+    }
+
+    if (auto cmp = getWeeks() <=> other.getWeeks(); cmp != 0) {
+        return cmp;
+    }
+
+    if (auto cmp = getDays() <=> other.getDays(); cmp != 0) {
+        return cmp;
+    }
+
+    if (auto cmp = getHours() <=> other.getHours(); cmp != 0) {
+        return cmp;
+    }
+
+    if (auto cmp = getMinutes() <=> other.getMinutes(); cmp != 0) {
+        return cmp;
+    }
+
+    return std::strong_ordering::equal;
+}
+
+[[nodiscard]] auto DurationUnits::toISO8601String() const -> std::string {
     if (this->isZero()) {
         return "PT0M";
     }
@@ -122,7 +153,7 @@ auto DurationUnits::addMinutes(value_t value) -> void {
         result += "H";
     }
 
-    if (const auto minutes{durationUnits_.getMinutes()}; minutes) {
+    if (const auto minutes{getMinutes()}; minutes) {
         if (!timeSectionStarted) {
             result += "T";
             timeSectionStarted = true;
@@ -188,4 +219,4 @@ auto DurationUnits::addMinutes(value_t value) -> void {
 
     return result;
 }
-} // namespace hbt::mods::util
+} // namespace hbt::mods

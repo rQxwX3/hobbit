@@ -2,10 +2,15 @@
 
 #include <nlohmann/json.hpp>
 
+#include <interval.hpp>
+
 #include <chrono>
 
 namespace hbt::mods {
 class Date {
+  public:
+    using weekday_t = std::chrono::weekday;
+
   private:
     std::chrono::year_month_day ymd_;
 
@@ -29,10 +34,11 @@ class Date {
 
     [[nodiscard]] auto getYMD() const -> std::chrono::year_month_day;
 
-    [[nodiscard]] auto getWeekday() const -> std::chrono::weekday;
+    [[nodiscard]] auto getWeekday() const -> weekday_t;
 
   public:
-    [[nodiscard]] auto operator<=>(const Date &other) const -> bool = default;
+    [[nodiscard]] auto operator<=>(const Date &other) const
+        -> std::strong_ordering = default;
 
   public:
     [[nodiscard]] auto isToday() const -> bool;
@@ -48,12 +54,8 @@ class Date {
     [[nodiscard]] static auto fromJSON(const nlohmann::json &json) -> Date;
 
   public:
-    template <typename Rep, typename Period>
-    [[nodiscard]] auto
-    operator+(std::chrono::duration<Rep, Period> interval) const -> Date {
-        auto currentYMD{this->getYMD()};
+    [[nodiscard]] auto operator+(Interval interval) const -> Date;
 
-        return Date{std::chrono::sys_days{currentYMD} + interval};
-    }
+    auto operator+=(Interval interval) -> Date &;
 };
 } // namespace hbt::mods
