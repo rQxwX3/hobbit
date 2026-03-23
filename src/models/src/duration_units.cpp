@@ -168,6 +168,11 @@ auto DurationUnits::addMinutes(value_t value) -> void {
 
 [[nodiscard]] auto DurationUnits::fromISO8601String(const std::string &string)
     -> std::optional<DurationUnits> {
+    /*
+     * ISO8601 Duration regex pattern adapted from:
+     * https://stackoverflow.com/a/32045167
+     * (modified to exclude seconds group)
+     */
     const std::regex pattern{
         R"(^P(?!$)(\d+(?:\.\d+)?Y)?(\d+(?:\.\d+)?M)?(\d+(?:\.\d+)?W)?(\d+(?:\.\d+)?D)?(T(?=\d)(\d+(?:\.\d+)?H)?(\d+(?:\.\d+)?M)?)?$)"};
 
