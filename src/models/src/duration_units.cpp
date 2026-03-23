@@ -168,23 +168,16 @@ auto DurationUnits::addMinutes(value_t value) -> void {
 
 [[nodiscard]] auto DurationUnits::fromISO8601String(const std::string &string)
     -> std::optional<DurationUnits> {
-    const std::regex pattern(R"(^P(?=.)"
-                             "(?:(\\d+)Y)?"
-                             "(?:(\\d+)M)?"
-                             "(?:(\\d+)W)?"
-                             "(?:(\\d+)D)?"
-                             "(?:T(?="
-                             "(?:(\\d+)H)?"
-                             "(?:(\\d+)M)?"
-                             "))?"
-                             "$)");
+    const std::regex pattern{
+        R"(^P(?!$)(\d+(?:\.\d+)?Y)?(\d+(?:\.\d+)?M)?(\d+(?:\.\d+)?W)?(\d+(?:\.\d+)?D)?(T(?=\d)(\d+(?:\.\d+)?H)?(\d+(?:\.\d+)?M)?)?$)"};
 
     constexpr size_t yearsGroup{1};
     constexpr size_t monthsGroup{2};
     constexpr size_t weeksGroup{3};
     constexpr size_t daysGroup{4};
-    constexpr size_t hoursGroup{5};
-    constexpr size_t minutesGroup{5};
+    constexpr size_t timeSectionGroup{5};
+    constexpr size_t hoursGroup{6};
+    constexpr size_t minutesGroup{7};
 
     std::smatch matches;
     if (!std::regex_match(string, matches, pattern)) {
@@ -194,27 +187,39 @@ auto DurationUnits::addMinutes(value_t value) -> void {
     DurationUnits result;
 
     if (matches[yearsGroup].matched) {
-        result.addYears(std::stoll(matches[yearsGroup].str()));
+        auto str{matches[yearsGroup].str()};
+        str.pop_back(); // Remove trailing 'Y'
+        result.addYears(static_cast<long long>(std::stod(str)));
     }
 
     if (matches[monthsGroup].matched) {
-        result.addMonths(std::stoll(matches[monthsGroup].str()));
+        auto str{matches[monthsGroup].str()};
+        str.pop_back(); // Remove trailing 'M'
+        result.addMonths(static_cast<long long>(std::stod(str)));
     }
 
     if (matches[weeksGroup].matched) {
-        result.addWeeks(std::stoll(matches[weeksGroup].str()));
+        auto str{matches[weeksGroup].str()};
+        str.pop_back(); // Remove trailing 'W'
+        result.addWeeks(static_cast<long long>(std::stod(str)));
     }
 
     if (matches[daysGroup].matched) {
-        result.addDays(std::stoll(matches[daysGroup].str()));
+        auto str{matches[daysGroup].str()};
+        str.pop_back(); // Remove trailing 'D'
+        result.addDays(static_cast<long long>(std::stod(str)));
     }
 
     if (matches[hoursGroup].matched) {
-        result.addHours(std::stoll(matches[hoursGroup].str()));
+        auto str{matches[hoursGroup].str()};
+        str.pop_back(); // Remove trailing 'H'
+        result.addHours(static_cast<long long>(std::stod(str)));
     }
 
     if (matches[minutesGroup].matched) {
-        result.addMinutes(std::stoll(matches[minutesGroup].str()));
+        auto str{matches[minutesGroup].str()};
+        str.pop_back(); // Remove trailing 'M'
+        result.addMinutes(static_cast<long long>(std::stod(str)));
     }
 
     return result;

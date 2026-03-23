@@ -1,7 +1,13 @@
 include(GoogleTest)
 
 # test models
-add_executable(models_test unit/test_models.cpp)
+add_executable(models_test 
+	unit/models/test_user.cpp
+	unit/models/test_duration_units.cpp
+	unit/models/test_date.cpp
+	unit/models/test_occurrence.cpp
+	unit/models/test_entry.cpp
+)
 
 target_link_libraries(models_test PRIVATE 
 	gtest 
@@ -12,8 +18,7 @@ target_link_libraries(models_test PRIVATE
 	storage_lib
 )
 
-target_link_libraries(models_test PRIVATE 
-	gtest 
+target_link_libraries(models_test PRIVATE gtest 
 	gmock
 	gtest_main 
 	nlohmann_json::nlohmann_json

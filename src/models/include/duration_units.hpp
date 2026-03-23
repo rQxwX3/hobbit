@@ -21,7 +21,7 @@ class DurationUnits {
     using value_t = std::size_t;
     using array_t = std::array<value_t, unit_t::COUNT_>;
 
-  private:
+  public:
     static constexpr value_t monthsInYear{12};
     static constexpr value_t weeksInMonth{4};
     static constexpr value_t daysInWeek{7};
