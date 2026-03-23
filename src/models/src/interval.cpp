@@ -1,10 +1,13 @@
 #include <interval.hpp>
 
 namespace hbt::mods {
-Interval::Interval() = default;
+Interval::Interval(MonthHandling monthHandling)
+    : durationUnits_{hbt::mods::util::DurationUnits{}},
+      monthHandling_{monthHandling} {}
 
-Interval::Interval(hbt::mods::util::DurationUnits durationUnits)
-    : durationUnits_{durationUnits} {}
+Interval::Interval(hbt::mods::util::DurationUnits durationUnits,
+                   MonthHandling monthHandling)
+    : durationUnits_{durationUnits}, monthHandling_{monthHandling} {}
 
 [[nodiscard]] auto Interval::years(value_t value) -> Interval {
     auto durationUnits{hbt::mods::util::DurationUnits{}};
@@ -19,7 +22,7 @@ Interval::Interval(hbt::mods::util::DurationUnits durationUnits)
 
     durationUnits.addMonths(value);
 
-    return Interval{durationUnits};
+    return Interval{durationUnits, MonthHandling::CUT_OFF};
 }
 
 [[nodiscard]] auto Interval::weeks(value_t value) -> Interval {
@@ -52,6 +55,30 @@ Interval::Interval(hbt::mods::util::DurationUnits durationUnits)
     durationUnits.addMinutes(value);
 
     return Interval{durationUnits};
+}
+
+[[nodiscard]] auto Interval::getYears() const -> value_t {
+    return durationUnits_.getYears();
+}
+
+[[nodiscard]] auto Interval::getMonths() const -> value_t {
+    return durationUnits_.getMonths();
+}
+
+[[nodiscard]] auto Interval::getWeeks() const -> value_t {
+    return durationUnits_.getWeeks();
+}
+
+[[nodiscard]] auto Interval::getDays() const -> value_t {
+    return durationUnits_.getDays();
+}
+
+[[nodiscard]] auto Interval::getHours() const -> value_t {
+    return durationUnits_.getHours();
+}
+
+[[nodiscard]] auto Interval::getMinutes() const -> value_t {
+    return durationUnits_.getMinutes();
 }
 
 [[nodiscard]] auto Interval::operator+(const Interval &other) const
