@@ -53,7 +53,7 @@ class Occurrence {
     [[nodiscard]] auto toJSON() const -> nlohmann::json;
 
     [[nodiscard]] static auto fromJSON(const nlohmann::json &json)
-        -> Occurrence;
+        -> std::optional<Occurrence>;
 
   public:
     [[nodiscard]] auto isForDate(Date date) const -> bool;

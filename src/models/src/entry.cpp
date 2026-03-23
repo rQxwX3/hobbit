@@ -64,17 +64,24 @@ Entry::getOccurrences() const & -> const std::vector<Occurrence> & {
     return json;
 }
 
-[[nodiscard]] auto Entry::fromJSON(const nlohmann::json &json) -> Entry {
+[[nodiscard]] auto Entry::fromJSON(const nlohmann::json &json)
+    -> std::optional<Entry> {
     if (!json.contains("title") || !json.contains("occurrences") ||
         !json.contains("is_completed")) {
-        throw std::runtime_error("Missing required fields ENTRY");
+        return std::nullopt;
     }
 
     auto jsonOccurrences = json["occurrences"];
     auto occurrences{std::vector<Occurrence>()};
 
     for (const auto &jsonOccurrence : jsonOccurrences) {
-        occurrences.emplace_back(Occurrence::fromJSON(jsonOccurrence));
+        auto occ{Occurrence::fromJSON(jsonOccurrence)};
+
+        if (!occ.has_value()) {
+            return std::nullopt;
+        }
+
+        occurrences.emplace_back(occ.value());
     }
 
     return Entry{json["title"].get<std::string>(), occurrences,

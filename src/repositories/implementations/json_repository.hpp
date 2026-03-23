@@ -19,7 +19,7 @@ concept JSONSerializable =
 
         { std::move(rvalue_t).toJSON() } -> std::convertible_to<nlohmann::json>;
 
-        { T::fromJSON(j) } -> std::same_as<T>;
+        { T::fromJSON(j) } -> std::same_as<std::optional<T>>;
     };
 
 template <JSONSerializable T> class Repository {

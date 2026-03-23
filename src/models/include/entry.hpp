@@ -42,7 +42,8 @@ class Entry {
 
     [[nodiscard]] auto toJSON() && -> nlohmann::json;
 
-    [[nodiscard]] static auto fromJSON(const nlohmann::json &json) -> Entry;
+    [[nodiscard]] static auto fromJSON(const nlohmann::json &json)
+        -> std::optional<Entry>;
 
   public:
     [[nodiscard]] auto isForDate(hbt::mods::Date date) const -> bool;
