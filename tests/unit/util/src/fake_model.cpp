@@ -10,9 +10,10 @@ FakeModel::FakeModel(std::string field) : field{std::move(field)} {}
     return {{"field", field}};
 }
 
-[[nodiscard]] auto FakeModel::fromJSON(const nlohmann::json &j) -> FakeModel {
+[[nodiscard]] auto FakeModel::fromJSON(const nlohmann::json &j)
+    -> std::optional<FakeModel> {
     if (!j.is_object() || !j.contains("field") || !j["field"].is_string()) {
-        throw std::runtime_error("Invalid JSON for FakeModel");
+        return std::nullopt;
     }
 
     return FakeModel{j["field"]};

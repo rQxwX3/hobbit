@@ -46,8 +46,9 @@ TEST(EntryTest, ToFromJSON) {
                                               occurrences[1].toJSON()));
 
     auto restored{Entry::fromJSON(json)};
-    const auto &restoredOccurrences{restored.getOccurrences()};
-    EXPECT_EQ(restored.getTitle(), "todo");
+    ASSERT_TRUE(restored.has_value());
+    const auto &restoredOccurrences{restored.value().getOccurrences()};
+    EXPECT_EQ(restored.value().getTitle(), "todo");
     // EXPECT_THAT(restoredOccurrences,
     //             testing::UnorderedElementsAre(occurrences[0],
     //             occurrences[1]));

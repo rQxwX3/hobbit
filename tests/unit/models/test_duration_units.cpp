@@ -171,7 +171,7 @@ TEST(DurationUnitsTest, ComparisonOperators) {
     EXPECT_TRUE(second == first);
 }
 
-TEST(DurationUnitsTest, ToFromISO8601String) {
+TEST(DurationUnitsTest, ToFromValidISO8601String) {
     auto first{hbt::mods::DurationUnits{}};
     auto firstISO{first.toISO8601String()};
     EXPECT_EQ(firstISO, "PT0M");
@@ -220,5 +220,59 @@ TEST(DurationUnitsTest, ToFromISO8601String) {
     restored = hbt::mods::DurationUnits::fromISO8601String(firstISO);
     ASSERT_TRUE(restored.has_value());
     EXPECT_EQ(restored.value(), first);
+}
+
+TEST(DurationUnitsTest, ToFromInValidISO8601String) {
+    // invalid empty duration
+    auto invalidISO{hbt::mods::DurationUnits::fromISO8601String("PT")};
+    ASSERT_TRUE(!invalidISO.has_value());
+
+    invalidISO = hbt::mods::DurationUnits::fromISO8601String("");
+    ASSERT_TRUE(!invalidISO.has_value());
+
+    // no global prefix
+    invalidISO = hbt::mods::DurationUnits::fromISO8601String("1Y");
+    ASSERT_TRUE(!invalidISO.has_value());
+
+    // no time section designator
+    invalidISO = hbt::mods::DurationUnits::fromISO8601String("P1Y1H");
+    ASSERT_TRUE(!invalidISO.has_value());
+
+    // incorrect order in date section
+    invalidISO = hbt::mods::DurationUnits::fromISO8601String("P1M1Y");
+    ASSERT_TRUE(!invalidISO.has_value());
+    // incorrect order in time section
+    invalidISO = hbt::mods::DurationUnits::fromISO8601String("P1YT1M1H");
+    ASSERT_TRUE(!invalidISO.has_value());
+
+    // number without designator
+    invalidISO = hbt::mods::DurationUnits::fromISO8601String("P1");
+    ASSERT_TRUE(!invalidISO.has_value());
+
+    invalidISO = hbt::mods::DurationUnits::fromISO8601String("P1YT1");
+    ASSERT_TRUE(!invalidISO.has_value());
+
+    // designator without number
+    invalidISO = hbt::mods::DurationUnits::fromISO8601String("PY");
+    ASSERT_TRUE(!invalidISO.has_value());
+
+    invalidISO = hbt::mods::DurationUnits::fromISO8601String("P1YTH");
+    ASSERT_TRUE(!invalidISO.has_value());
+
+    // trailing number
+    invalidISO = hbt::mods::DurationUnits::fromISO8601String("P1Y1");
+    ASSERT_TRUE(!invalidISO.has_value());
+
+    // trailing designator
+    invalidISO = hbt::mods::DurationUnits::fromISO8601String("P1YM");
+    ASSERT_TRUE(!invalidISO.has_value());
+
+    // invalid designator in date section
+    invalidISO = hbt::mods::DurationUnits::fromISO8601String("P1Y1Z");
+    ASSERT_TRUE(!invalidISO.has_value());
+
+    // invalid designator in time section
+    invalidISO = hbt::mods::DurationUnits::fromISO8601String("P1Y1T1H1Z");
+    ASSERT_TRUE(!invalidISO.has_value());
 }
 }; // namespace test::mods

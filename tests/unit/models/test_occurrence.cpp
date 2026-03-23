@@ -13,9 +13,10 @@ TEST(OccurrenceTest, ToFromJSON) {
     EXPECT_EQ(json["date"], original.getDate().toYMDString());
 
     auto restored{Occurrence::fromJSON(json)};
-    EXPECT_EQ(restored.getDate().toYMDString(),
+    ASSERT_TRUE(restored.has_value());
+    EXPECT_EQ(restored.value().getDate().toYMDString(),
               original.getDate().toYMDString());
-    EXPECT_EQ(restored.getWeekday(), original.getWeekday());
+    EXPECT_EQ(restored.value().getWeekday(), original.getWeekday());
 }
 
 // TEST(OccurrenceTest, IsForDateTrueForFutureDate) {

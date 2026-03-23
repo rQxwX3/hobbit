@@ -13,6 +13,7 @@ class FakeModel {
   public:
     [[nodiscard]] auto toJSON() const -> nlohmann::json;
 
-    [[nodiscard]] static auto fromJSON(const nlohmann::json &j) -> FakeModel;
+    [[nodiscard]] static auto fromJSON(const nlohmann::json &j)
+        -> std::optional<FakeModel>;
 };
 } // namespace test::util
