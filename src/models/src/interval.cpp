@@ -11,6 +11,12 @@ Interval::Interval(hbt::mods::DurationUnits durationUnits,
                    MonthHandling monthHandling)
     : durationUnits_{durationUnits}, monthHandling_{monthHandling} {}
 
+Interval::Interval(value_t years, value_t months, value_t weeks, value_t days,
+                   value_t hours, value_t minutes, MonthHandling monthHandling)
+    : durationUnits_{hbt::mods::DurationUnits{
+          {years, months, weeks, days, hours, minutes}}},
+      monthHandling_{monthHandling} {}
+
 [[nodiscard]] auto Interval::years(value_t value) -> Interval {
     auto durationUnits{hbt::mods::DurationUnits{}};
 
