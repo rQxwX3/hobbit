@@ -25,8 +25,7 @@ class Interval {
     explicit Interval(hbt::mods::DurationUnits durationUnits,
                       MonthHandling monthHandling = defaultMonthHandling);
 
-    explicit Interval(value_t years = 0, value_t months = 0, value_t weeks = 0,
-                      value_t days = 0, value_t hours = 0, value_t minutes = 0,
+    explicit Interval(hbt::mods::DurationUnits::Units units,
                       MonthHandling monthHandling = defaultMonthHandling);
 
   public:
