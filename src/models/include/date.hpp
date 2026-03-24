@@ -49,7 +49,7 @@ class Date {
     [[nodiscard]] auto toISO8601String() const -> std::string;
 
     [[nodiscard]] static auto fromISO8601String(const std::string &string)
-        -> Date;
+        -> std::optional<Date>;
 
   public:
     [[nodiscard]] auto operator+(Interval interval) const -> Date;

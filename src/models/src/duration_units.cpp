@@ -176,8 +176,8 @@ auto DurationUnits::addMinutes(value_t value) -> void {
      * https://stackoverflow.com/a/32045167
      * (modified to exclude seconds group)
      */
-    const std::regex pattern{
-        R"(^P(?!$)(\d+(?:\.\d+)?Y)?(\d+(?:\.\d+)?M)?(\d+(?:\.\d+)?W)?(\d+(?:\.\d+)?D)?(T(?=\d)(\d+(?:\.\d+)?H)?(\d+(?:\.\d+)?M)?)?$)"};
+    const auto pattern{std::regex{
+        R"(^P(?!$)(\d+(?:\.\d+)?Y)?(\d+(?:\.\d+)?M)?(\d+(?:\.\d+)?W)?(\d+(?:\.\d+)?D)?(T(?=\d)(\d+(?:\.\d+)?H)?(\d+(?:\.\d+)?M)?)?$)"}};
 
     constexpr size_t yearsGroup{1};
     constexpr size_t monthsGroup{2};

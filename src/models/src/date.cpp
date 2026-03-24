@@ -2,6 +2,8 @@
 
 #include <chrono>
 #include <format>
+#include <optional>
+#include <regex>
 
 namespace hbt::mods {
 Date::Date()
@@ -52,23 +54,31 @@ Date::Date(std::chrono::year year, std::chrono::month month,
     return std::format("{:%Y-%m-%d}", ymd_);
 }
 
-[[nodiscard]] auto Date::fromISO8601String(const std::string &ymdString)
-    -> Date {
-    constexpr int yearDigits{4};
-    constexpr int monthDigits{2};
-    constexpr int dayDigits{2};
+[[nodiscard]] auto Date::fromISO8601String(const std::string &string)
+    -> std::optional<Date> {
+    const auto pattern{std::regex{R"((\d{4})[-./](\d{2})[-./](\d{2}))"}};
 
-    auto yearString{std::stoi(ymdString.substr(0, yearDigits))};
+    std::smatch matches;
+    if (!std::regex_match(string, matches, pattern)) {
+        return std::nullopt;
+    }
 
-    auto monthString{static_cast<unsigned>(
-        std::stoi(ymdString.substr(yearDigits + 1, monthDigits)))};
+    constexpr size_t yearGroup{1};
+    constexpr size_t monthGroup{2};
+    constexpr size_t dayGroup{3};
 
-    auto dayString{static_cast<unsigned>(std::stoi(
-        ymdString.substr(yearDigits + 1 + monthDigits + 1, dayDigits)))};
+    const auto year{std::stoi(matches[yearGroup].str())};
+    const auto month{
+        static_cast<unsigned>(std::stoi(matches[monthGroup].str()))};
+    const auto day{static_cast<unsigned>(std::stoi(matches[dayGroup].str()))};
 
-    std::chrono::year_month_day ymd{std::chrono::year{yearString},
-                                    std::chrono::month{monthString},
-                                    std::chrono::day{dayString}};
+    const auto ymd{std::chrono::year_month_day(std::chrono::year{year},
+                                               std::chrono::month{month},
+                                               std::chrono::day{day})};
+
+    if (!ymd.ok()) {
+        return std::nullopt;
+    }
 
     return Date{ymd};
 }

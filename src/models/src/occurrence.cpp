@@ -34,8 +34,7 @@ Occurrence::Occurrence(hbt::mods::Date date, hbt::mods::Interval interval)
         return std::nullopt;
     }
 
-    auto intervalFromJSON{
-        hbt::mods::Interval::fromJSON(json["interval"].get<std::string>())};
+    auto intervalFromJSON{hbt::mods::Interval::fromJSON(json["interval"])};
     if (!intervalFromJSON.has_value()) {
         return std::nullopt;
     }
@@ -44,7 +43,7 @@ Occurrence::Occurrence(hbt::mods::Date date, hbt::mods::Interval interval)
 }
 
 [[nodiscard]] auto Occurrence::isForDate(Date date) const -> bool {
-    if (!interval_.isZero() && date_ != date) {
+    if (interval_.isZero() && date_ != date) {
         return false;
     }
 

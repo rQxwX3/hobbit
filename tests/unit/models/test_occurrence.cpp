@@ -14,8 +14,7 @@ TEST(OccurrenceTest, ToFromJSON) {
 
     auto restored{Occurrence::fromJSON(json)};
     ASSERT_TRUE(restored.has_value());
-    EXPECT_EQ(restored.value().getDate().toISO8601String(),
-              original.getDate().toISO8601String());
+    EXPECT_EQ(restored.value().getDate(), original.getDate());
     EXPECT_EQ(restored.value().getWeekday(), original.getWeekday());
 }
 
