@@ -94,21 +94,44 @@ TEST(DateTest, AddNonMonthInterval) {
                         years{1}};
     EXPECT_EQ(date + yearInterval, Date{ymdYearFromNow});
 
+    auto twoYearInterval{Interval{{.years = 2}}};
+    auto ymdTwoYearsFromNow{year_month_day(floor<days>(system_clock::now())) +
+                            years{2}};
+    EXPECT_EQ(date + twoYearInterval, Date{ymdTwoYearsFromNow});
+
     auto weekInterval{Interval{{.weeks = 1}}};
     auto ymdWeekFromNow{
         year_month_day(floor<days>(system_clock::now()) + weeks{1})};
     EXPECT_EQ(date + weekInterval, Date{ymdWeekFromNow});
+
+    auto twoWeekInterval{Interval{{.weeks = 2}}};
+    auto ymdTwoWeeksFromNow{
+        year_month_day(floor<days>(system_clock::now()) + weeks{2})};
+    EXPECT_EQ(date + twoWeekInterval, Date{ymdTwoWeeksFromNow});
 
     auto dayInterval{Interval{{.days = 1}}};
     auto ymdDayFromNow{
         year_month_day(floor<days>(system_clock::now()) + days{1})};
     EXPECT_EQ(date + dayInterval, Date{ymdDayFromNow});
 
+    auto twoDayInterval{Interval{{.days = 2}}};
+    auto ymdTwoDaysFromNow{
+        year_month_day(floor<days>(system_clock::now()) + days{2})};
+    EXPECT_EQ(date + twoDayInterval, Date{ymdTwoDaysFromNow});
+
     auto yearWeekDayInterval{Interval{{.years = 1, .weeks = 1, .days = 1}}};
     auto ymdYearWeekDayFromNow{
         year_month_day(floor<days>(system_clock::now()) + days{1} + weeks{1}) +
         years{1}};
     EXPECT_EQ(date + yearWeekDayInterval, Date{ymdYearWeekDayFromNow});
+
+    auto doubleYearWeekDayInterval{
+        Interval{{.years = 2, .weeks = 2, .days = 2}}};
+    auto ymdDoubleYearWeekDayFromNow{
+        year_month_day(floor<days>(system_clock::now()) + days{2} + weeks{2}) +
+        years{2}};
+    EXPECT_EQ(date + doubleYearWeekDayInterval,
+              Date{ymdDoubleYearWeekDayFromNow});
 }
 
 TEST(DateTest, AddMonthInterval) {
@@ -116,15 +139,25 @@ TEST(DateTest, AddMonthInterval) {
 
     auto cutOffInterval{
         Interval{{.months = 1}, Interval::MonthHandling::CUT_OFF}};
+    auto doubleCutOffInterval{
+        Interval{{.months = 2}, Interval::MonthHandling::CUT_OFF}};
+
     auto wrapAroundInterval{
         Interval{{.months = 1}, Interval::MonthHandling::WRAP_AROUND}};
+    auto doubleWrapAroundInterval{
+        Interval{{.months = 2}, Interval::MonthHandling::WRAP_AROUND}};
 
     // There is 28 days in Feb 2026
-    auto date{Date{year{2026}, month{1}, day{29}}};
-    auto dateCutOff{Date{year{2026}, month{2}, day{28}}};
-    auto dateWrapAround{Date{year{2026}, month{3}, day{1}}};
+    auto date1{Date{year{2026}, month{1}, day{29}}};
+    auto date1CutOff{Date{year{2026}, month{2}, day{28}}};
+    auto date1WrapAround{Date{year{2026}, month{3}, day{1}}};
+    EXPECT_EQ(date1 + cutOffInterval, date1CutOff);
+    EXPECT_EQ(date1 + wrapAroundInterval, date1WrapAround);
 
-    EXPECT_EQ(date + cutOffInterval, dateCutOff);
-    EXPECT_EQ(date + wrapAroundInterval, dateWrapAround);
+    auto date2{Date{year{2025}, month{12}, day{29}}};
+    auto date2CutOff{Date{year{2026}, month{2}, day{28}}};
+    auto date2WrapAround{Date{year{2026}, month{3}, day{1}}};
+    EXPECT_EQ(date2 + doubleCutOffInterval, date2CutOff);
+    EXPECT_EQ(date2 + doubleWrapAroundInterval, date2WrapAround);
 }
 } // namespace test::mods
