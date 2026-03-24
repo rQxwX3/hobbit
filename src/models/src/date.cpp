@@ -56,6 +56,11 @@ Date::Date(std::chrono::year year, std::chrono::month month,
 
 [[nodiscard]] auto Date::fromISO8601String(const std::string &string)
     -> std::optional<Date> {
+    /*
+     * ISO8601 Date regex pattern adapted from:
+     * https://regex101.com/r/zZ1pF9/1
+     * (modified to exclude time section, contain grouping)
+     */
     const auto pattern{std::regex{R"((\d{4})[-./](\d{2})[-./](\d{2}))"}};
 
     std::smatch matches;
@@ -66,6 +71,11 @@ Date::Date(std::chrono::year year, std::chrono::month month,
     constexpr size_t yearGroup{1};
     constexpr size_t monthGroup{2};
     constexpr size_t dayGroup{3};
+
+    if (!matches[yearGroup].matched || !matches[monthGroup].matched ||
+        !matches[dayGroup].matched) {
+        return std::nullopt;
+    }
 
     const auto year{std::stoi(matches[yearGroup].str())};
     const auto month{

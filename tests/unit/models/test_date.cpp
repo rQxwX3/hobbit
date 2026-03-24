@@ -77,11 +77,43 @@ TEST(DateTest, IsTodayFalseOnWrongDates) {
 }
 
 TEST(DateTest, ToFromISO8601String) {
-    auto original{Date{}};
+    auto original{Date{std::chrono::year{2026}, std::chrono::month{3},
+                       std::chrono::day{24}}};
     auto ymdString{original.toISO8601String()};
 
     auto restored{Date::fromISO8601String(ymdString)};
+    ASSERT_TRUE(restored.has_value());
     EXPECT_EQ(restored, original);
+}
+
+TEST(DateTest, FromValidISO8601String) {
+    EXPECT_TRUE(Date::fromISO8601String("2024-12-01").has_value());
+    EXPECT_TRUE(Date::fromISO8601String("2024/12/01").has_value());
+    EXPECT_TRUE(Date::fromISO8601String("2024.12.01").has_value());
+}
+
+TEST(DateTest, FromInvalidISO8601String) {
+    EXPECT_FALSE(Date::fromISO8601String("").has_value());
+    EXPECT_FALSE(Date::fromISO8601String("hello").has_value());
+
+    EXPECT_FALSE(Date::fromISO8601String("2026").has_value());
+
+    EXPECT_FALSE(Date::fromISO8601String("20261231").has_value());
+
+    EXPECT_FALSE(Date::fromISO8601String("2026-12").has_value());
+
+    // invalid month
+    EXPECT_FALSE(Date::fromISO8601String("2026-13-31").has_value());
+
+    // invalid day
+    EXPECT_FALSE(Date::fromISO8601String("2026-13-38").has_value());
+
+    // non-leap year Febrary 29th
+    EXPECT_FALSE(Date::fromISO8601String("2026-02-29").has_value());
+
+    // single digit sections
+    EXPECT_FALSE(Date::fromISO8601String("2026-2-29").has_value());
+    EXPECT_FALSE(Date::fromISO8601String("2026-02-1").has_value());
 }
 
 TEST(DateTest, AddNonMonthInterval) {
