@@ -15,6 +15,16 @@ TEST(IntervalTest, EmptyOnConstruction) {
     EXPECT_EQ(interval.getMinutes(), 0);
 }
 
+TEST(IntervalTest, HandlesEachUnit) {
+    auto interval{Interval{1, 2, 3, 4, 5, 6}};
+    EXPECT_EQ(interval.getYears(), 1);
+    EXPECT_EQ(interval.getMonths(), 2);
+    EXPECT_EQ(interval.getWeeks(), 3);
+    EXPECT_EQ(interval.getDays(), 4);
+    EXPECT_EQ(interval.getHours(), 5);
+    EXPECT_EQ(interval.getMinutes(), 6);
+}
+
 TEST(IntervalTest, FactoryFunctions) {
     auto year{Interval::years(1)};
     EXPECT_EQ(year.getYears(), 1);

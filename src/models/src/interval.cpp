@@ -3,10 +3,6 @@
 #include <string>
 
 namespace hbt::mods {
-Interval::Interval(MonthHandling monthHandling)
-    : durationUnits_{hbt::mods::DurationUnits{}},
-      monthHandling_{monthHandling} {}
-
 Interval::Interval(hbt::mods::DurationUnits durationUnits,
                    MonthHandling monthHandling)
     : durationUnits_{durationUnits}, monthHandling_{monthHandling} {}
@@ -14,7 +10,12 @@ Interval::Interval(hbt::mods::DurationUnits durationUnits,
 Interval::Interval(value_t years, value_t months, value_t weeks, value_t days,
                    value_t hours, value_t minutes, MonthHandling monthHandling)
     : durationUnits_{hbt::mods::DurationUnits{
-          {years, months, weeks, days, hours, minutes}}},
+          DurationUnits::Units{.years = years,
+                               .months = months,
+                               .weeks = weeks,
+                               .days = days,
+                               .hours = hours,
+                               .minutes = minutes}}},
       monthHandling_{monthHandling} {}
 
 [[nodiscard]] auto Interval::years(value_t value) -> Interval {

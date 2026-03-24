@@ -22,8 +22,6 @@ class Interval {
     MonthHandling monthHandling_;
 
   public:
-    Interval(MonthHandling monthHandling = defaultMonthHandling);
-
     explicit Interval(hbt::mods::DurationUnits durationUnits,
                       MonthHandling monthHandling = defaultMonthHandling);
 
