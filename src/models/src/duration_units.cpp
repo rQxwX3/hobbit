@@ -7,7 +7,10 @@
 namespace hbt::mods {
 DurationUnits::DurationUnits() : units_{array_t{}} {}
 
-DurationUnits::DurationUnits(array_t units) : units_{units} {}
+DurationUnits::DurationUnits(array_t unitsArray) : units_{unitsArray} {}
+
+DurationUnits::DurationUnits(const Units &unitsStruct)
+    : units_{unitsStruct.toArray()} {};
 
 auto DurationUnits::addYears(value_t value) -> void {
     units_[unit_t::YEAR] += value;

@@ -21,6 +21,19 @@ class DurationUnits {
     using value_t = std::size_t;
     using array_t = std::array<value_t, unit_t::COUNT_>;
 
+    struct Units {
+        value_t years{0};
+        value_t months{0};
+        value_t weeks{0};
+        value_t days{0};
+        value_t hours{0};
+        value_t minutes{0};
+
+        [[nodiscard]] auto toArray() const -> array_t {
+            return array_t{years, months, weeks, days, hours, minutes};
+        }
+    };
+
   public:
     static constexpr value_t monthsInYear{12};
     static constexpr value_t weeksInMonth{4};
@@ -34,7 +47,9 @@ class DurationUnits {
   public:
     DurationUnits();
 
-    explicit DurationUnits(array_t units);
+    explicit DurationUnits(array_t unitsArray);
+
+    explicit DurationUnits(const Units &unitsStruct);
 
   public:
     auto addYears(value_t value) -> void;
