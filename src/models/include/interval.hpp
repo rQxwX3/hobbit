@@ -21,11 +21,13 @@ class Interval {
     hbt::mods::DurationUnits durationUnits_;
     MonthHandling monthHandling_;
 
-  public:
-    explicit Interval(hbt::mods::DurationUnits durationUnits,
-                      MonthHandling monthHandling = defaultMonthHandling);
+  private:
+    Interval(hbt::mods::DurationUnits durationUnits,
+             MonthHandling monthHandling = defaultMonthHandling);
 
-    explicit Interval(hbt::mods::DurationUnits::Units units,
+  public:
+    explicit Interval(hbt::mods::DurationUnits::Units units =
+                          hbt::mods::DurationUnits::Units{},
                       MonthHandling monthHandling = defaultMonthHandling);
 
   public:

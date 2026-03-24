@@ -48,11 +48,12 @@ Date::Date(std::chrono::year year, std::chrono::month month,
     return Date::today().getYMD() == ymd_;
 }
 
-[[nodiscard]] auto Date::toYMDString() const -> std::string {
+[[nodiscard]] auto Date::toISO8601String() const -> std::string {
     return std::format("{:%Y-%m-%d}", ymd_);
 }
 
-[[nodiscard]] auto Date::fromYMDString(const std::string &ymdString) -> Date {
+[[nodiscard]] auto Date::fromISO8601String(const std::string &ymdString)
+    -> Date {
     constexpr int yearDigits{4};
     constexpr int monthDigits{2};
     constexpr int dayDigits{2};

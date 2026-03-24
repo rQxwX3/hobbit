@@ -16,7 +16,12 @@ TEST(IntervalTest, EmptyOnConstruction) {
 }
 
 TEST(IntervalTest, HandlesEachUnit) {
-    auto interval{Interval{1, 2, 3, 4, 5, 6}};
+    auto interval{Interval{{.years = 1,
+                            .months = 2,
+                            .weeks = 3,
+                            .days = 4,
+                            .hours = 5,
+                            .minutes = 6}}};
     EXPECT_EQ(interval.getYears(), 1);
     EXPECT_EQ(interval.getMonths(), 2);
     EXPECT_EQ(interval.getWeeks(), 3);

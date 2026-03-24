@@ -25,7 +25,7 @@ Occurrence::Occurrence(hbt::mods::Date date, interval_t interval)
 [[nodiscard]] auto Occurrence::toJSON() const -> nlohmann::json {
     auto intervalJSON{(interval_.has_value()) ? interval_->toJSON() : "none"};
 
-    return {{"date", date_.toYMDString()}, {"interval", intervalJSON}};
+    return {{"date", date_.toISO8601String()}, {"interval", intervalJSON}};
 }
 
 [[nodiscard]] auto Occurrence::fromJSON(const nlohmann::json &json)
@@ -35,7 +35,7 @@ Occurrence::Occurrence(hbt::mods::Date date, interval_t interval)
     }
 
     return Occurrence{
-        hbt::mods::Date::fromYMDString(json["date"].get<std::string>()),
+        hbt::mods::Date::fromISO8601String(json["date"].get<std::string>()),
         hbt::mods::Interval::fromJSON(json["interval"])};
 }
 
@@ -44,7 +44,8 @@ Occurrence::Occurrence(hbt::mods::Date date, interval_t interval)
         return false;
     }
 
-    for (auto dateCopy{date_}; dateCopy < date; dateCopy += interval_.value()) {
+    for (auto dateCopy{date_}; dateCopy <= date;
+         dateCopy += interval_.value()) {
         if (dateCopy == date) {
             return true;
         }

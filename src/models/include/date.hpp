@@ -40,18 +40,16 @@ class Date {
     [[nodiscard]] auto operator<=>(const Date &other) const
         -> std::strong_ordering = default;
 
+    [[nodiscard]] auto operator==(const Date &other) const -> bool = default;
+
   public:
     [[nodiscard]] auto isToday() const -> bool;
 
   public:
-    [[nodiscard]] auto toYMDString() const -> std::string;
+    [[nodiscard]] auto toISO8601String() const -> std::string;
 
-    [[nodiscard]] static auto fromYMDString(const std::string &string) -> Date;
-
-  public:
-    [[nodiscard]] auto toJSON() const & -> nlohmann::json;
-
-    [[nodiscard]] static auto fromJSON(const nlohmann::json &json) -> Date;
+    [[nodiscard]] static auto fromISO8601String(const std::string &string)
+        -> Date;
 
   public:
     [[nodiscard]] auto operator+(Interval interval) const -> Date;
