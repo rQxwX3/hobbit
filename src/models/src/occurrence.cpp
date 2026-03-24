@@ -1,19 +1,14 @@
 #include <occurrence.hpp>
 
 namespace hbt::mods {
-Occurrence::Occurrence() : date_{Date{}}, interval_{std::nullopt} {}
-
-Occurrence::Occurrence(hbt::mods::Date date)
-    : date_{date}, interval_{std::nullopt} {}
-
-Occurrence::Occurrence(hbt::mods::Date date, interval_t interval)
+Occurrence::Occurrence(hbt::mods::Date date, hbt::mods::Interval interval)
     : date_{date}, interval_{interval} {}
 
 [[nodiscard]] auto Occurrence::getDate() const -> hbt::mods::Date {
     return date_;
 }
 
-[[nodiscard]] auto Occurrence::getInterval() const -> interval_t {
+[[nodiscard]] auto Occurrence::getInterval() const -> hbt::mods::Interval {
     return interval_;
 }
 
@@ -23,9 +18,8 @@ Occurrence::Occurrence(hbt::mods::Date date, interval_t interval)
 }
 
 [[nodiscard]] auto Occurrence::toJSON() const -> nlohmann::json {
-    auto intervalJSON{(interval_.has_value()) ? interval_->toJSON() : "none"};
-
-    return {{"date", date_.toISO8601String()}, {"interval", intervalJSON}};
+    return {{"date", date_.toISO8601String()},
+            {"interval", interval_.toJSON()}};
 }
 
 [[nodiscard]] auto Occurrence::fromJSON(const nlohmann::json &json)
@@ -34,18 +28,27 @@ Occurrence::Occurrence(hbt::mods::Date date, interval_t interval)
         return std::nullopt;
     }
 
-    return Occurrence{
-        hbt::mods::Date::fromISO8601String(json["date"].get<std::string>()),
-        hbt::mods::Interval::fromJSON(json["interval"])};
+    auto dateFromISO8601String{
+        hbt::mods::Date::fromISO8601String(json["date"].get<std::string>())};
+    if (!dateFromISO8601String.has_value()) {
+        return std::nullopt;
+    }
+
+    auto intervalFromJSON{
+        hbt::mods::Interval::fromJSON(json["interval"].get<std::string>())};
+    if (!intervalFromJSON.has_value()) {
+        return std::nullopt;
+    }
+
+    return Occurrence{dateFromISO8601String.value(), intervalFromJSON.value()};
 }
 
 [[nodiscard]] auto Occurrence::isForDate(Date date) const -> bool {
-    if (!interval_.has_value() && date_ != date) {
+    if (!interval_.isZero() && date_ != date) {
         return false;
     }
 
-    for (auto dateCopy{date_}; dateCopy <= date;
-         dateCopy += interval_.value()) {
+    for (auto dateCopy{date_}; dateCopy <= date; dateCopy += interval_) {
         if (dateCopy == date) {
             return true;
         }
@@ -56,7 +59,6 @@ Occurrence::Occurrence(hbt::mods::Date date, interval_t interval)
 
 [[nodiscard]] auto Occurrence::operator==(const Occurrence &other) const
     -> bool {
-    return date_ == date_ &&
-           Occurrence::compareOptional(interval_, other.interval_);
+    return date_ == date_ && interval_ == other.interval_;
 }
 } // namespace hbt::mods

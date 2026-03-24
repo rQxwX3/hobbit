@@ -11,41 +11,18 @@ namespace hbt::mods {
 
 class Occurrence {
   private:
-    template <typename T>
-    [[nodiscard]] auto compareOptional(const std::optional<T> &first,
-                                       const std::optional<T> &second) const
-        -> bool {
-        if (first.has_value() && !second.has_value()) {
-            return false;
-        }
-        if (!first.has_value() && second.has_value()) {
-            return false;
-        }
-        if (!first.has_value() && !second.has_value()) {
-            return true;
-        }
-        return first.value() == second.value();
-    }
-
-  private:
-    using interval_t = std::optional<hbt::mods::Interval>;
-
-  private:
     hbt::mods::Date date_;
 
-    interval_t interval_;
+    hbt::mods::Interval interval_;
 
   public:
-    Occurrence();
-
-    Occurrence(hbt::mods::Date date);
-
-    Occurrence(hbt::mods::Date date, interval_t interval);
+    Occurrence(hbt::mods::Date date = hbt::mods::Date{},
+               hbt::mods::Interval = hbt::mods::Interval{});
 
   public:
     [[nodiscard]] auto getDate() const -> hbt::mods::Date;
 
-    [[nodiscard]] auto getInterval() const -> interval_t;
+    [[nodiscard]] auto getInterval() const -> hbt::mods::Interval;
 
     [[nodiscard]] auto getWeekday() const -> hbt::mods::Date::weekday_t;
 
