@@ -34,6 +34,7 @@ endif()
 
 add_subdirectory(libs/json)
 add_subdirectory(libs/gtest)
+add_subdirectory(libs/ftxui)
 
 add_subdirectory(src/models)
 add_subdirectory(src/repositories)
