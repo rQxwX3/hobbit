@@ -41,6 +41,7 @@ add_subdirectory(src/repositories)
 add_subdirectory(src/storage)
 
 add_subdirectory(src/core)
+add_subdirectory(src/ui)
 
 add_subdirectory(tests)
 
@@ -52,4 +53,7 @@ target_link_libraries(hobbit PRIVATE
 	storage_lib 
 	core_lib
 	nlohmann_json::nlohmann_json
+	ftxui::component
+    ftxui::dom
+    ftxui::screen
 )
