@@ -10,10 +10,12 @@
 
 #include <vector>
 
-namespace hbt::ui {
+namespace hbt::ui::tui {
 class TUI : public UI {
   private:
     ftxui::App screen_;
+
+    std::vector<hbt::mods::Entry> entries_;
 
   private:
     auto createMainComponent() -> ftxui::Component;
@@ -24,8 +26,6 @@ class TUI : public UI {
   public:
     TUI();
 
-    ~TUI() override;
-
   public:
     auto start() -> void override;
 
@@ -34,7 +34,7 @@ class TUI : public UI {
     auto refresh() -> void override;
 
   public:
-    // auto showEntryList(const std::vector<hbt::mods::Entry> &entries,
-    //                    hbt::mods::Date date) -> void override;
+    auto showEntryList(const std::vector<hbt::mods::Entry> &entries)
+        -> void override;
 };
-} // namespace hbt::ui
+} // namespace hbt::ui::tui

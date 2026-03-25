@@ -5,8 +5,8 @@ add_library(core_lib STATIC
 
 target_include_directories(core_lib PUBLIC include)
 
-target_link_libraries(core_lib PRIVATE 
+target_link_libraries(core_lib PUBLIC 
+	ui_lib
 	models_lib
 	repositories_lib
-	ui_lib
 )

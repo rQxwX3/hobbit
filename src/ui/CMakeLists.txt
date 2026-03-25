@@ -1,13 +1,7 @@
-add_library(ui_lib STATIC implementations/src/tui.cpp)
+add_subdirectory(implementations/tui)
 
-target_include_directories(ui_lib PUBLIC
-	implementations/include
-	interfaces
-)
+add_library(ui_lib INTERFACE)
 
-target_link_libraries(ui_lib PRIVATE
-	models_lib
-	ftxui::component
-    ftxui::dom
-    ftxui::screen
+target_include_directories(ui_lib INTERFACE
+    interfaces
 )

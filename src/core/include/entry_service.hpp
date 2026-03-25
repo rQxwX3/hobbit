@@ -1,3 +1,5 @@
+#pragma once
+
 #include <date.hpp>
 #include <entry.hpp>
 #include <repository.hpp>

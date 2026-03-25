@@ -11,7 +11,7 @@ class App {
   private:
     std::unique_ptr<hbt::core::EntryService> entries_;
     std::unique_ptr<hbt::ui::UI> ui_;
-    hbt::mods::Date date;
+    hbt::mods::Date date_;
 
   public:
     App(std::unique_ptr<hbt::core::EntryService> entries,

@@ -18,7 +18,7 @@ class UI {
     virtual auto refresh() -> void = 0;
 
   public:
-    // virtual auto showEntryList(const std::vector<hbt::mods::Entry> &entries,
-    //                            hbt::mods::Date date) -> void = 0;
+    virtual auto showEntryList(const std::vector<hbt::mods::Entry> &entries)
+        -> void = 0;
 };
 } // namespace hbt::ui
