@@ -1,7 +1,5 @@
 #include <tui.hpp>
 
-#include <iostream>
-
 namespace hbt::ui {
 auto TUI::createMainComponent() -> ftxui::Component {
     auto component = ftxui::Renderer([&] -> ftxui::Element {
