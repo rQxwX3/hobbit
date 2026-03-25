@@ -1,6 +1,8 @@
 #pragma once
 
+#include <ftxui/component/app.hpp>
 #include <ftxui/component/component.hpp>
+#include <ftxui/screen/screen.hpp>
 
 #include <date.hpp>
 #include <entry.hpp>
@@ -10,6 +12,20 @@
 
 namespace hbt::ui {
 class TUI : public UI {
+  private:
+    ftxui::App screen_;
+
+  private:
+    auto createMainComponent() -> ftxui::Component;
+
+    // private:
+    //   auto static restoreTerminal() -> void;
+
+  public:
+    TUI();
+
+    ~TUI() override;
+
   public:
     auto start() -> void override;
 
@@ -18,7 +34,7 @@ class TUI : public UI {
     auto refresh() -> void override;
 
   public:
-    auto showEntryList(const std::vector<hbt::mods::Entry> &entries,
-                       hbt::mods::Date date) -> void override;
+    // auto showEntryList(const std::vector<hbt::mods::Entry> &entries,
+    //                    hbt::mods::Date date) -> void override;
 };
 } // namespace hbt::ui

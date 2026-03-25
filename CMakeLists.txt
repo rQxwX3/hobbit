@@ -52,6 +52,7 @@ target_link_libraries(hobbit PRIVATE
 	repositories_lib 
 	storage_lib 
 	core_lib
+	ui_lib
 	nlohmann_json::nlohmann_json
 	ftxui::component
     ftxui::dom
