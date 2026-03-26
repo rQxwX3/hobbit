@@ -1,16 +1,39 @@
 #include <entry_component.hpp>
 #include <entry_list_component.hpp>
 
+#include <ftxui/component/event.hpp>
+
 namespace hbt::ui::tui {
+[[nodiscard]] auto EntryListComponent::getMaxIndex() const -> index_t {
+    auto childrenSize{static_cast<index_t>(children_.size())};
+
+    return (childrenSize == 0) ? noSelectionIndex : childrenSize;
+}
+
+[[nodiscard]] auto EntryListComponent::isSafeIndex(index_t index) const
+    -> bool {
+    if (index < 0) {
+        return false;
+    }
+
+    if (auto maxIndex{getMaxIndex()}; maxIndex != noSelectionIndex) {
+        return index < maxIndex;
+    }
+
+    return false;
+}
+
 auto EntryListComponent::updateSelection(index_t newSelectedIndex) -> void {
-    children_[selectedIndex_]->setSelected(false);
+    if (isSafeIndex(selectedIndex_)) {
+        children_[selectedIndex_]->setSelected(false);
+    }
 
     selectedIndex_ = newSelectedIndex;
 
-    children_[selectedIndex_]->setSelected(true);
+    if (isSafeIndex(selectedIndex_)) {
+        children_[selectedIndex_]->setSelected(true);
+    }
 }
-
-auto EntryListComponent::resetSelection() -> void { selectedIndex_ = -1; }
 
 auto EntryListComponent::setEntries(
     const std::vector<hbt::mods::Entry> &entries) -> void {
@@ -23,7 +46,7 @@ auto EntryListComponent::setEntries(
         EntryListComponent::Add(child);
     }
 
-    updateSelection(0);
+    updateSelection(entries.empty() ? noSelectionIndex : 0);
 }
 
 auto EntryListComponent::OnRender() -> ftxui::Element {
@@ -42,4 +65,25 @@ auto EntryListComponent::OnRender() -> ftxui::Element {
     return center(list) | flex;
 }
 
+auto EntryListComponent::OnEvent(ftxui::Event event) -> bool {
+    using namespace ftxui;
+
+    if (event == Event::Character('k') || event == Event::ArrowUp) {
+        if (auto attemptIndex{selectedIndex_ - 1}; isSafeIndex(attemptIndex)) {
+            updateSelection(attemptIndex);
+        }
+
+        return true;
+    }
+
+    if (event == Event::Character('j') || event == Event::ArrowDown) {
+        if (auto attemptIndex{selectedIndex_ + 1}; isSafeIndex(attemptIndex)) {
+            updateSelection(attemptIndex);
+        }
+
+        return true;
+    }
+
+    return false;
+}
 } // namespace hbt::ui::tui

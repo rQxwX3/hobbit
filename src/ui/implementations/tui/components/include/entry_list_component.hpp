@@ -10,15 +10,19 @@
 namespace hbt::ui::tui {
 class EntryListComponent : public ftxui::ComponentBase {
   private:
-    using index_t = size_t;
+    using index_t = int;
+
+    static constexpr index_t noSelectionIndex{-1};
 
   private:
     std::vector<std::shared_ptr<EntryComponent>> children_;
 
-    index_t selectedIndex_{0};
+    index_t selectedIndex_{-1};
 
   private:
-    auto resetSelection() -> void;
+    [[nodiscard]] auto getMaxIndex() const -> index_t;
+
+    [[nodiscard]] auto isSafeIndex(index_t index) const -> bool;
 
     auto updateSelection(index_t newSelectedIndex) -> void;
 
@@ -27,5 +31,7 @@ class EntryListComponent : public ftxui::ComponentBase {
 
   public:
     auto OnRender() -> ftxui::Element override;
+
+    auto OnEvent(ftxui::Event event) -> bool override;
 };
 } // namespace hbt::ui::tui
