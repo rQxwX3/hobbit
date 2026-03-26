@@ -8,12 +8,17 @@
 #include <entry.hpp>
 #include <ui.hpp>
 
+#include <entry_list_component.hpp>
+
+#include <memory>
 #include <vector>
 
 namespace hbt::ui::tui {
 class TUI : public UI {
   private:
     ftxui::App screen_;
+
+    std::shared_ptr<EntryListComponent> entryList_;
 
     std::vector<hbt::mods::Entry> entries_;
 

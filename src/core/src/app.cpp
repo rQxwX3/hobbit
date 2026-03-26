@@ -6,7 +6,11 @@ App::App(std::unique_ptr<hbt::core::EntryService> entries,
     : entries_{std::move(entries)}, ui_{std::move(ui)},
       date_{hbt::mods::Date::today()} {};
 
-auto App::run() -> void { ui_->start(); }
+auto App::run() -> void {
+    ui_->start();
+
+    refreshUI();
+}
 
 auto App::stop() -> void { ui_->stop(); }
 

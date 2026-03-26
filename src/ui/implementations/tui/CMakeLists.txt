@@ -1,6 +1,7 @@
 add_library(tui_lib STATIC
     src/tui.cpp
     components/src/entry_component.cpp
+	components/src/entry_list_component.cpp
 )
 
 target_include_directories(tui_lib PUBLIC

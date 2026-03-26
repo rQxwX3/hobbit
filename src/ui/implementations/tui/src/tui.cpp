@@ -1,11 +1,29 @@
+#include <entry_list_component.hpp>
 #include <tui.hpp>
 
 namespace hbt::ui::tui {
-auto TUI::createMainComponent() -> ftxui::Component {}
+auto TUI::createMainComponent() -> ftxui::Component {
+    auto component = CatchEvent(entryList_, [&](ftxui::Event event) {
+        if (event == ftxui::Event::Character('q')) {
+            stop();
+            return true;
+        }
+
+        return false;
+    });
+
+    return component;
+}
 
 TUI::TUI()
     : screen_{ftxui::App::FullscreenAlternateScreen()},
-      entries_{std::vector<hbt::mods::Entry>()} {}
+      entryList_{std::make_shared<EntryListComponent>()},
+      entries_{std::vector<hbt::mods::Entry>()} {
+    entries_.push_back(hbt::mods::Entry{"todo1", {}});
+    entries_.push_back(hbt::mods::Entry{"todo2", {}});
+    entries_.push_back(hbt::mods::Entry{"todo3", {}});
+    entryList_->setEntries(entries_);
+}
 
 auto TUI::start() -> void {
     auto mainComponent(createMainComponent());

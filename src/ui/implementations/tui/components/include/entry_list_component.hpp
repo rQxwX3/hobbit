@@ -5,14 +5,22 @@
 #include <entry.hpp>
 #include <entry_component.hpp>
 
-#include <memory>
 #include <vector>
 
 namespace hbt::ui::tui {
 class EntryListComponent : public ftxui::ComponentBase {
   private:
+    using index_t = size_t;
+
+  private:
     std::vector<std::shared_ptr<EntryComponent>> children_;
-    size_t selectedIndex_{0};
+
+    index_t selectedIndex_{0};
+
+  private:
+    auto resetSelection() -> void;
+
+    auto updateSelection(index_t newSelectedIndex) -> void;
 
   public:
     auto setEntries(const std::vector<hbt::mods::Entry> &entries) -> void;

@@ -21,5 +21,4 @@ auto main() -> int {
     auto app{hbt::core::App{std::move(entries), std::move(tui)}};
 
     app.run();
-    app.refreshUI();
 }
