@@ -21,8 +21,5 @@ class App {
     auto run() -> void;
 
     auto stop() -> void;
-
-  public:
-    auto refreshUI() -> void;
 };
 } // namespace hbt::core

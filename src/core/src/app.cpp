@@ -7,22 +7,19 @@ App::App(std::unique_ptr<hbt::core::EntryService> entries,
       date_{hbt::mods::Date::today()} {
 
     ui_->setCreateEntryCallback([this](const std::string &title) -> void {
-        entries_->createEntry(
-            title, {hbt::mods::Occurrence{hbt::mods::Date::today(),
-                                          hbt::mods::Interval::years(1)}});
+        auto entry{hbt::mods::Entry{
+            title,
+            {hbt::mods::Occurrence{hbt::mods::Date::today(),
+                                   hbt::mods::Interval::years(1)}}}};
+
+        entries_->createEntry(entry);
+        ui_->populateEntryList(entry);
     });
+
+    ui_->setEntryList(entries_->getEntriesForDate(date_));
 };
 
-auto App::run() -> void {
-    ui_->start();
-
-    refreshUI();
-}
+auto App::run() -> void { ui_->start(); }
 
 auto App::stop() -> void { ui_->stop(); }
-
-auto App::refreshUI() -> void {
-    ui_->showEntryList(entries_->getEntriesForDate(date_));
-}
-
 } // namespace hbt::core

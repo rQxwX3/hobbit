@@ -27,10 +27,6 @@ auto TUI::setUpOrchestrator() -> void {
 auto TUI::createEntryListComponent() -> ftxui::Component {
     auto entryList{ftxui::Make<EntryListComponent>()};
 
-    entries_.push_back(hbt::mods::Entry{"todo1", {}});
-    entries_.push_back(hbt::mods::Entry{"todo2", {}});
-    entries_.push_back(hbt::mods::Entry{"todo3", {}});
-
     entryList->setEntries(entries_);
 
     return entryList;
@@ -83,9 +79,13 @@ auto TUI::stop() -> void { screen_.Exit(); }
 
 auto TUI::refresh() -> void { screen_.PostEvent(ftxui::Event::Custom); }
 
-auto TUI::showEntryList(const std::vector<hbt::mods::Entry> &entries) -> void {
+auto TUI::setEntryList(const std::vector<hbt::mods::Entry> &entries) -> void {
     entries_ = entries;
 
     refresh();
+}
+
+auto TUI::populateEntryList(hbt::mods::Entry entry) -> void {
+    entries_.push_back(entry);
 }
 } // namespace hbt::ui::tui

@@ -46,6 +46,11 @@ class TUI : public UI {
     setCreateEntryCallback(const createEntryCallback_t &createEntryCallback)
         -> void override;
 
+    auto setEntryList(const std::vector<hbt::mods::Entry> &entries)
+        -> void override;
+
+    auto populateEntryList(hbt::mods::Entry entry) -> void override;
+
   public:
     auto start() -> void override;
 
@@ -54,7 +59,5 @@ class TUI : public UI {
     auto refresh() -> void override;
 
   public:
-    auto showEntryList(const std::vector<hbt::mods::Entry> &entries)
-        -> void override;
 };
 } // namespace hbt::ui::tui
