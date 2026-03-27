@@ -9,6 +9,10 @@ EntryService::EntryService(
         repository)
     : repository_{std::move(repository)} {}
 
+auto EntryService::createEntry(const hbt::mods::Entry &entry) -> id_t {
+    return repository_->save(entry);
+}
+
 auto EntryService::createEntry(std::string title,
                                std::vector<hbt::mods::Occurrence> occurrences)
     -> id_t {

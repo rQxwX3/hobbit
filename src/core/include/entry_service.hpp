@@ -24,6 +24,8 @@ class EntryService {
     auto createEntry(std::string title,
                      std::vector<hbt::mods::Occurrence> occurrences) -> id_t;
 
+    auto createEntry(const hbt::mods::Entry &entry) -> id_t;
+
     auto deleteEntry(id_t id) -> void;
 
   public:
