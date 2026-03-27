@@ -41,8 +41,9 @@ auto TUI::createEntryFormComponent() -> ftxui::Component {
         throw std::runtime_error("Missing create entry callback");
     }
 
-    auto entryForm{
-        ftxui::Make<EntryFormComponent>(std::move(createEntryCallback_))};
+    auto entryForm{ftxui::Make<EntryFormComponent>(
+        std::move(createEntryCallback_),
+        [this] -> void { switchToScreen(Screen::EntryList); })};
 
     return entryForm;
 }

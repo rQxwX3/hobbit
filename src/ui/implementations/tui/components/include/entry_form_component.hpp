@@ -34,6 +34,7 @@ class EntryFormComponent : public ftxui::ComponentBase {
     ftxui::Component cancelButton_;
 
     onSubmitCallback_t onSubmit_;
+    onCancelCallback_t onCancel_;
 
   private:
     auto clear() -> void;
@@ -46,7 +47,8 @@ class EntryFormComponent : public ftxui::ComponentBase {
     auto cancel() -> void;
 
   public:
-    EntryFormComponent(onSubmitCallback_t onSubmit);
+    EntryFormComponent(onSubmitCallback_t onSubmit,
+                       onCancelCallback_t onCancel);
 
   public:
     auto OnRender() -> ftxui::Element override;

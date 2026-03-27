@@ -13,10 +13,14 @@ auto EntryFormComponent::submit() -> void {
     }
 }
 
-auto EntryFormComponent::cancel() -> void { clear(); }
+auto EntryFormComponent::cancel() -> void {
+    clear();
+    onCancel_();
+}
 
-EntryFormComponent::EntryFormComponent(onSubmitCallback_t onSubmit)
-    : onSubmit_{std::move(onSubmit)},
+EntryFormComponent::EntryFormComponent(onSubmitCallback_t onSubmit,
+                                       onCancelCallback_t onCancel)
+    : onSubmit_{std::move(onSubmit)}, onCancel_{std::move(onCancel)},
 
       titleInput_{ftxui::Input(&title_, titleInputPlaceholder)},
 
