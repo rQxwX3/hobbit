@@ -31,6 +31,8 @@ class OrchestatorComponent : public ftxui::ComponentBase {
     auto registerComponentFactory(screen_t screen,
                                   const componentFactory_t &factory) -> void;
 
+    auto invalidateComponent(screen_t screen) -> void;
+
     auto switchToComponent(screen_t screen) -> void;
 
   public:

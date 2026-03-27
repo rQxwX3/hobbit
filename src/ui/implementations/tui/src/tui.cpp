@@ -49,6 +49,7 @@ auto TUI::setCreateEntryCallback(
     createEntryCallback_ =
         [this, createEntryCallback](const std::string &title) -> void {
         createEntryCallback(title);
+        orchestrator_->invalidateComponent(Screen::EntryList);
         switchToScreen(Screen::EntryList);
     };
 }

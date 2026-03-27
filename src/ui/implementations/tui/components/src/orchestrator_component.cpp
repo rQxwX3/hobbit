@@ -29,6 +29,10 @@ auto OrchestatorComponent::registerComponentFactory(
     componentFactories_[screen] = factory;
 }
 
+auto OrchestatorComponent::invalidateComponent(screen_t screen) -> void {
+    renderedComponents_.erase(screen);
+}
+
 auto OrchestatorComponent::switchToComponent(screen_t screen) -> void {
     if (currentScreen_ == screen) {
         return;
