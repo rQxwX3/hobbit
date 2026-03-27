@@ -19,7 +19,7 @@ auto TUI::setUpOrchestrator() -> void {
         Screen::CreateEntry,
         [this] -> ftxui::Component { return createEntryFormComponent(); });
 
-    orchestrator->switchToComponent(Screen::CreateEntry);
+    orchestrator->switchToComponent(Screen::EntryList);
 
     orchestrator_ = orchestrator;
 }

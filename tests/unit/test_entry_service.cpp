@@ -60,9 +60,49 @@ TEST_F(EntryServiceTest, CreatesSingleEntry) {
         testing::UnorderedElementsAre(occurrences1[0], occurrences1[1]));
 }
 
+TEST_F(EntryServiceTest, CreatesSingleEntryFromCopy) {
+    auto entry{hbt::mods::Entry{"entry", occurrences1}};
+
+    auto id{service->createEntry(entry)};
+    auto result{repoPtr->load(id)};
+
+    ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(result->getTitle(), "entry");
+    EXPECT_EQ(result->isCompleted(), false);
+    EXPECT_THAT(
+        result->getOccurrences(),
+        testing::UnorderedElementsAre(occurrences1[0], occurrences1[1]));
+}
+
 TEST_F(EntryServiceTest, CreatesMultipleEntries) {
     auto id1{service->createEntry("entry1", occurrences1)};
     auto id2{service->createEntry("entry2", occurrences2)};
+
+    auto result1{repoPtr->load(id1)};
+    auto result2{repoPtr->load(id2)};
+
+    ASSERT_TRUE(result1.has_value());
+    ASSERT_TRUE(result2.has_value());
+
+    EXPECT_EQ(result1->getTitle(), "entry1");
+    EXPECT_EQ(result2->getTitle(), "entry2");
+    EXPECT_EQ(result1->isCompleted(), false);
+    EXPECT_EQ(result2->isCompleted(), false);
+
+    EXPECT_THAT(
+        result1->getOccurrences(),
+        testing::UnorderedElementsAre(occurrences1[0], occurrences1[1]));
+    EXPECT_THAT(
+        result2->getOccurrences(),
+        testing::UnorderedElementsAre(occurrences2[0], occurrences2[1]));
+}
+
+TEST_F(EntryServiceTest, CreatesMultipleEntriesFromCopy) {
+    auto entry1{hbt::mods::Entry{"entry1", occurrences1}};
+    auto entry2{hbt::mods::Entry{"entry2", occurrences2}};
+
+    auto id1{service->createEntry(entry1)};
+    auto id2{service->createEntry(entry2)};
 
     auto result1{repoPtr->load(id1)};
     auto result2{repoPtr->load(id2)};
