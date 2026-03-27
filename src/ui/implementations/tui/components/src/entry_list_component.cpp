@@ -24,15 +24,16 @@ namespace hbt::ui::tui {
 }
 
 auto EntryListComponent::updateSelection(index_t newSelectedIndex) -> void {
+    if (!isSafeIndex(newSelectedIndex)) {
+        return;
+    }
+
     if (isSafeIndex(selectedIndex_)) {
         children_[selectedIndex_]->setSelected(false);
     }
 
+    children_[newSelectedIndex]->setSelected(true);
     selectedIndex_ = newSelectedIndex;
-
-    if (isSafeIndex(selectedIndex_)) {
-        children_[selectedIndex_]->setSelected(true);
-    }
 }
 
 auto EntryListComponent::setEntries(
@@ -69,21 +70,17 @@ auto EntryListComponent::OnEvent(ftxui::Event event) -> bool {
     using namespace ftxui;
 
     if (event == Event::Character('k') || event == Event::ArrowUp) {
-        if (auto attemptIndex{selectedIndex_ - 1}; isSafeIndex(attemptIndex)) {
-            updateSelection(attemptIndex);
-        }
+        updateSelection(selectedIndex_ - 1);
 
         return true;
     }
 
     if (event == Event::Character('j') || event == Event::ArrowDown) {
-        if (auto attemptIndex{selectedIndex_ + 1}; isSafeIndex(attemptIndex)) {
-            updateSelection(attemptIndex);
-        }
+        updateSelection(selectedIndex_ + 1);
 
         return true;
     }
 
-    return false;
+    return ComponentBase::OnEvent(event);
 }
 } // namespace hbt::ui::tui

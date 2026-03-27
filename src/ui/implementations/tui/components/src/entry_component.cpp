@@ -11,12 +11,12 @@ auto EntryComponent::setSelected(bool selected) -> void {
 auto EntryComponent::OnRender() -> ftxui::Element {
     using namespace ftxui;
 
-    auto title{text(title_)};
+    auto entry{hbox({text(title_)})};
 
     if (selected_) {
-        title = title | bold | inverted;
+        return entry | border | bold;
     }
 
-    return hbox({title}) | border | flex;
+    return entry | border;
 }
 } // namespace hbt::ui::tui

@@ -8,6 +8,15 @@
 namespace hbt::ui {
 class UI {
   public:
+    enum class Screen : uint8_t {
+        EntryList,
+        CreateEntry,
+        Statistics,
+        Settings,
+        NONE,
+    };
+
+  public:
     virtual ~UI() = default;
 
   public:

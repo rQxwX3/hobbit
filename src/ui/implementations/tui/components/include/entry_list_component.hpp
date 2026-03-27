@@ -27,6 +27,9 @@ class EntryListComponent : public ftxui::ComponentBase {
     auto updateSelection(index_t newSelectedIndex) -> void;
 
   public:
+    static auto create() -> EntryListComponent;
+
+  public:
     auto setEntries(const std::vector<hbt::mods::Entry> &entries) -> void;
 
   public:

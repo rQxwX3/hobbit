@@ -1,34 +1,66 @@
 #include <entry_list_component.hpp>
+#include <orchestrator_component.hpp>
+
 #include <tui.hpp>
+#include <utility>
 
 namespace hbt::ui::tui {
-auto TUI::createMainComponent() -> ftxui::Component {
-    auto component = CatchEvent(entryList_, [&](ftxui::Event event) {
-        if (event == ftxui::Event::Character('q')) {
-            stop();
-            return true;
-        }
+auto TUI::navigateTo(UI::Screen screen) -> void {}
 
-        return false;
-    });
+auto TUI::createEntryListComponent() -> ftxui::Component {
+    auto entryList{ftxui::Make<EntryListComponent>()};
 
-    return component;
-}
-
-TUI::TUI()
-    : screen_{ftxui::App::FullscreenAlternateScreen()},
-      entryList_{std::make_shared<EntryListComponent>()},
-      entries_{std::vector<hbt::mods::Entry>()} {
     entries_.push_back(hbt::mods::Entry{"todo1", {}});
     entries_.push_back(hbt::mods::Entry{"todo2", {}});
     entries_.push_back(hbt::mods::Entry{"todo3", {}});
-    entryList_->setEntries(entries_);
+
+    entryList->setEntries(entries_);
+
+    return entryList;
 }
+
+auto TUI::createEntryFormComponent() -> ftxui::Component {
+    auto entryForm{
+        ftxui::Make<EntryFormComponent>(std::move(onCreateEntryCallback_))};
+
+    return entryForm;
+}
+
+auto TUI::createMainComponent() -> ftxui::Component {
+    auto orchestrator{ftxui::Make<OrchestatorComponent>()};
+
+    orchestrator->registerComponentFactory(
+        Screen::EntryList,
+        [this] -> ftxui::Component { return createEntryListComponent(); });
+
+    orchestrator->registerComponentFactory(
+        Screen::CreateEntry,
+        [this] -> ftxui::Component { return createEntryFormComponent(); });
+
+    orchestrator->switchToComponent(Screen::CreateEntry);
+
+    return orchestrator;
+}
+
+TUI::TUI(onCreateEntryCallback_t onCreateEntryCallback)
+    : screen_{ftxui::App::FullscreenAlternateScreen()},
+      entries_{std::vector<hbt::mods::Entry>()},
+      onCreateEntryCallback_{std::move(onCreateEntryCallback)} {}
 
 auto TUI::start() -> void {
     auto mainComponent(createMainComponent());
 
-    screen_.Loop(mainComponent);
+    auto quitHandler{
+        ftxui::CatchEvent(mainComponent, [this](ftxui::Event event) {
+            if (event == ftxui::Event::Character('q') ||
+                event == ftxui::Event::Character('Q')) {
+                stop();
+                return true;
+            }
+            return false;
+        })};
+
+    screen_.Loop(quitHandler);
 }
 
 auto TUI::stop() -> void { screen_.Exit(); }
