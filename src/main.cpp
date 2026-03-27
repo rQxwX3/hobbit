@@ -13,15 +13,9 @@ auto main() -> int {
     auto entriesRepo{std::make_unique<
         hbt::repo::json::MultiItemRepository<hbt::mods::Entry>>(storage)};
 
-    auto entries{
-        std::make_unique<hbt::core::EntryService>(std::move(entriesRepo))};
-
-    auto tui{std::make_unique<hbt::ui::tui::TUI>(
-        [&entries](const std::string &title) -> void {
-            entries->createEntry(title, {});
-        })};
-
-    auto app{hbt::core::App{std::move(entries), std::move(tui)}};
+    auto app{hbt::core::App{
+        std::make_unique<hbt::core::EntryService>(std::move(entriesRepo)),
+        std::make_unique<hbt::ui::tui::TUI>()}};
 
     app.run();
 }

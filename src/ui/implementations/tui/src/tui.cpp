@@ -2,10 +2,27 @@
 #include <orchestrator_component.hpp>
 
 #include <tui.hpp>
-#include <utility>
 
 namespace hbt::ui::tui {
-auto TUI::navigateTo(UI::Screen screen) -> void {}
+auto TUI::switchToScreen(UI::Screen screen) -> void {
+    orchestrator_->switchToComponent(screen);
+}
+
+auto TUI::setUpOrchestrator() -> void {
+    auto orchestrator{ftxui::Make<OrchestatorComponent>()};
+
+    orchestrator->registerComponentFactory(
+        Screen::EntryList,
+        [this] -> ftxui::Component { return createEntryListComponent(); });
+
+    orchestrator->registerComponentFactory(
+        Screen::CreateEntry,
+        [this] -> ftxui::Component { return createEntryFormComponent(); });
+
+    orchestrator->switchToComponent(Screen::CreateEntry);
+
+    orchestrator_ = orchestrator;
+}
 
 auto TUI::createEntryListComponent() -> ftxui::Component {
     auto entryList{ftxui::Make<EntryListComponent>()};
@@ -20,43 +37,41 @@ auto TUI::createEntryListComponent() -> ftxui::Component {
 }
 
 auto TUI::createEntryFormComponent() -> ftxui::Component {
+    if (!createEntryCallback_) {
+        throw std::runtime_error("Missing create entry callback");
+    }
+
     auto entryForm{
-        ftxui::Make<EntryFormComponent>(std::move(onCreateEntryCallback_))};
+        ftxui::Make<EntryFormComponent>(std::move(createEntryCallback_))};
 
     return entryForm;
 }
 
-auto TUI::createMainComponent() -> ftxui::Component {
-    auto orchestrator{ftxui::Make<OrchestatorComponent>()};
-
-    orchestrator->registerComponentFactory(
-        Screen::EntryList,
-        [this] -> ftxui::Component { return createEntryListComponent(); });
-
-    orchestrator->registerComponentFactory(
-        Screen::CreateEntry,
-        [this] -> ftxui::Component { return createEntryFormComponent(); });
-
-    orchestrator->switchToComponent(Screen::CreateEntry);
-
-    return orchestrator;
+auto TUI::setCreateEntryCallback(
+    const createEntryCallback_t &createEntryCallback) -> void {
+    createEntryCallback_ =
+        [this, createEntryCallback](const std::string &title) -> void {
+        createEntryCallback(title);
+        switchToScreen(Screen::EntryList);
+    };
 }
 
-TUI::TUI(onCreateEntryCallback_t onCreateEntryCallback)
+TUI::TUI()
     : screen_{ftxui::App::FullscreenAlternateScreen()},
-      entries_{std::vector<hbt::mods::Entry>()},
-      onCreateEntryCallback_{std::move(onCreateEntryCallback)} {}
+      entries_{std::vector<hbt::mods::Entry>()} {}
 
 auto TUI::start() -> void {
-    auto mainComponent(createMainComponent());
+    setUpOrchestrator();
 
     auto quitHandler{
-        ftxui::CatchEvent(mainComponent, [this](ftxui::Event event) {
+        ftxui::CatchEvent(orchestrator_, [this](ftxui::Event event) {
             if (event == ftxui::Event::Character('q') ||
                 event == ftxui::Event::Character('Q')) {
                 stop();
+
                 return true;
             }
+
             return false;
         })};
 

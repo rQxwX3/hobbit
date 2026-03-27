@@ -10,37 +10,41 @@
 
 #include <entry_form_component.hpp>
 #include <entry_list_component.hpp>
+#include <orchestrator_component.hpp>
 
-#include <functional>
 #include <vector>
 
 namespace hbt::ui::tui {
 class TUI : public UI {
-  public:
-    using onCreateEntryCallback_t = std::function<void(const std::string &)>;
-
   private:
     std::vector<hbt::mods::Entry> entries_;
 
     ftxui::App screen_;
 
-    onCreateEntryCallback_t onCreateEntryCallback_;
+    std::shared_ptr<OrchestatorComponent> orchestrator_;
+
+    createEntryCallback_t createEntryCallback_;
 
   private:
-    auto navigateTo(UI::Screen screen) -> void;
+    auto switchToScreen(UI::Screen screen) -> void;
 
   private:
-    auto createMainComponent() -> ftxui::Component;
-
     auto createEntryListComponent() -> ftxui::Component;
 
     auto createEntryFormComponent() -> ftxui::Component;
+
+    auto setUpOrchestrator() -> void;
 
     // private:
     //   auto static restoreTerminal() -> void;
 
   public:
-    TUI(onCreateEntryCallback_t onCreateEntryCallback);
+    TUI();
+
+  public:
+    auto
+    setCreateEntryCallback(const createEntryCallback_t &createEntryCallback)
+        -> void override;
 
   public:
     auto start() -> void override;

@@ -8,6 +8,9 @@
 namespace hbt::ui {
 class UI {
   public:
+    using createEntryCallback_t = std::function<void(const std::string &)>;
+
+  public:
     enum class Screen : uint8_t {
         EntryList,
         CreateEntry,
@@ -25,6 +28,11 @@ class UI {
     virtual auto stop() -> void = 0;
 
     virtual auto refresh() -> void = 0;
+
+  public:
+    virtual auto
+    setCreateEntryCallback(const createEntryCallback_t &createEntryCallback)
+        -> void = 0;
 
   public:
     virtual auto showEntryList(const std::vector<hbt::mods::Entry> &entries)

@@ -34,12 +34,16 @@ class EntryFormComponent : public ftxui::ComponentBase {
     ftxui::Component cancelButton_;
 
     onSubmitCallback_t onSubmit_;
-    onCancelCallback_t onCancel_;
 
   private:
     auto clear() -> void;
 
     auto createElements() -> std::vector<ftxui::Element>;
+
+  private:
+    auto submit() -> void;
+
+    auto cancel() -> void;
 
   public:
     EntryFormComponent(onSubmitCallback_t onSubmit);

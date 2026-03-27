@@ -4,25 +4,28 @@
 #include <entry_form_component.hpp>
 
 namespace hbt::ui::tui {
+auto EntryFormComponent::submit() -> void {
+    if (title_.empty()) {
+        error_ = emptyTitleError;
+    } else {
+        onSubmit_(title_);
+        clear();
+    }
+}
+
+auto EntryFormComponent::cancel() -> void { clear(); }
+
 EntryFormComponent::EntryFormComponent(onSubmitCallback_t onSubmit)
     : onSubmit_{std::move(onSubmit)},
 
       titleInput_{ftxui::Input(&title_, titleInputPlaceholder)},
 
-      submitButton_{ftxui::Button(submitButtonText,
-                                  [this]() -> void {
-                                      if (title_.empty()) {
-                                          error_ = emptyTitleError;
-                                      } else {
-                                          onSubmit_(title_);
-                                          clear();
-                                      }
-                                  })},
+      submitButton_{
+          ftxui::Button(submitButtonText, [this]() -> void { submit(); })},
 
-      cancelButton_{ftxui::Button(cancelButtonText, [this]() -> void {
-          onCancel_();
-          clear();
-      })} {
+      cancelButton_{
+          ftxui::Button(cancelButtonText, [this]() -> void { cancel(); })} {
+
     Add(titleInput_);
     Add(submitButton_);
     Add(cancelButton_);
@@ -80,8 +83,13 @@ auto EntryFormComponent::OnEvent(ftxui::Event event) -> bool {
     using namespace ftxui;
 
     if (event == Event::Escape) {
-        onCancel_();
-        clear();
+        cancel();
+
+        return true;
+    }
+
+    if (event == Event::Return) {
+        submit();
 
         return true;
     }
