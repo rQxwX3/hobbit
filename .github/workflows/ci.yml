@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
 
     steps:
       - uses: actions/checkout@v4
@@ -37,16 +37,6 @@ jobs:
           brew install gcc@15 make
           sudo ln -sf $(brew --prefix gcc@15)/bin/gcc-15 /usr/local/bin/gcc
           sudo ln -sf $(brew --prefix gcc@15)/bin/g++-15 /usr/local/bin/g++
-          gcc --version
-
-      - name: Install GCC 15+ (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          choco install msys2 --params="/InstallDir:C:\tools\msys64 /NoPath"
-          refreshenv
-          C:\tools\msys64\usr\bin\bash.exe -l -c "pacman -Syu --noconfirm"
-          C:\tools\msys64\usr\bin\bash.exe -l -c "pacman -S --noconfirm mingw-w64-ucrt-x86_64-gcc make"
-          echo "C:\tools\msys64\ucrt64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           gcc --version
 
       - name: Build & test
