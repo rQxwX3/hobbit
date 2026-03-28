@@ -4,3 +4,4 @@ build/
 .cache/
 Testing/
 entries.json
+coverage*
