@@ -4,26 +4,6 @@
 #include <tui.hpp>
 
 namespace hbt::ui::tui {
-auto TUI::switchToScreen(UI::Screen screen) -> void {
-    orchestrator_->switchToComponent(screen);
-}
-
-auto TUI::setUpOrchestrator() -> void {
-    auto orchestrator{ftxui::Make<OrchestatorComponent>()};
-
-    orchestrator->registerComponentFactory(
-        Screen::EntryList,
-        [this] -> ftxui::Component { return createEntryListComponent(); });
-
-    orchestrator->registerComponentFactory(
-        Screen::CreateEntry,
-        [this] -> ftxui::Component { return createEntryFormComponent(); });
-
-    orchestrator->switchToComponent(Screen::EntryList);
-
-    orchestrator_ = orchestrator;
-}
-
 auto TUI::createEntryListComponent() -> ftxui::Component {
     auto entryList{ftxui::Make<EntryListComponent>()};
 
@@ -44,6 +24,22 @@ auto TUI::createEntryFormComponent() -> ftxui::Component {
     return entryForm;
 }
 
+auto TUI::setupOrchestrator() -> void {
+    auto orchestrator{ftxui::Make<OrchestatorComponent>()};
+
+    orchestrator->registerComponentFactory(
+        Screen::EntryList,
+        [this] -> ftxui::Component { return createEntryListComponent(); });
+
+    orchestrator->registerComponentFactory(
+        Screen::CreateEntry,
+        [this] -> ftxui::Component { return createEntryFormComponent(); });
+
+    orchestrator->switchToComponent(Screen::EntryList);
+
+    orchestrator_ = orchestrator;
+}
+
 auto TUI::setCreateEntryCallback(
     const createEntryCallback_t &createEntryCallback) -> void {
     createEntryCallback_ =
@@ -54,12 +50,8 @@ auto TUI::setCreateEntryCallback(
     };
 }
 
-TUI::TUI()
-    : screen_{ftxui::App::FullscreenAlternateScreen()},
-      entries_{std::vector<hbt::mods::Entry>()} {}
-
 auto TUI::start() -> void {
-    setUpOrchestrator();
+    setupOrchestrator();
 
     auto quitHandler{
         ftxui::CatchEvent(orchestrator_, [this](ftxui::Event event) {
@@ -76,12 +68,10 @@ auto TUI::start() -> void {
     screen_.Loop(quitHandler);
 }
 
-auto TUI::stop() -> void { screen_.Exit(); }
+TUI::TUI() : screen_{ftxui::App::FullscreenAlternateScreen()} {}
 
-auto TUI::refresh() -> void { screen_.PostEvent(ftxui::Event::Custom); }
-
-auto TUI::setEntryList(const std::vector<hbt::mods::Entry> &entries) -> void {
-    entries_ = entries;
+auto TUI::setEntryList(std::vector<hbt::mods::Entry> entries) -> void {
+    entries_ = std::move(entries);
 
     refresh();
 }
@@ -89,4 +79,13 @@ auto TUI::setEntryList(const std::vector<hbt::mods::Entry> &entries) -> void {
 auto TUI::populateEntryList(hbt::mods::Entry entry) -> void {
     entries_.push_back(entry);
 }
+
+auto TUI::switchToScreen(UI::Screen screen) -> void {
+    orchestrator_->switchToComponent(screen);
+}
+
+auto TUI::stop() -> void { screen_.Exit(); }
+
+auto TUI::refresh() -> void { screen_.PostEvent(ftxui::Event::Custom); }
+
 } // namespace hbt::ui::tui

@@ -12,11 +12,37 @@ class OrchestatorComponent : public ftxui::ComponentBase {
     using screen_t = UI::Screen;
     using componentFactory_t = std::function<ftxui::Component()>;
 
-    using screenComponentPair_t = std::pair<UI::Screen, ftxui::Component>;
+    class CachedComponent {
+      private:
+        componentFactory_t factory_;
+        ftxui::Component cached_;
+
+      public:
+        CachedComponent(componentFactory_t factory)
+            : factory_{std::move(factory)} {}
+
+        auto get() -> ftxui::Component {
+            if (!cached_) {
+                assert(factory_);
+                cached_ = factory_();
+            }
+
+            return cached_;
+        }
+
+        auto setFactory(componentFactory_t factory) {
+            factory_ = std::move(factory);
+        }
+
+        auto setCached(ftxui::Component component) {
+            cached_ = std::move(component);
+        }
+
+        auto invalidate() { cached_ = nullptr; }
+    };
 
   private:
-    std::unordered_map<screen_t, componentFactory_t> componentFactories_;
-    std::unordered_map<screen_t, ftxui::Component> renderedComponents_;
+    std::unordered_map<screen_t, CachedComponent> cachedComponents_;
 
     screen_t currentScreen_;
     ftxui::Component currentComponent_;
@@ -28,8 +54,8 @@ class OrchestatorComponent : public ftxui::ComponentBase {
     explicit OrchestatorComponent();
 
   public:
-    auto registerComponentFactory(screen_t screen,
-                                  const componentFactory_t &factory) -> void;
+    auto registerComponentFactory(screen_t screen, componentFactory_t factory)
+        -> void;
 
     auto invalidateComponent(screen_t screen) -> void;
 

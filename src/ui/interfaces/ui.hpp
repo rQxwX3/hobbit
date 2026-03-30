@@ -34,7 +34,7 @@ class UI {
     setCreateEntryCallback(const createEntryCallback_t &createEntryCallback)
         -> void = 0;
 
-    virtual auto setEntryList(const std::vector<hbt::mods::Entry> &entries)
+    virtual auto setEntryList(std::vector<hbt::mods::Entry> entries)
         -> void = 0;
 
     virtual auto populateEntryList(hbt::mods::Entry entry) -> void = 0;

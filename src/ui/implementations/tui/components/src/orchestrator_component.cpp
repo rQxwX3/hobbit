@@ -7,30 +7,44 @@ OrchestatorComponent::OrchestatorComponent()
     : currentScreen_{UI::Screen::NONE} {}
 
 auto OrchestatorComponent::activateComponent(screen_t screen) -> void {
-    if (!renderedComponents_.contains(screen)) {
-        auto it{componentFactories_.find(screen)};
-
-        if (it == componentFactories_.end()) {
-            return;
-        }
-
-        renderedComponents_[screen] = it->second();
+    if (currentScreen_ == screen) {
+        return;
     }
 
+    auto it{cachedComponents_.find(screen)};
+
+    if (it == cachedComponents_.end()) {
+        return;
+    }
+
+    auto component{it->second.get()};
+
     currentScreen_ = screen;
-    currentComponent_ = renderedComponents_[screen];
+    currentComponent_ = component;
 
     OrchestatorComponent::DetachAllChildren();
     OrchestatorComponent::Add(currentComponent_);
 }
 
-auto OrchestatorComponent::registerComponentFactory(
-    UI::Screen screen, const componentFactory_t &factory) -> void {
-    componentFactories_[screen] = factory;
+auto OrchestatorComponent::registerComponentFactory(UI::Screen screen,
+                                                    componentFactory_t factory)
+    -> void {
+    auto it{cachedComponents_.find(screen)};
+
+    if (it != cachedComponents_.end()) {
+        it->second.setFactory(std::move(factory));
+        return;
+    }
+
+    cachedComponents_.emplace(screen, std::move(factory));
 }
 
 auto OrchestatorComponent::invalidateComponent(screen_t screen) -> void {
-    renderedComponents_.erase(screen);
+    auto it{cachedComponents_.find(screen)};
+
+    if (it != cachedComponents_.end()) {
+        it->second.invalidate();
+    }
 }
 
 auto OrchestatorComponent::switchToComponent(screen_t screen) -> void {

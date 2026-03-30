@@ -33,7 +33,7 @@ class TUI : public UI {
 
     auto createEntryFormComponent() -> ftxui::Component;
 
-    auto setUpOrchestrator() -> void;
+    auto setupOrchestrator() -> void;
 
     // private:
     //   auto static restoreTerminal() -> void;
@@ -46,8 +46,7 @@ class TUI : public UI {
     setCreateEntryCallback(const createEntryCallback_t &createEntryCallback)
         -> void override;
 
-    auto setEntryList(const std::vector<hbt::mods::Entry> &entries)
-        -> void override;
+    auto setEntryList(std::vector<hbt::mods::Entry> entries) -> void override;
 
     auto populateEntryList(hbt::mods::Entry entry) -> void override;
 
