@@ -1,5 +1,6 @@
 #include <interval.hpp>
 
+#include <regex>
 #include <string>
 
 namespace hbt::mods {
@@ -124,5 +125,56 @@ auto Interval::setMonthHandling(MonthHandling monthHandling) -> void {
         std::stoi(json["month_handling"].get<std::string>()))};
 
     return Interval{durationUnitsFromISO8601String.value(), monthHandling};
+}
+
+[[nodiscard]] auto Interval::fromNaturalLanguage(const std::string &input)
+    -> std::optional<Interval> {
+    if (input.empty()) {
+        return std::nullopt;
+    }
+
+    const auto pattern{std::regex(
+        R"(^(?:(\d+)\s*y(?:ears?)?\s*)?(?:(\d+)\s*mo(?:nths?)?\s*)?(?:(\d+)\s*w(?:eeks?)?\s*)?(?:(\d+)\s*d(?:ays?)?\s*)?(?:(\d+)\s*h(?:ours?)?\s*)?(?:(\d+)\s*m(?:in(?:utes?)?)?\s*)?$)",
+        std::regex::icase)};
+
+    constexpr size_t yearsGroup{1};
+    constexpr size_t monthsGroup{2};
+    constexpr size_t weeksGroup{3};
+    constexpr size_t daysGroup{4};
+    constexpr size_t hoursGroup{5};
+    constexpr size_t minutesGroup{6};
+
+    std::smatch matches;
+    if (!std::regex_match(input, matches, pattern)) {
+        return std::nullopt;
+    }
+
+    auto durationUnits{hbt::mods::DurationUnits{}};
+
+    if (matches[yearsGroup].matched) {
+        durationUnits.addYears(std::stoi(matches[yearsGroup]));
+    }
+
+    if (matches[monthsGroup].matched) {
+        durationUnits.addMonths(std::stoi(matches[monthsGroup]));
+    }
+
+    if (matches[weeksGroup].matched) {
+        durationUnits.addWeeks(std::stoi(matches[weeksGroup]));
+    }
+
+    if (matches[daysGroup].matched) {
+        durationUnits.addDays(std::stoi(matches[daysGroup]));
+    }
+
+    if (matches[hoursGroup].matched) {
+        durationUnits.addHours(std::stoi(matches[hoursGroup]));
+    }
+
+    if (matches[minutesGroup].matched) {
+        durationUnits.addMinutes(std::stoi(matches[minutesGroup]));
+    }
+
+    return Interval{durationUnits};
 }
 } // namespace hbt::mods
