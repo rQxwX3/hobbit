@@ -1,5 +1,6 @@
 #include <interval.hpp>
 
+#include <algorithm>
 #include <regex>
 #include <string>
 
@@ -133,6 +134,15 @@ auto Interval::setMonthHandling(MonthHandling monthHandling) -> void {
         return std::nullopt;
     }
 
+    /*
+     * Prevents replacing separators with whitespaces in inputs like 1.5 years
+     * (which would lead to 1 5 years)
+     */
+    auto invalidSeparatorsPattern(std::regex(R"(\d+[^a-zA-Z0-9\s]\d+)"));
+    if (std::regex_search(input, invalidSeparatorsPattern)) {
+        return std::nullopt;
+    }
+
     const auto pattern{std::regex(
         R"(^(?:(\d+)\s*y(?:ears?)?\s*)?(?:(\d+)\s*mo(?:nths?)?\s*)?(?:(\d+)\s*w(?:eeks?)?\s*)?(?:(\d+)\s*d(?:ays?)?\s*)?(?:(\d+)\s*h(?:ours?)?\s*)?(?:(\d+)\s*m(?:in(?:utes?)?)?\s*)?$)",
         std::regex::icase)};
@@ -144,8 +154,14 @@ auto Interval::setMonthHandling(MonthHandling monthHandling) -> void {
     constexpr size_t hoursGroup{5};
     constexpr size_t minutesGroup{6};
 
+    std::string cleaned;
+    std::replace_copy_if(
+        input.begin(), input.end(), std::back_inserter(cleaned),
+        [](char c) -> bool { return !std::isalnum(c) && !std::isspace(c); },
+        ' ');
+
     std::smatch matches;
-    if (!std::regex_match(input, matches, pattern)) {
+    if (!std::regex_match(cleaned, matches, pattern)) {
         return std::nullopt;
     }
 
