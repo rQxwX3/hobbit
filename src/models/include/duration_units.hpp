@@ -41,6 +41,8 @@ class DurationUnits {
     static constexpr value_t hoursInDay{24};
     static constexpr value_t minutesInHour{60};
 
+    static constexpr value_t maxValue{999};
+
   private:
     array_t units_;
 
@@ -65,17 +67,7 @@ class DurationUnits {
     auto addMinutes(value_t value) -> void;
 
   public:
-    [[nodiscard]] auto getYears() const -> value_t;
-
-    [[nodiscard]] auto getMonths() const -> value_t;
-
-    [[nodiscard]] auto getWeeks() const -> value_t;
-
-    [[nodiscard]] auto getDays() const -> value_t;
-
-    [[nodiscard]] auto getHours() const -> value_t;
-
-    [[nodiscard]] auto getMinutes() const -> value_t;
+    [[nodiscard]] auto getUnit(unit_t unit) const -> value_t;
 
   public:
     [[nodiscard]] auto isZero() const -> bool;

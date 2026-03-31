@@ -1,11 +1,9 @@
 #include <duration_units.hpp>
+#include <duration_units_parser.hpp>
 
 #include <algorithm>
-#include <iostream>
-#include <ranges>
 #include <regex>
 #include <string>
-#include <unordered_set>
 
 namespace hbt::mods {
 DurationUnits::DurationUnits() : units_{array_t{}} {}
@@ -49,28 +47,8 @@ auto DurationUnits::addMinutes(value_t value) -> void {
     units_[unit_t::MINUTE] += value % DurationUnits::minutesInHour;
 }
 
-[[nodiscard]] auto DurationUnits::getYears() const -> value_t {
-    return units_[unit_t::YEAR];
-}
-
-[[nodiscard]] auto DurationUnits::getMonths() const -> value_t {
-    return units_[unit_t::MONTH];
-}
-
-[[nodiscard]] auto DurationUnits::getWeeks() const -> value_t {
-    return units_[unit_t::WEEK];
-}
-
-[[nodiscard]] auto DurationUnits::getDays() const -> value_t {
-    return units_[unit_t::DAY];
-}
-
-[[nodiscard]] auto DurationUnits::getHours() const -> value_t {
-    return units_[unit_t::HOUR];
-}
-
-[[nodiscard]] auto DurationUnits::getMinutes() const -> value_t {
-    return units_[unit_t::MINUTE];
+[[nodiscard]] auto DurationUnits::getUnit(unit_t unit) const -> value_t {
+    return units_[unit];
 }
 
 [[nodiscard]] auto DurationUnits::isZero() const -> bool {
@@ -82,39 +60,45 @@ auto DurationUnits::addMinutes(value_t value) -> void {
     -> DurationUnits {
     auto result{DurationUnits{*this}};
 
-    result.addYears(other.getYears());
-    result.addMonths(other.getMonths());
-    result.addWeeks(other.getWeeks());
-    result.addDays(other.getDays());
-    result.addHours(other.getHours());
-    result.addMinutes(other.getMinutes());
+    result.addYears(other.getUnit(unit_t::YEAR));
+    result.addMonths(other.getUnit(unit_t::MONTH));
+    result.addWeeks(other.getUnit(unit_t::WEEK));
+    result.addDays(other.getUnit(unit_t::DAY));
+    result.addHours(other.getUnit(unit_t::HOUR));
+    result.addMinutes(other.getUnit(unit_t::MINUTE));
 
     return result;
 }
 
 [[nodiscard]] auto DurationUnits::operator<=>(const DurationUnits &other) const
     -> std::strong_ordering {
-    if (auto cmp = getYears() <=> other.getYears(); cmp != 0) {
+    if (auto cmp = getUnit(unit_t::YEAR) <=> other.getUnit(unit_t::YEAR);
+        cmp != 0) {
         return cmp;
     }
 
-    if (auto cmp = getMonths() <=> other.getMonths(); cmp != 0) {
+    if (auto cmp = getUnit(unit_t::MONTH) <=> other.getUnit(unit_t::MONTH);
+        cmp != 0) {
         return cmp;
     }
 
-    if (auto cmp = getWeeks() <=> other.getWeeks(); cmp != 0) {
+    if (auto cmp = getUnit(unit_t::WEEK) <=> other.getUnit(unit_t::WEEK);
+        cmp != 0) {
         return cmp;
     }
 
-    if (auto cmp = getDays() <=> other.getDays(); cmp != 0) {
+    if (auto cmp = getUnit(unit_t::DAY) <=> other.getUnit(unit_t::DAY);
+        cmp != 0) {
         return cmp;
     }
 
-    if (auto cmp = getHours() <=> other.getHours(); cmp != 0) {
+    if (auto cmp = getUnit(unit_t::HOUR) <=> other.getUnit(unit_t::HOUR);
+        cmp != 0) {
         return cmp;
     }
 
-    if (auto cmp = getMinutes() <=> other.getMinutes(); cmp != 0) {
+    if (auto cmp = getUnit(unit_t::MINUTE) <=> other.getUnit(unit_t::MINUTE);
+        cmp != 0) {
         return cmp;
     }
 
@@ -129,27 +113,27 @@ auto DurationUnits::addMinutes(value_t value) -> void {
     std::string result{"P"};
     bool timeSectionStarted{false};
 
-    if (const auto years{getYears()}; years) {
+    if (const auto years{getUnit(unit_t::YEAR)}; years) {
         result += std::to_string(years);
         result += "Y";
     }
 
-    if (const auto months{getMonths()}; months) {
+    if (const auto months{getUnit(unit_t::MONTH)}; months) {
         result += std::to_string(months);
         result += "M";
     }
 
-    if (const auto weeks{getWeeks()}; weeks) {
+    if (const auto weeks{getUnit(unit_t::WEEK)}; weeks) {
         result += std::to_string(weeks);
         result += "W";
     }
 
-    if (const auto days{getDays()}; days) {
+    if (const auto days{getUnit(unit_t::DAY)}; days) {
         result += std::to_string(days);
         result += "D";
     }
 
-    if (const auto hours{getHours()}; hours) {
+    if (const auto hours{getUnit(unit_t::HOUR)}; hours) {
         if (!timeSectionStarted) {
             result += "T";
             timeSectionStarted = true;
@@ -159,7 +143,7 @@ auto DurationUnits::addMinutes(value_t value) -> void {
         result += "H";
     }
 
-    if (const auto minutes{getMinutes()}; minutes) {
+    if (const auto minutes{getUnit(unit_t::MINUTE)}; minutes) {
         if (!timeSectionStarted) {
             result += "T";
             timeSectionStarted = true;
@@ -236,122 +220,8 @@ auto DurationUnits::addMinutes(value_t value) -> void {
     return result;
 }
 
-[[nodiscard]] auto toLower(const std::string &string) -> std::string {
-    auto result{string};
-    std::ranges::transform(result, result.begin(),
-                           [](unsigned char c) { return std::tolower(c); });
-
-    return result;
-}
-
-auto parseUnit(const std::string &unit, int value, DurationUnits &durationUnits,
-               std::array<bool, DurationUnits::unit_t::COUNT_> &foundUnits)
-    -> bool {
-    const auto u{toLower(unit)};
-
-    static const std::unordered_set<std::string> years{"y", "yr", "yrs", "year",
-                                                       "years"};
-    static const std::unordered_set<std::string> months{"mo", "month",
-                                                        "months"};
-    static const std::unordered_set<std::string> weeks{"w", "wk", "wks", "week",
-                                                       "weeks"};
-    static const std::unordered_set<std::string> days{"d", "day", "days"};
-    static const std::unordered_set<std::string> hours{"h", "hr", "hrs", "hour",
-                                                       "hours"};
-    static const std::unordered_set<std::string> minutes{"m", "min", "mins",
-                                                         "minute", "minutes"};
-
-    auto markUnitAsFound{[&foundUnits](DurationUnits::unit_t unit) -> bool {
-        if (foundUnits[unit]) {
-            return false;
-        }
-
-        foundUnits[unit] = true;
-        return true;
-    }};
-
-    if (years.contains(u)) {
-        if (!markUnitAsFound(DurationUnits::unit_t::YEAR)) {
-            return false;
-        }
-
-        durationUnits.addYears(value);
-
-    } else if (months.contains(u)) {
-        if (!markUnitAsFound(DurationUnits::unit_t::MONTH)) {
-            return false;
-        }
-
-        durationUnits.addMonths(value);
-
-    } else if (weeks.contains(u)) {
-        if (!markUnitAsFound(DurationUnits::unit_t::WEEK)) {
-            return false;
-        }
-
-        durationUnits.addWeeks(value);
-
-    } else if (days.contains(u)) {
-        if (!markUnitAsFound(DurationUnits::unit_t::DAY)) {
-            return false;
-        }
-
-        durationUnits.addDays(value);
-
-    } else if (hours.contains(u)) {
-        if (!markUnitAsFound(DurationUnits::unit_t::HOUR)) {
-            return false;
-        }
-
-        durationUnits.addHours(value);
-
-    } else if (minutes.contains(u)) {
-        if (!markUnitAsFound(DurationUnits::unit_t::MINUTE)) {
-            return false;
-        }
-
-        durationUnits.addMinutes(value);
-
-    } else {
-        return false;
-    }
-
-    return true;
-}
-
 [[nodiscard]] auto DurationUnits::fromNaturalLanguage(const std::string &input)
     -> std::optional<DurationUnits> {
-    const std::regex pattern(R"(^([\W_]*\d+[\W_]*[a-zA-Z]+[\W_]*){1,6}$)");
-    if (!std::regex_match(input, pattern)) {
-        return std::nullopt;
-    }
-
-    std::string filtered;
-    std::ranges::copy(input | std::ranges::views::filter([](unsigned char c) {
-                          return std::isalnum(c);
-                      }),
-                      std::back_inserter(filtered));
-
-    const std::regex pairPattern(R"((\d+)([A-Za-z]+))");
-    constexpr size_t valueGroup{1};
-    constexpr size_t unitGroup{2};
-
-    auto durationUnits{DurationUnits{}};
-    auto foundUnits{std::array<bool, DurationUnits::unit_t::COUNT_>{false}};
-
-    for (auto it(std::sregex_iterator{filtered.begin(), filtered.end(),
-                                      pairPattern});
-         it != std::sregex_iterator(); ++it) {
-        const auto &match{*it};
-
-        auto value{std::stoi(match[valueGroup].str())};
-        auto unit{match[unitGroup].str()};
-
-        if (!parseUnit(unit, value, durationUnits, foundUnits)) {
-            return std::nullopt;
-        }
-    }
-
-    return durationUnits;
+    return util::DurationUnitsParser::fromNaturalLanguage(input);
 }
 } // namespace hbt::mods
