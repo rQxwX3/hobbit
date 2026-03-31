@@ -95,5 +95,8 @@ class DurationUnits {
 
     [[nodiscard]] static auto fromISO8601String(const std::string &string)
         -> std::optional<DurationUnits>;
+
+    [[nodiscard]] static auto fromNaturalLanguage(const std::string &input)
+        -> std::optional<DurationUnits>;
 };
 } // namespace hbt::mods

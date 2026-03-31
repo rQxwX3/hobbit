@@ -1,8 +1,11 @@
 #include <duration_units.hpp>
 
 #include <algorithm>
+#include <iostream>
+#include <ranges>
 #include <regex>
 #include <string>
+#include <unordered_set>
 
 namespace hbt::mods {
 DurationUnits::DurationUnits() : units_{array_t{}} {}
@@ -231,5 +234,124 @@ auto DurationUnits::addMinutes(value_t value) -> void {
     }
 
     return result;
+}
+
+[[nodiscard]] auto toLower(const std::string &string) -> std::string {
+    auto result{string};
+    std::ranges::transform(result, result.begin(),
+                           [](unsigned char c) { return std::tolower(c); });
+
+    return result;
+}
+
+auto parseUnit(const std::string &unit, int value, DurationUnits &durationUnits,
+               std::array<bool, DurationUnits::unit_t::COUNT_> &foundUnits)
+    -> bool {
+    const auto u{toLower(unit)};
+
+    static const std::unordered_set<std::string> years{"y", "yr", "yrs", "year",
+                                                       "years"};
+    static const std::unordered_set<std::string> months{"mo", "month",
+                                                        "months"};
+    static const std::unordered_set<std::string> weeks{"w", "wk", "wks", "week",
+                                                       "weeks"};
+    static const std::unordered_set<std::string> days{"d", "day", "days"};
+    static const std::unordered_set<std::string> hours{"h", "hr", "hrs", "hour",
+                                                       "hours"};
+    static const std::unordered_set<std::string> minutes{"m", "min", "mins",
+                                                         "minute", "minutes"};
+
+    auto markUnitAsFound{[&foundUnits](DurationUnits::unit_t unit) -> bool {
+        if (foundUnits[unit]) {
+            return false;
+        }
+
+        foundUnits[unit] = true;
+        return true;
+    }};
+
+    if (years.contains(u)) {
+        if (!markUnitAsFound(DurationUnits::unit_t::YEAR)) {
+            return false;
+        }
+
+        durationUnits.addYears(value);
+
+    } else if (months.contains(u)) {
+        if (!markUnitAsFound(DurationUnits::unit_t::MONTH)) {
+            return false;
+        }
+
+        durationUnits.addMonths(value);
+
+    } else if (weeks.contains(u)) {
+        if (!markUnitAsFound(DurationUnits::unit_t::WEEK)) {
+            return false;
+        }
+
+        durationUnits.addWeeks(value);
+
+    } else if (days.contains(u)) {
+        if (!markUnitAsFound(DurationUnits::unit_t::DAY)) {
+            return false;
+        }
+
+        durationUnits.addDays(value);
+
+    } else if (hours.contains(u)) {
+        if (!markUnitAsFound(DurationUnits::unit_t::HOUR)) {
+            return false;
+        }
+
+        durationUnits.addHours(value);
+
+    } else if (minutes.contains(u)) {
+        if (!markUnitAsFound(DurationUnits::unit_t::MINUTE)) {
+            return false;
+        }
+
+        durationUnits.addMinutes(value);
+
+    } else {
+        return false;
+    }
+
+    return true;
+}
+
+[[nodiscard]] auto DurationUnits::fromNaturalLanguage(const std::string &input)
+    -> std::optional<DurationUnits> {
+    const std::regex pattern(R"(^([\W_]*\d+[\W_]*[a-zA-Z]+[\W_]*){1,6}$)");
+    if (!std::regex_match(input, pattern)) {
+        return std::nullopt;
+    }
+
+    std::string filtered;
+    std::ranges::copy(input | std::ranges::views::filter([](unsigned char c) {
+                          return std::isalnum(c);
+                      }),
+                      std::back_inserter(filtered));
+
+    const std::regex pairPattern(R"((\d+)([A-Za-z]+))");
+    constexpr size_t valueGroup{1};
+    constexpr size_t unitGroup{2};
+
+    auto durationUnits{DurationUnits{}};
+    auto foundUnits{std::array<bool, DurationUnits::unit_t::COUNT_>{false}};
+
+    for (auto it(std::sregex_iterator{filtered.begin(), filtered.end(),
+                                      pairPattern});
+         it != std::sregex_iterator(); ++it) {
+        const auto &match{*it};
+
+        auto value{std::stoi(match[valueGroup].str())};
+        auto unit{match[unitGroup].str()};
+
+        if (!parseUnit(unit, value, durationUnits, foundUnits)) {
+            return std::nullopt;
+        }
+    }
+
+    return durationUnits;
 }
 } // namespace hbt::mods
