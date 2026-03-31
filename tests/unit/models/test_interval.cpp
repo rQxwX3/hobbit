@@ -4,15 +4,16 @@
 
 namespace test::mods {
 using hbt::mods::Interval;
+using unit_t = hbt::mods::Interval::unit_t;
 TEST(IntervalTest, EmptyOnConstruction) {
     auto interval{Interval{}};
     EXPECT_EQ(interval.getMonthHandling(), Interval::defaultMonthHandling);
-    EXPECT_EQ(interval.getYears(), 0);
-    EXPECT_EQ(interval.getMonths(), 0);
-    EXPECT_EQ(interval.getWeeks(), 0);
-    EXPECT_EQ(interval.getDays(), 0);
-    EXPECT_EQ(interval.getHours(), 0);
-    EXPECT_EQ(interval.getMinutes(), 0);
+    EXPECT_EQ(interval.getUnit(unit_t::YEAR), 0);
+    EXPECT_EQ(interval.getUnit(unit_t::MONTH), 0);
+    EXPECT_EQ(interval.getUnit(unit_t::WEEK), 0);
+    EXPECT_EQ(interval.getUnit(unit_t::DAY), 0);
+    EXPECT_EQ(interval.getUnit(unit_t::HOUR), 0);
+    EXPECT_EQ(interval.getUnit(unit_t::MINUTE), 0);
 }
 
 TEST(IntervalTest, HandlesEachUnit) {
@@ -22,62 +23,62 @@ TEST(IntervalTest, HandlesEachUnit) {
                             .days = 4,
                             .hours = 5,
                             .minutes = 6}}};
-    EXPECT_EQ(interval.getYears(), 1);
-    EXPECT_EQ(interval.getMonths(), 2);
-    EXPECT_EQ(interval.getWeeks(), 3);
-    EXPECT_EQ(interval.getDays(), 4);
-    EXPECT_EQ(interval.getHours(), 5);
-    EXPECT_EQ(interval.getMinutes(), 6);
+    EXPECT_EQ(interval.getUnit(unit_t::YEAR), 1);
+    EXPECT_EQ(interval.getUnit(unit_t::MONTH), 2);
+    EXPECT_EQ(interval.getUnit(unit_t::WEEK), 3);
+    EXPECT_EQ(interval.getUnit(unit_t::DAY), 4);
+    EXPECT_EQ(interval.getUnit(unit_t::HOUR), 5);
+    EXPECT_EQ(interval.getUnit(unit_t::MINUTE), 6);
 }
 
 TEST(IntervalTest, FactoryFunctions) {
     auto year{Interval::years(1)};
-    EXPECT_EQ(year.getYears(), 1);
-    EXPECT_EQ(year.getMonths(), 0);
-    EXPECT_EQ(year.getWeeks(), 0);
-    EXPECT_EQ(year.getDays(), 0);
-    EXPECT_EQ(year.getHours(), 0);
-    EXPECT_EQ(year.getMinutes(), 0);
+    EXPECT_EQ(year.getUnit(unit_t::YEAR), 1);
+    EXPECT_EQ(year.getUnit(unit_t::MONTH), 0);
+    EXPECT_EQ(year.getUnit(unit_t::WEEK), 0);
+    EXPECT_EQ(year.getUnit(unit_t::DAY), 0);
+    EXPECT_EQ(year.getUnit(unit_t::HOUR), 0);
+    EXPECT_EQ(year.getUnit(unit_t::MINUTE), 0);
 
     auto month{Interval::months(1)};
-    EXPECT_EQ(month.getYears(), 0);
-    EXPECT_EQ(month.getMonths(), 1);
-    EXPECT_EQ(month.getWeeks(), 0);
-    EXPECT_EQ(month.getDays(), 0);
-    EXPECT_EQ(month.getHours(), 0);
-    EXPECT_EQ(month.getMinutes(), 0);
+    EXPECT_EQ(month.getUnit(unit_t::YEAR), 0);
+    EXPECT_EQ(month.getUnit(unit_t::MONTH), 1);
+    EXPECT_EQ(month.getUnit(unit_t::WEEK), 0);
+    EXPECT_EQ(month.getUnit(unit_t::DAY), 0);
+    EXPECT_EQ(month.getUnit(unit_t::HOUR), 0);
+    EXPECT_EQ(month.getUnit(unit_t::MINUTE), 0);
 
     auto week{Interval::weeks(1)};
-    EXPECT_EQ(week.getYears(), 0);
-    EXPECT_EQ(week.getMonths(), 0);
-    EXPECT_EQ(week.getWeeks(), 1);
-    EXPECT_EQ(week.getDays(), 0);
-    EXPECT_EQ(week.getHours(), 0);
-    EXPECT_EQ(week.getMinutes(), 0);
+    EXPECT_EQ(week.getUnit(unit_t::YEAR), 0);
+    EXPECT_EQ(week.getUnit(unit_t::MONTH), 0);
+    EXPECT_EQ(week.getUnit(unit_t::WEEK), 1);
+    EXPECT_EQ(week.getUnit(unit_t::DAY), 0);
+    EXPECT_EQ(week.getUnit(unit_t::HOUR), 0);
+    EXPECT_EQ(week.getUnit(unit_t::MINUTE), 0);
 
     auto day{Interval::days(1)};
-    EXPECT_EQ(day.getYears(), 0);
-    EXPECT_EQ(day.getMonths(), 0);
-    EXPECT_EQ(day.getWeeks(), 0);
-    EXPECT_EQ(day.getDays(), 1);
-    EXPECT_EQ(day.getHours(), 0);
-    EXPECT_EQ(day.getMinutes(), 0);
+    EXPECT_EQ(day.getUnit(unit_t::YEAR), 0);
+    EXPECT_EQ(day.getUnit(unit_t::MONTH), 0);
+    EXPECT_EQ(day.getUnit(unit_t::WEEK), 0);
+    EXPECT_EQ(day.getUnit(unit_t::DAY), 1);
+    EXPECT_EQ(day.getUnit(unit_t::HOUR), 0);
+    EXPECT_EQ(day.getUnit(unit_t::MINUTE), 0);
 
     auto hour{Interval::hours(1)};
-    EXPECT_EQ(hour.getYears(), 0);
-    EXPECT_EQ(hour.getMonths(), 0);
-    EXPECT_EQ(hour.getWeeks(), 0);
-    EXPECT_EQ(hour.getDays(), 0);
-    EXPECT_EQ(hour.getHours(), 1);
-    EXPECT_EQ(hour.getMinutes(), 0);
+    EXPECT_EQ(hour.getUnit(unit_t::YEAR), 0);
+    EXPECT_EQ(hour.getUnit(unit_t::MONTH), 0);
+    EXPECT_EQ(hour.getUnit(unit_t::WEEK), 0);
+    EXPECT_EQ(hour.getUnit(unit_t::DAY), 0);
+    EXPECT_EQ(hour.getUnit(unit_t::HOUR), 1);
+    EXPECT_EQ(hour.getUnit(unit_t::MINUTE), 0);
 
     auto minute{Interval::minutes(1)};
-    EXPECT_EQ(minute.getYears(), 0);
-    EXPECT_EQ(minute.getMonths(), 0);
-    EXPECT_EQ(minute.getWeeks(), 0);
-    EXPECT_EQ(minute.getDays(), 0);
-    EXPECT_EQ(minute.getHours(), 0);
-    EXPECT_EQ(minute.getMinutes(), 1);
+    EXPECT_EQ(minute.getUnit(unit_t::YEAR), 0);
+    EXPECT_EQ(minute.getUnit(unit_t::MONTH), 0);
+    EXPECT_EQ(minute.getUnit(unit_t::WEEK), 0);
+    EXPECT_EQ(minute.getUnit(unit_t::DAY), 0);
+    EXPECT_EQ(minute.getUnit(unit_t::HOUR), 0);
+    EXPECT_EQ(minute.getUnit(unit_t::MINUTE), 1);
 }
 
 TEST(IntervalTest, IsZero) {
@@ -98,4 +99,5 @@ TEST(IntervalTest, ToFromJSON) {
 
     EXPECT_EQ(original, restored);
 }
+
 }; // namespace test::mods

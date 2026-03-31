@@ -99,8 +99,9 @@ Date::Date(std::chrono::year year, std::chrono::month month,
             ymd.year(), std::chrono::month_day_last{ymd.month()}};
     };
 
-    auto newYMD{ymd_ + std::chrono::years{interval.getYears()} +
-                std::chrono::months{interval.getMonths()}};
+    auto newYMD{ymd_ +
+                std::chrono::years{interval.getUnit(Interval::unit_t::YEAR)} +
+                std::chrono::months{interval.getUnit(Interval::unit_t::MONTH)}};
 
     if (Interval::MonthHandling::CUT_OFF == interval.getMonthHandling() &&
         !newYMD.ok()) {
@@ -108,8 +109,8 @@ Date::Date(std::chrono::year year, std::chrono::month month,
     }
 
     auto newSysDays{std::chrono::sys_days{newYMD}};
-    newSysDays += std::chrono::weeks{interval.getWeeks()} +
-                  std::chrono::days{interval.getDays()};
+    newSysDays += std::chrono::weeks{interval.getUnit(Interval::unit_t::WEEK)} +
+                  std::chrono::days{interval.getUnit(Interval::unit_t::DAY)};
 
     return Date{newSysDays};
 }
