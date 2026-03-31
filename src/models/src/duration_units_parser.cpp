@@ -27,10 +27,10 @@ DurationUnitsParser::getBucketOfUnit(const std::string &unitString)
     return std::nullopt;
 }
 
-[[nodiscard]] auto
-DurationUnitsParser::parseUnit(const std::string &unit, int value,
-                               DurationUnits &durationUnits,
-                               matchedBuckets_t &matchedBuckets) -> bool {
+[[nodiscard]] auto DurationUnitsParser::parseUnit(
+    const std::string &unit, DurationUnits::value_t value,
+    DurationUnits &durationUnits, matchedBuckets_t &matchedBuckets) -> bool {
+
     auto res{getBucketOfUnit(unit)};
     if (!res.has_value()) {
         return false;
@@ -59,6 +59,10 @@ DurationUnitsParser::parseAllUnits(const std::string &filteredInput,
 
         auto value{std::stoi(match[pairRegexPatternValueGroup].str())};
         auto unit{match[pairRegexPatternUnitGroup].str()};
+
+        if (!DurationUnits::isValidValue(value)) {
+            return false;
+        }
 
         if (!parseUnit(unit, value, durationUnits, matchedBuckets)) {
             return false;

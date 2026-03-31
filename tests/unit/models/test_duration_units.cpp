@@ -353,6 +353,30 @@ TEST(DurationUnitsTest, FromValidNaturalLanguage) {
                                                        .minutes = 0}};
     EXPECT_EQ(parsed.value(), durationUnits);
 
+    // minus of a negative value is stripped as a separator
+    input = "-1y";
+    parsed = DurationUnits::fromNaturalLanguage(input);
+    ASSERT_TRUE(parsed.has_value());
+    durationUnits = DurationUnits{DurationUnits::Units{.years = 1,
+                                                       .months = 0,
+                                                       .weeks = 0,
+                                                       .days = 0,
+                                                       .hours = 0,
+                                                       .minutes = 0}};
+    EXPECT_EQ(parsed.value(), durationUnits);
+
+    auto maxInput{std::to_string(DurationUnits::maxValue) + "year"};
+    parsed = DurationUnits::fromNaturalLanguage(maxInput);
+    ASSERT_TRUE(parsed.has_value());
+    durationUnits =
+        DurationUnits{DurationUnits::Units{.years = DurationUnits::maxValue,
+                                           .months = 0,
+                                           .weeks = 0,
+                                           .days = 0,
+                                           .hours = 0,
+                                           .minutes = 0}};
+    EXPECT_EQ(parsed.value(), durationUnits);
+
     input = "!@#$%^&*()_+|/<>,.~      1 !@#$%^&*()_+|/<>,.~`     years    "
             "!@#$%^&*()_+|/<>,.~` 2 !@#$%^&*()_+|/<>,.~`      months   "
             "!@#$%^&*()_+|/<>,.~` ";
@@ -436,6 +460,12 @@ TEST(DurationUnitsTest, FromInvalidNaturalLanguage) {
     ASSERT_FALSE(DurationUnits::fromNaturalLanguage(input).has_value());
 
     input = "1y1y";
+    ASSERT_FALSE(DurationUnits::fromNaturalLanguage(input).has_value());
+
+    input = "1000y";
+    ASSERT_FALSE(DurationUnits::fromNaturalLanguage(input).has_value());
+
+    input = "1y1000m";
     ASSERT_FALSE(DurationUnits::fromNaturalLanguage(input).has_value());
 }
 }; // namespace test::mods

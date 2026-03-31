@@ -16,8 +16,8 @@ class DurationUnitsParser {
     class UnitBucket {
       private:
         using possibleValues_t = std::unordered_set<std::string>;
-        using addUnitCallback_t =
-            std::function<void(DurationUnits &durationUnits, int value)>;
+        using addUnitCallback_t = std::function<void(
+            DurationUnits &durationUnits, DurationUnits::value_t value)>;
 
       private:
         DurationUnits::unit_t unit;
@@ -40,7 +40,8 @@ class DurationUnitsParser {
             return possibleValues_.contains(unitString);
         }
 
-        auto addUnit(DurationUnits &durationUnits, int value) -> bool {
+        auto addUnit(DurationUnits &durationUnits, DurationUnits::value_t value)
+            -> bool {
             addUnitCallback_(durationUnits, value);
             return true;
         }
@@ -62,42 +63,42 @@ class DurationUnitsParser {
     inline static const UnitBucket yearBucket{
         DurationUnits::unit_t::YEAR,
         {"y", "yr", "yrs", "year", "years"},
-        [](DurationUnits &durationUnits, int value) -> void {
+        [](DurationUnits &durationUnits, DurationUnits::value_t value) -> void {
             durationUnits.addYears(value);
         }};
 
     inline static const UnitBucket monthBucket{
         DurationUnits::unit_t::MONTH,
         {"mo", "month", "months"},
-        [](DurationUnits &durationUnits, int value) -> void {
+        [](DurationUnits &durationUnits, DurationUnits::value_t value) -> void {
             durationUnits.addMonths(value);
         }};
 
     inline static const UnitBucket weekBucket{
         DurationUnits::unit_t::WEEK,
         {"w", "wk", "wks", "week", "weeks"},
-        [](DurationUnits &durationUnits, int value) -> void {
+        [](DurationUnits &durationUnits, DurationUnits::value_t value) -> void {
             durationUnits.addWeeks(value);
         }};
 
     inline static const UnitBucket dayBucket{
         DurationUnits::unit_t::DAY,
         {"d", "day", "days"},
-        [](DurationUnits &durationUnits, int value) -> void {
+        [](DurationUnits &durationUnits, DurationUnits::value_t value) -> void {
             durationUnits.addDays(value);
         }};
 
     inline static const UnitBucket hourBucket{
         DurationUnits::unit_t::HOUR,
         {"h", "hr", "hrs", "hour", "hours"},
-        [](DurationUnits &durationUnits, int value) -> void {
+        [](DurationUnits &durationUnits, DurationUnits::value_t value) -> void {
             durationUnits.addHours(value);
         }};
 
     inline static const UnitBucket minuteBucket{
         DurationUnits::unit_t::MINUTE,
         {"m", "min", "mins", "minute", "minutes"},
-        [](DurationUnits &durationUnits, int value) -> void {
+        [](DurationUnits &durationUnits, DurationUnits::value_t value) -> void {
             durationUnits.addMinutes(value);
         }};
 
@@ -108,9 +109,9 @@ class DurationUnitsParser {
     [[nodiscard]] static auto getBucketOfUnit(const std::string &unitString)
         -> std::optional<std::reference_wrapper<const UnitBucket>>;
 
-    [[nodiscard]] static auto parseUnit(const std::string &unit, int value,
-                                        DurationUnits &durationUnits,
-                                        matchedBuckets_t &matchedBuckets)
+    [[nodiscard]] static auto
+    parseUnit(const std::string &unit, DurationUnits::value_t value,
+              DurationUnits &durationUnits, matchedBuckets_t &matchedBuckets)
         -> bool;
 
     [[nodiscard]] static auto parseAllUnits(const std::string &filteredInput,

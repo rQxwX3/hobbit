@@ -72,6 +72,8 @@ class DurationUnits {
   public:
     [[nodiscard]] auto isZero() const -> bool;
 
+    [[nodiscard]] static auto isValidValue(value_t value) -> bool;
+
   public:
     [[nodiscard]] auto operator+(const DurationUnits &other) const
         -> DurationUnits;

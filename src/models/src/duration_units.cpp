@@ -56,6 +56,10 @@ auto DurationUnits::addMinutes(value_t value) -> void {
                                [](auto value) -> bool { return value == 0; });
 }
 
+[[nodiscard]] auto DurationUnits::isValidValue(value_t value) -> bool {
+    return value <= maxValue;
+}
+
 [[nodiscard]] auto DurationUnits::operator+(const DurationUnits &other) const
     -> DurationUnits {
     auto result{DurationUnits{*this}};
