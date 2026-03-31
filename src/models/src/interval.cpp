@@ -1,8 +1,9 @@
+#include <algorithm>
 #include <interval.hpp>
 
-#include <algorithm>
 #include <regex>
 #include <string>
+#include <unordered_set>
 
 namespace hbt::mods {
 Interval::Interval(hbt::mods::DurationUnits durationUnits,
@@ -128,67 +129,85 @@ auto Interval::setMonthHandling(MonthHandling monthHandling) -> void {
     return Interval{durationUnitsFromISO8601String.value(), monthHandling};
 }
 
+[[nodiscard]] auto toLower(const std::string &string) -> std::string {
+    auto result{string};
+    std::ranges::transform(result, result.begin(),
+                           [](unsigned char c) { return std::tolower(c); });
+
+    return result;
+}
+
+auto parseUnit(const std::string &unit, int value, DurationUnits &durationUnits)
+    -> bool {
+    const auto u{toLower(unit)};
+
+    static const std::unordered_set<std::string> years{"y", "yr", "yrs", "year",
+                                                       "years"};
+    static const std::unordered_set<std::string> months{"mo", "month",
+                                                        "months"};
+    static const std::unordered_set<std::string> weeks{"w", "wk", "wks", "week",
+                                                       "weeks"};
+    static const std::unordered_set<std::string> days{"d", "day", "days"};
+    static const std::unordered_set<std::string> hours{"h", "hr", "hrs", "hour",
+                                                       "hours"};
+    static const std::unordered_set<std::string> minutes{"m", "min", "mins",
+                                                         "minute", "minutes"};
+
+    if (years.contains(u)) {
+        durationUnits.addYears(value);
+
+    } else if (months.contains(u)) {
+        durationUnits.addMonths(value);
+
+    } else if (weeks.contains(u)) {
+        durationUnits.addWeeks(value);
+
+    } else if (days.contains(u)) {
+        durationUnits.addDays(value);
+
+    } else if (hours.contains(u)) {
+        durationUnits.addHours(value);
+
+    } else if (minutes.contains(u)) {
+        durationUnits.addMinutes(value);
+
+    } else {
+        return false;
+    }
+
+    return true;
+}
+
 [[nodiscard]] auto Interval::fromNaturalLanguage(const std::string &input)
     -> std::optional<Interval> {
-    if (input.empty()) {
+    const std::regex pattern(R"(^(\d+\W*[a-zA-Z]+\W*){1,6}$)");
+    if (!std::regex_match(input, pattern)) {
         return std::nullopt;
     }
 
-    /*
-     * Prevents replacing separators with whitespaces in inputs like 1.5 years
-     * (which would lead to 1 5 years)
-     */
-    auto invalidSeparatorsPattern(std::regex(R"(\d+[^a-zA-Z0-9\s]\d+)"));
-    if (std::regex_search(input, invalidSeparatorsPattern)) {
-        return std::nullopt;
-    }
+    std::string filtered;
+    std::ranges::copy(input | std::ranges::views::filter([](unsigned char c) {
+                          return std::isalnum(c);
+                      }),
+                      std::back_inserter(filtered));
 
-    const auto pattern{std::regex(
-        R"(^(?:(\d+)\s*y(?:ears?)?\s*)?(?:(\d+)\s*mo(?:nths?)?\s*)?(?:(\d+)\s*w(?:eeks?)?\s*)?(?:(\d+)\s*d(?:ays?)?\s*)?(?:(\d+)\s*h(?:ours?)?\s*)?(?:(\d+)\s*m(?:in(?:utes?)?)?\s*)?$)",
-        std::regex::icase)};
+    const std::regex pairPattern(R"((\d+)([A-Za-z]+))");
+    constexpr size_t valueGroup{1};
+    constexpr size_t unitGroup{2};
 
-    constexpr size_t yearsGroup{1};
-    constexpr size_t monthsGroup{2};
-    constexpr size_t weeksGroup{3};
-    constexpr size_t daysGroup{4};
-    constexpr size_t hoursGroup{5};
-    constexpr size_t minutesGroup{6};
+    auto durationUnits{DurationUnits{}};
 
-    std::string cleaned;
-    std::replace_copy_if(
-        input.begin(), input.end(), std::back_inserter(cleaned),
-        [](char c) -> bool { return !std::isalnum(c) && !std::isspace(c); },
-        ' ');
+    for (auto it(std::sregex_iterator{filtered.begin(), filtered.end(),
+                                      pairPattern});
+         it != std::sregex_iterator(); ++it) {
+        const auto &match{*it};
 
-    std::smatch matches;
-    if (!std::regex_match(cleaned, matches, pattern)) {
-        return std::nullopt;
-    }
+        auto value{std::stoi(match[valueGroup].str())};
+        auto unit{match[unitGroup].str()};
 
-    auto durationUnits{hbt::mods::DurationUnits{}};
-
-    if (matches[yearsGroup].matched) {
-        durationUnits.addYears(std::stoi(matches[yearsGroup]));
-    }
-
-    if (matches[monthsGroup].matched) {
-        durationUnits.addMonths(std::stoi(matches[monthsGroup]));
-    }
-
-    if (matches[weeksGroup].matched) {
-        durationUnits.addWeeks(std::stoi(matches[weeksGroup]));
-    }
-
-    if (matches[daysGroup].matched) {
-        durationUnits.addDays(std::stoi(matches[daysGroup]));
-    }
-
-    if (matches[hoursGroup].matched) {
-        durationUnits.addHours(std::stoi(matches[hoursGroup]));
-    }
-
-    if (matches[minutesGroup].matched) {
-        durationUnits.addMinutes(std::stoi(matches[minutesGroup]));
+        if (!parseUnit(unit, value, durationUnits)) {
+            return std::nullopt;
+        }
     }
 
     return Interval{durationUnits};

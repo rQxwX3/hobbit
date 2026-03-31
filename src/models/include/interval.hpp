@@ -18,10 +18,13 @@ class Interval {
     using value_t = hbt::mods::DurationUnits::value_t;
 
   private:
+    
+
+  private:
     hbt::mods::DurationUnits durationUnits_;
     MonthHandling monthHandling_;
 
-  private:
+  public:
     Interval(hbt::mods::DurationUnits durationUnits,
              MonthHandling monthHandling = defaultMonthHandling);
 
