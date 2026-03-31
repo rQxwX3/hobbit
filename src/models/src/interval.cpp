@@ -60,28 +60,8 @@ Interval::Interval(hbt::mods::DurationUnits::Units units,
     return Interval{durationUnits};
 }
 
-[[nodiscard]] auto Interval::getYears() const -> value_t {
-    return durationUnits_.getYears();
-}
-
-[[nodiscard]] auto Interval::getMonths() const -> value_t {
-    return durationUnits_.getMonths();
-}
-
-[[nodiscard]] auto Interval::getWeeks() const -> value_t {
-    return durationUnits_.getWeeks();
-}
-
-[[nodiscard]] auto Interval::getDays() const -> value_t {
-    return durationUnits_.getDays();
-}
-
-[[nodiscard]] auto Interval::getHours() const -> value_t {
-    return durationUnits_.getHours();
-}
-
-[[nodiscard]] auto Interval::getMinutes() const -> value_t {
-    return durationUnits_.getMinutes();
+[[nodiscard]] auto Interval::getUnit(unit_t unit) const -> value_t {
+    return durationUnits_.getUnit(unit);
 }
 
 [[nodiscard]] auto Interval::getMonthHandling() const -> MonthHandling {

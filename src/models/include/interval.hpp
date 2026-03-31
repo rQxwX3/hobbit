@@ -16,10 +16,9 @@ class Interval {
 
   public:
     using value_t = hbt::mods::DurationUnits::value_t;
+    using unit_t = hbt::mods::DurationUnits::unit_t;
 
   private:
-    
-
   private:
     hbt::mods::DurationUnits durationUnits_;
     MonthHandling monthHandling_;
@@ -47,17 +46,7 @@ class Interval {
     [[nodiscard]] static auto minutes(value_t value) -> Interval;
 
   public:
-    [[nodiscard]] auto getYears() const -> value_t;
-
-    [[nodiscard]] auto getMonths() const -> value_t;
-
-    [[nodiscard]] auto getWeeks() const -> value_t;
-
-    [[nodiscard]] auto getDays() const -> value_t;
-
-    [[nodiscard]] auto getHours() const -> value_t;
-
-    [[nodiscard]] auto getMinutes() const -> value_t;
+    [[nodiscard]] auto getUnit(unit_t unit) const -> value_t;
 
   public:
     [[nodiscard]] auto getMonthHandling() const -> MonthHandling;
