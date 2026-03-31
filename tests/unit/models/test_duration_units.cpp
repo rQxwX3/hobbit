@@ -304,4 +304,116 @@ TEST(DurationUnitsTest, ToFromInValidISO8601String) {
     invalidISO = DurationUnits::fromISO8601String("P1Y1T1H1Z");
     ASSERT_TRUE(!invalidISO.has_value());
 }
+
+TEST(DurationUnitsTest, FromValidNaturalLanguage) {
+    using hbt::mods::DurationUnits;
+
+    auto input{"1year, 2months, 3weeks, 4 days, 5 hours, 6 minutes"};
+    auto parsed{DurationUnits::fromNaturalLanguage(input)};
+    ASSERT_TRUE(parsed.has_value());
+    auto durationUnits{DurationUnits{DurationUnits::Units{.years = 1,
+                                                          .months = 2,
+                                                          .weeks = 3,
+                                                          .days = 4,
+                                                          .hours = 5,
+                                                          .minutes = 6}}};
+    EXPECT_EQ(parsed.value(), durationUnits);
+
+    input = "1y2mo3w4d5h6m";
+    parsed = DurationUnits::fromNaturalLanguage(input);
+    ASSERT_TRUE(parsed.has_value());
+    durationUnits = DurationUnits{DurationUnits::Units{.years = 1,
+                                                       .months = 2,
+                                                       .weeks = 3,
+                                                       .days = 4,
+                                                       .hours = 5,
+                                                       .minutes = 6}};
+    EXPECT_EQ(parsed.value(), durationUnits);
+
+    input = "1Y2mOnTh3wk4day5hr6min";
+    parsed = DurationUnits::fromNaturalLanguage(input);
+    ASSERT_TRUE(parsed.has_value());
+    durationUnits = DurationUnits{DurationUnits::Units{.years = 1,
+                                                       .months = 2,
+                                                       .weeks = 3,
+                                                       .days = 4,
+                                                       .hours = 5,
+                                                       .minutes = 6}};
+    EXPECT_EQ(parsed.value(), durationUnits);
+
+    input = "1year";
+    parsed = DurationUnits::fromNaturalLanguage(input);
+    ASSERT_TRUE(parsed.has_value());
+    durationUnits = DurationUnits{DurationUnits::Units{.years = 1,
+                                                       .months = 0,
+                                                       .weeks = 0,
+                                                       .days = 0,
+                                                       .hours = 0,
+                                                       .minutes = 0}};
+    EXPECT_EQ(parsed.value(), durationUnits);
+
+    input = "!@#$%^&*()_+|/<>,.~      1 !@#$%^&*()_+|/<>,.~`     years    "
+            "!@#$%^&*()_+|/<>,.~` 2 !@#$%^&*()_+|/<>,.~`      months   "
+            "!@#$%^&*()_+|/<>,.~` ";
+    parsed = DurationUnits::fromNaturalLanguage(input);
+    ASSERT_TRUE(parsed.has_value());
+    durationUnits = DurationUnits{DurationUnits::Units{.years = 1,
+                                                       .months = 2,
+                                                       .weeks = 0,
+                                                       .days = 0,
+                                                       .hours = 0,
+                                                       .minutes = 0}};
+    EXPECT_EQ(parsed.value(), durationUnits);
+
+    input = "6m5h4d3w2mo1y";
+    parsed = DurationUnits::fromNaturalLanguage(input);
+    ASSERT_TRUE(parsed.has_value());
+    durationUnits = DurationUnits{DurationUnits::Units{.years = 1,
+                                                       .months = 2,
+                                                       .weeks = 3,
+                                                       .days = 4,
+                                                       .hours = 5,
+                                                       .minutes = 6}};
+    EXPECT_EQ(parsed.value(), durationUnits);
+
+    input = "6m1y";
+    parsed = DurationUnits::fromNaturalLanguage(input);
+    ASSERT_TRUE(parsed.has_value());
+    durationUnits = DurationUnits{DurationUnits::Units{.years = 1,
+                                                       .months = 0,
+                                                       .weeks = 0,
+                                                       .days = 0,
+                                                       .hours = 0,
+                                                       .minutes = 6}};
+    EXPECT_EQ(parsed.value(), durationUnits);
+}
+
+TEST(DurationUnitsTest, FromInvalidNaturalLanguage) {
+    auto input{""};
+    ASSERT_FALSE(DurationUnits::fromNaturalLanguage(input).has_value());
+
+    input = "year";
+    ASSERT_FALSE(DurationUnits::fromNaturalLanguage(input).has_value());
+
+    input = "1 nothing";
+    ASSERT_FALSE(DurationUnits::fromNaturalLanguage(input).has_value());
+
+    input = "year 1month";
+    ASSERT_FALSE(DurationUnits::fromNaturalLanguage(input).has_value());
+
+    input = "1 year month";
+    ASSERT_FALSE(DurationUnits::fromNaturalLanguage(input).has_value());
+
+    input = "1.5year";
+    ASSERT_FALSE(DurationUnits::fromNaturalLanguage(input).has_value());
+
+    input = "1/5year";
+    ASSERT_FALSE(DurationUnits::fromNaturalLanguage(input).has_value());
+
+    input = "1y2mo3w4d5h6m7m";
+    ASSERT_FALSE(DurationUnits::fromNaturalLanguage(input).has_value());
+
+    input = "1y1y";
+    ASSERT_FALSE(DurationUnits::fromNaturalLanguage(input).has_value());
+}
 }; // namespace test::mods
