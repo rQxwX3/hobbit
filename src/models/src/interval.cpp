@@ -119,4 +119,8 @@ auto Interval::setMonthHandling(MonthHandling monthHandling) -> void {
 
     return std::nullopt;
 }
+
+[[nodiscard]] auto Interval::toNaturalLanguage() const -> std::string {
+    return durationUnits_.toNaturalLanguage();
+}
 } // namespace hbt::mods

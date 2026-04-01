@@ -60,44 +60,68 @@ class DurationUnitsParser {
     inline static const size_t pairRegexPatternUnitGroup{2};
 
   private:
+    inline static const std::array<std::unordered_set<std::string>,
+                                   DurationUnits::unit_t::COUNT_>
+        possibleValues{
+            std::unordered_set<std::string>{
+                {"y", "yr", "yrs", "year", "years"}},
+
+            std::unordered_set<std::string>{{"mo", "month", "months"}},
+
+            std::unordered_set<std::string>{
+                {"w", "wk", "wks", "week", "weeks"}},
+
+            std::unordered_set<std::string>{{"d", "day", "days"}},
+
+            std::unordered_set<std::string>{
+                {"h", "hr", "hrs", "hour", "hours"}},
+
+            std::unordered_set<std::string>{
+                {"m", "min", "mins", "minute", "minutes"}},
+        };
+
+    inline static const std::array<std::string, DurationUnits::unit_t::COUNT_>
+        preferredNaturalLanguageValues{"year", "month", "week",
+                                       "day",  "hour",  "minute"};
+
+  private:
     inline static const UnitBucket yearBucket{
         DurationUnits::unit_t::YEAR,
-        {"y", "yr", "yrs", "year", "years"},
+        possibleValues[DurationUnits::unit_t::YEAR],
         [](DurationUnits &durationUnits, DurationUnits::value_t value) -> void {
             durationUnits.addYears(value);
         }};
 
     inline static const UnitBucket monthBucket{
         DurationUnits::unit_t::MONTH,
-        {"mo", "month", "months"},
+        possibleValues[DurationUnits::unit_t::MONTH],
         [](DurationUnits &durationUnits, DurationUnits::value_t value) -> void {
             durationUnits.addMonths(value);
         }};
 
     inline static const UnitBucket weekBucket{
         DurationUnits::unit_t::WEEK,
-        {"w", "wk", "wks", "week", "weeks"},
+        possibleValues[DurationUnits::unit_t::WEEK],
         [](DurationUnits &durationUnits, DurationUnits::value_t value) -> void {
             durationUnits.addWeeks(value);
         }};
 
     inline static const UnitBucket dayBucket{
-        DurationUnits::unit_t::DAY,
-        {"d", "day", "days"},
+        DurationUnits::unit_t::DAY, possibleValues[DurationUnits::unit_t::DAY],
         [](DurationUnits &durationUnits, DurationUnits::value_t value) -> void {
             durationUnits.addDays(value);
         }};
 
     inline static const UnitBucket hourBucket{
         DurationUnits::unit_t::HOUR,
-        {"h", "hr", "hrs", "hour", "hours"},
+        possibleValues[DurationUnits::unit_t::HOUR],
         [](DurationUnits &durationUnits, DurationUnits::value_t value) -> void {
             durationUnits.addHours(value);
         }};
 
     inline static const UnitBucket minuteBucket{
         DurationUnits::unit_t::MINUTE,
-        {"m", "min", "mins", "minute", "minutes"},
+        possibleValues[DurationUnits::unit_t::MINUTE],
         [](DurationUnits &durationUnits, DurationUnits::value_t value) -> void {
             durationUnits.addMinutes(value);
         }};
@@ -121,5 +145,14 @@ class DurationUnitsParser {
   public:
     [[nodiscard]] static auto fromNaturalLanguage(const std::string &input)
         -> std::optional<DurationUnits>;
+
+  public:
+    [[nodiscard]] static auto
+    formatUnitValuePairToNaturalLanguage(DurationUnits::unitValuePair_t pair)
+        -> std::string;
+
+  public:
+    [[nodiscard]] auto static toNaturalLanguage(
+        const DurationUnits &durationUnits) -> std::string;
 };
 } // namespace hbt::mods::util

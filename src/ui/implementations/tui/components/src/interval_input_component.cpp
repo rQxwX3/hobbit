@@ -22,7 +22,7 @@ auto IntervalInputComponent::triggerParse() -> void {
     if (result.has_value()) {
         interval_ = result.value();
 
-        previewText_ = "result is smth";
+        previewText_ = interval_.toNaturalLanguage();
         hasError_ = false;
     } else {
         previewText_ = "invalid";

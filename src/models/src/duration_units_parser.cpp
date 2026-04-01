@@ -98,4 +98,37 @@ DurationUnitsParser::fromNaturalLanguage(const std::string &input)
 
     return std::nullopt;
 }
+
+[[nodiscard]] auto DurationUnitsParser::formatUnitValuePairToNaturalLanguage(
+    DurationUnits::unitValuePair_t pair) -> std::string {
+    auto unit{pair.first};
+    auto value{pair.second};
+
+    auto unitString{preferredNaturalLanguageValues[unit]};
+    auto valueString{std::to_string(value)};
+
+    if (value == 1) {
+        return valueString + unitString;
+    }
+
+    return valueString + unitString + "s";
+}
+
+[[nodiscard]] auto
+DurationUnitsParser::toNaturalLanguage(const DurationUnits &durationUnits)
+    -> std::string {
+    auto result{std::string{}};
+    auto unitValuePairs{durationUnits.getNonZeroUnitValuePairs()};
+
+    for (const auto pair : unitValuePairs) {
+        result += formatUnitValuePairToNaturalLanguage(pair) + ", ";
+    }
+
+    if (result.size() > 1) {
+        result.pop_back(); // remove trailing comma
+        result.pop_back(); // remove trailing space
+    }
+
+    return result;
+}
 } // namespace hbt::mods::util

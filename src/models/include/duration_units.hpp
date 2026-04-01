@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <utility>
+#include <vector>
 
 namespace hbt::mods {
 class DurationUnits {
@@ -19,6 +21,8 @@ class DurationUnits {
     };
 
     using value_t = std::size_t;
+    using unitValuePair_t = std::pair<unit_t, value_t>;
+
     using array_t = std::array<value_t, unit_t::COUNT_>;
 
     struct Units {
@@ -69,6 +73,9 @@ class DurationUnits {
   public:
     [[nodiscard]] auto getUnit(unit_t unit) const -> value_t;
 
+    [[nodiscard]] auto getNonZeroUnitValuePairs() const
+        -> std::vector<unitValuePair_t>;
+
   public:
     [[nodiscard]] auto isZero() const -> bool;
 
@@ -90,7 +97,10 @@ class DurationUnits {
     [[nodiscard]] static auto fromISO8601String(const std::string &string)
         -> std::optional<DurationUnits>;
 
+  public:
     [[nodiscard]] static auto fromNaturalLanguage(const std::string &input)
         -> std::optional<DurationUnits>;
+
+    [[nodiscard]] auto toNaturalLanguage() const -> std::string;
 };
 } // namespace hbt::mods

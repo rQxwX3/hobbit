@@ -74,7 +74,10 @@ class Interval {
     [[nodiscard]] static auto fromJSON(const nlohmann::json &json)
         -> std::optional<Interval>;
 
+  public:
     [[nodiscard]] static auto fromNaturalLanguage(const std::string &input)
         -> std::optional<Interval>;
+
+    [[nodiscard]] auto toNaturalLanguage() const -> std::string;
 };
 } // namespace hbt::mods

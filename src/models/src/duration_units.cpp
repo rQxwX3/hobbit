@@ -13,6 +13,24 @@ DurationUnits::DurationUnits(array_t unitsArray) : units_{unitsArray} {}
 DurationUnits::DurationUnits(const Units &unitsStruct)
     : units_{unitsStruct.toArray()} {};
 
+[[nodiscard]] auto DurationUnits::getNonZeroUnitValuePairs() const
+    -> std::vector<unitValuePair_t> {
+    std::vector<unitValuePair_t> result;
+    result.reserve(unit_t::COUNT_);
+
+    for (size_t i{0}; i != unit_t::COUNT_; ++i) {
+        auto value{units_[i]};
+
+        if (value == 0) {
+            continue;
+        }
+
+        result.emplace_back(static_cast<unit_t>(i), value);
+    }
+
+    return result;
+}
+
 auto DurationUnits::addYears(value_t value) -> void {
     units_[unit_t::YEAR] += value;
 }
@@ -227,5 +245,9 @@ auto DurationUnits::addMinutes(value_t value) -> void {
 [[nodiscard]] auto DurationUnits::fromNaturalLanguage(const std::string &input)
     -> std::optional<DurationUnits> {
     return util::DurationUnitsParser::fromNaturalLanguage(input);
+}
+
+[[nodiscard]] auto DurationUnits::toNaturalLanguage() const -> std::string {
+    return util::DurationUnitsParser::toNaturalLanguage(*this);
 }
 } // namespace hbt::mods
