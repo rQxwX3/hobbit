@@ -13,6 +13,29 @@ namespace hbt::mods::util {
     return result;
 }
 
+[[nodiscard]] auto DurationUnitsParser::getAllSubstrings(
+    std::string string, const std::unordered_set<std::string> &exclude)
+    -> std::unordered_set<std::string> {
+    auto result{std::unordered_set<std::string>{}};
+    auto n{string.size()};
+
+    for (size_t mask = 1; mask < (1ull << n); ++mask) {
+        auto subsequence{std::string{}};
+
+        for (size_t i = 0; i < n; ++i) {
+            if (mask & (1ull << i)) {
+                subsequence += string[i];
+            }
+        }
+
+        if (!exclude.contains(subsequence)) {
+            result.insert(subsequence);
+        }
+    }
+
+    return result;
+}
+
 [[nodiscard]] auto
 DurationUnitsParser::getBucketOfUnit(const std::string &unitString)
     -> std::optional<std::reference_wrapper<const UnitBucket>> {

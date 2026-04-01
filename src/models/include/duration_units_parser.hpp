@@ -60,24 +60,21 @@ class DurationUnitsParser {
     inline static const size_t pairRegexPatternUnitGroup{2};
 
   private:
+    [[nodiscard]] static auto
+    getAllSubstrings(std::string strings,
+                     const std::unordered_set<std::string> &exclude)
+        -> std::unordered_set<std::string>;
+
+  private:
     inline static const std::array<std::unordered_set<std::string>,
                                    DurationUnits::unit_t::COUNT_>
         possibleValues{
-            std::unordered_set<std::string>{
-                {"y", "yr", "yrs", "year", "years"}},
-
-            std::unordered_set<std::string>{{"mo", "month", "months"}},
-
-            std::unordered_set<std::string>{
-                {"w", "wk", "wks", "week", "weeks"}},
-
-            std::unordered_set<std::string>{{"d", "day", "days"}},
-
-            std::unordered_set<std::string>{
-                {"h", "hr", "hrs", "hour", "hours"}},
-
-            std::unordered_set<std::string>{
-                {"m", "min", "mins", "minute", "minutes"}},
+            getAllSubstrings("years", {"e", "a", "r", "s"}),
+            getAllSubstrings("months", {"m", "o", "n", "t", "h", "s"}),
+            getAllSubstrings("weeks", {"e", "k", "s"}),
+            getAllSubstrings("days", {"a", "y", "s"}),
+            getAllSubstrings("hours", {"o", "u", "r", "s"}),
+            getAllSubstrings("minutes", {"i", "n", "u", "t", "e", "s"}),
         };
 
     inline static const std::array<std::string, DurationUnits::unit_t::COUNT_>
