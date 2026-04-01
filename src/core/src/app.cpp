@@ -6,15 +6,15 @@ App::App(std::unique_ptr<hbt::core::EntryService> entries,
     : entries_{std::move(entries)}, ui_{std::move(ui)},
       date_{hbt::mods::Date::today()} {
 
-    ui_->setCreateEntryCallback([this](const std::string &title) -> void {
-        auto entry{hbt::mods::Entry{
-            title,
-            {hbt::mods::Occurrence{hbt::mods::Date::today(),
-                                   hbt::mods::Interval::years(1)}}}};
+    ui_->setCreateEntryCallback(
+        [this](std::string title, hbt::mods::Interval interval) -> void {
+            auto entry{hbt::mods::Entry{
+                std::move(title),
+                {hbt::mods::Occurrence{hbt::mods::Date::today(), interval}}}};
 
-        entries_->createEntry(entry);
-        ui_->populateEntryList(entry);
-    });
+            entries_->createEntry(entry);
+            ui_->populateEntryList(entry);
+        });
 
     ui_->setEntryList(entries_->getEntriesForDate(date_));
 };

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <date.hpp>
+#include <duration_units.hpp>
 #include <entry.hpp>
 
 #include <vector>
@@ -8,7 +9,11 @@
 namespace hbt::ui {
 class UI {
   public:
-    using createEntryCallback_t = std::function<void(const std::string &)>;
+    using createEntryCallback_t =
+        std::function<void(std::string, hbt::mods::Interval)>;
+
+  public:
+    using IntervalUnits = hbt::mods::DurationUnits::unit_t;
 
   public:
     enum class Screen : uint8_t {

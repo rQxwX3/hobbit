@@ -56,12 +56,12 @@ auto OrchestatorComponent::switchToComponent(screen_t screen) -> void {
 }
 
 auto OrchestatorComponent::OnEvent(ftxui::Event event) -> bool {
-    if (event == ftxui::Event::Character('1')) {
+    if (event == ftxui::Event::Character('O')) {
         switchToComponent(UI::Screen::EntryList);
         return true;
     }
 
-    if (event == ftxui::Event::Character('2')) {
+    if (event == ftxui::Event::Character('P')) {
         switchToComponent(UI::Screen::CreateEntry);
         return true;
     }

@@ -4,11 +4,18 @@
 #include <entry_form_component.hpp>
 
 namespace hbt::ui::tui {
+auto EntryFormComponent::clear() -> void {
+    title_.clear();
+    error_.clear();
+}
+
 auto EntryFormComponent::submit() -> void {
     if (title_.empty()) {
         error_ = emptyTitleError;
+    } else if (!intervalInput_->isValid()) {
+        error_ = invalidIntervalError;
     } else {
-        onSubmit_(title_);
+        onSubmit_(title_, intervalInput_->getInterval());
         clear();
     }
 }
@@ -18,29 +25,29 @@ auto EntryFormComponent::cancel() -> void {
     onCancel_();
 }
 
-EntryFormComponent::EntryFormComponent(onSubmitCallback_t onSubmit,
+EntryFormComponent::EntryFormComponent(UI::createEntryCallback_t onSubmit,
                                        onCancelCallback_t onCancel)
     : onSubmit_{std::move(onSubmit)}, onCancel_{std::move(onCancel)},
       titleInput_{ftxui::Input(&title_, titleInputPlaceholder)},
-      intervalInput_{ftxui::Make<IntervalInputComponent>()} {
-    Add(titleInput_);
-    Add(intervalInput_);
-}
-
-auto EntryFormComponent::clear() -> void {
-    title_.clear();
-    error_.clear();
+      intervalInput_{ftxui::Make<IntervalInputComponent>()},
+      container_{ftxui::Container::Vertical({titleInput_, intervalInput_})} {
+    Add(container_);
 }
 
 auto EntryFormComponent::OnRender() -> ftxui::Element {
     using namespace ftxui;
 
-    using namespace ftxui;
+    std::vector<Element> elements{
+        text("Title:") | bold,    titleInput_->Render(),    separator(),
+        text("Interval:") | bold, intervalInput_->Render(),
+    };
 
-    return vbox({// text("Title:"),
-                 // titleInput_->Render(),
-                 text("Interval Input:"), intervalInput_->Render()}) |
-           border;
+    if (!error_.empty()) {
+        elements.push_back(separator());
+        elements.push_back(text(error_) | color(Color::Red) | bold);
+    }
+
+    return vbox(elements) | border;
 }
 
 auto EntryFormComponent::OnEvent(ftxui::Event event) -> bool {
@@ -58,11 +65,7 @@ auto EntryFormComponent::OnEvent(ftxui::Event event) -> bool {
         return true;
     }
 
-    // if (titleInput_->OnEvent(event)) {
-    //     return true;
-    // }
-
-    if (intervalInput_->OnEvent(event)) {
+    if (container_->OnEvent(event)) {
         return true;
     }
 

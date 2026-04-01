@@ -35,7 +35,7 @@ auto TUI::setupOrchestrator() -> void {
         Screen::CreateEntry,
         [this] -> ftxui::Component { return createEntryFormComponent(); });
 
-    orchestrator->switchToComponent(Screen::EntryList);
+    orchestrator->switchToComponent(Screen::CreateEntry);
 
     orchestrator_ = orchestrator;
 }
@@ -43,8 +43,9 @@ auto TUI::setupOrchestrator() -> void {
 auto TUI::setCreateEntryCallback(
     const createEntryCallback_t &createEntryCallback) -> void {
     createEntryCallback_ =
-        [this, createEntryCallback](const std::string &title) -> void {
-        createEntryCallback(title);
+        [this, createEntryCallback](std::string title,
+                                    hbt::mods::Interval interval) -> void {
+        createEntryCallback(std::move(title), interval);
         orchestrator_->invalidateComponent(Screen::EntryList);
         switchToScreen(Screen::EntryList);
     };

@@ -7,6 +7,8 @@ Interval::Interval(hbt::mods::DurationUnits durationUnits,
                    MonthHandling monthHandling)
     : durationUnits_{durationUnits}, monthHandling_{monthHandling} {}
 
+Interval::Interval(const Interval &other) = default;
+
 Interval::Interval(hbt::mods::DurationUnits::Units units,
                    MonthHandling monthHandling)
     : durationUnits_{hbt::mods::DurationUnits{units}},
@@ -80,6 +82,7 @@ auto Interval::setMonthHandling(MonthHandling monthHandling) -> void {
 [[nodiscard]] auto Interval::isZero() const -> bool {
     return durationUnits_.isZero();
 }
+
 [[nodiscard]] auto Interval::toJSON() const -> nlohmann::json {
     return {
         {"duration_units", durationUnits_.toISO8601String()},
@@ -106,7 +109,7 @@ auto Interval::setMonthHandling(MonthHandling monthHandling) -> void {
     return Interval{durationUnitsFromISO8601String.value(), monthHandling};
 }
 
-[[nodiscard]] static auto fromNaturalLanguage(const std::string &input)
+[[nodiscard]] auto Interval::fromNaturalLanguage(const std::string &input)
     -> std::optional<Interval> {
     auto durationUnits{DurationUnits::fromNaturalLanguage(input)};
 

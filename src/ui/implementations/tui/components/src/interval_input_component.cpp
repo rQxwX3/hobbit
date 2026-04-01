@@ -4,7 +4,7 @@
 
 namespace hbt::ui::tui {
 IntervalInputComponent::IntervalInputComponent()
-    : inputField_{ftxui::Input(&inputText_, "e.g., 2y 3mo")} {
+    : inputField_{ftxui::Input(&intervalText_, "e.g., 2y 3mo")} {
     Add(inputField_);
 }
 
@@ -17,17 +17,26 @@ IntervalInputComponent::IntervalInputComponent()
 }
 
 auto IntervalInputComponent::triggerParse() -> void {
-    isLoading_ = true;
-
-    auto result{hbt::mods::Interval::fromNaturalLanguage(inputText_)};
+    auto result{hbt::mods::Interval::fromNaturalLanguage(intervalText_)};
 
     if (result.has_value()) {
+        interval_ = result.value();
+
         previewText_ = "result is smth";
         hasError_ = false;
     } else {
         previewText_ = "invalid";
         hasError_ = true;
     }
+}
+
+[[nodiscard]] auto IntervalInputComponent::isValid() const -> bool {
+    return !hasError_;
+}
+
+[[nodiscard]] auto IntervalInputComponent::getInterval() const
+    -> hbt::mods::Interval {
+    return interval_;
 }
 
 auto IntervalInputComponent::OnEvent(ftxui::Event event) -> bool {

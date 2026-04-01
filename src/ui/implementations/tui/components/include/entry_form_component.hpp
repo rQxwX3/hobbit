@@ -11,7 +11,6 @@
 namespace hbt::ui::tui {
 class EntryFormComponent : public ftxui::ComponentBase {
   public:
-    using onSubmitCallback_t = std::function<void(const std::string &)>;
     using onCancelCallback_t = std::function<void()>;
 
   private:
@@ -25,14 +24,21 @@ class EntryFormComponent : public ftxui::ComponentBase {
     static constexpr std::string_view emptyTitleError{
         "Entry title cannot be empty"};
 
+    static constexpr std::string_view invalidIntervalError{
+        "Entry interval is invalid"};
+
   private:
     std::string title_;
     std::string error_;
 
     ftxui::Component titleInput_;
-    ftxui::Component intervalInput_;
 
-    onSubmitCallback_t onSubmit_;
+    // required to store as shared_ptr to custom class in order to be able to
+    // use class methods
+    std::shared_ptr<IntervalInputComponent> intervalInput_;
+    ftxui::Component container_;
+
+    UI::createEntryCallback_t onSubmit_;
     onCancelCallback_t onCancel_;
 
   private:
@@ -44,7 +50,7 @@ class EntryFormComponent : public ftxui::ComponentBase {
     auto cancel() -> void;
 
   public:
-    EntryFormComponent(onSubmitCallback_t onSubmit,
+    EntryFormComponent(UI::createEntryCallback_t onSubmit,
                        onCancelCallback_t onCancel);
 
   public:

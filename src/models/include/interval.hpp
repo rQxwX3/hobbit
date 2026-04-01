@@ -27,6 +27,8 @@ class Interval {
     Interval(hbt::mods::DurationUnits durationUnits,
              MonthHandling monthHandling = defaultMonthHandling);
 
+    Interval(const Interval &other);
+
   public:
     explicit Interval(hbt::mods::DurationUnits::Units units =
                           hbt::mods::DurationUnits::Units{},
