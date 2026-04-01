@@ -21,18 +21,10 @@ auto EntryFormComponent::cancel() -> void {
 EntryFormComponent::EntryFormComponent(onSubmitCallback_t onSubmit,
                                        onCancelCallback_t onCancel)
     : onSubmit_{std::move(onSubmit)}, onCancel_{std::move(onCancel)},
-
       titleInput_{ftxui::Input(&title_, titleInputPlaceholder)},
-
-      submitButton_{
-          ftxui::Button(submitButtonText, [this]() -> void { submit(); })},
-
-      cancelButton_{
-          ftxui::Button(cancelButtonText, [this]() -> void { cancel(); })} {
-
+      intervalInput_{ftxui::Make<IntervalInputComponent>()} {
     Add(titleInput_);
-    Add(submitButton_);
-    Add(cancelButton_);
+    Add(intervalInput_);
 }
 
 auto EntryFormComponent::clear() -> void {
@@ -40,47 +32,15 @@ auto EntryFormComponent::clear() -> void {
     error_.clear();
 }
 
-auto EntryFormComponent::createElements() -> std::vector<ftxui::Element> {
-    using namespace ftxui;
-    std::vector<Element> elements;
-
-    elements.push_back(text(formTitle) | bold | center);
-    elements.push_back(separator());
-
-    elements.push_back(hbox({
-        text(" Title: ") | bold,
-        filler(),
-        titleInput_->Render() | flex,
-        filler(),
-    }));
-
-    elements.push_back(separator());
-
-    elements.push_back(hbox({
-        filler(),
-        submitButton_->Render(),
-        text("  "),
-        cancelButton_->Render(),
-        filler(),
-    }));
-
-    if (!error_.empty()) {
-        elements.push_back(separator());
-        elements.push_back(text(error_) | color(Color::Red) | center);
-    }
-
-    elements.push_back(separator());
-    elements.push_back(text(formHelpMenu) | dim | center);
-    return elements;
-}
-
 auto EntryFormComponent::OnRender() -> ftxui::Element {
     using namespace ftxui;
 
-    auto elements{createElements()};
-    auto width{Terminal::Size().dimx / 3};
+    using namespace ftxui;
 
-    return vbox(elements) | border | size(WIDTH, EQUAL, width);
+    return vbox({// text("Title:"),
+                 // titleInput_->Render(),
+                 text("Interval Input:"), intervalInput_->Render()}) |
+           border;
 }
 
 auto EntryFormComponent::OnEvent(ftxui::Event event) -> bool {
@@ -95,6 +55,14 @@ auto EntryFormComponent::OnEvent(ftxui::Event event) -> bool {
     if (event == Event::Return) {
         submit();
 
+        return true;
+    }
+
+    // if (titleInput_->OnEvent(event)) {
+    //     return true;
+    // }
+
+    if (intervalInput_->OnEvent(event)) {
         return true;
     }
 

@@ -2,6 +2,9 @@
 
 #include <ftxui/component/component_base.hpp>
 
+#include <interval_input_component.hpp>
+#include <ui.hpp>
+
 #include <functional>
 #include <string>
 
@@ -14,10 +17,7 @@ class EntryFormComponent : public ftxui::ComponentBase {
   private:
     static constexpr std::string_view formTitle{" Create new Entry "};
     static constexpr std::string_view formHelpMenu{
-        " Enter: Submit  Esc: Cancel  Tab: Navigate "};
-
-    static constexpr std::string_view submitButtonText{"Create"};
-    static constexpr std::string_view cancelButtonText{"Cancel"};
+        " Enter: Submit  Esc: Cancel "};
 
     static constexpr std::string_view titleInputPlaceholder{
         "Enter entry title..."};
@@ -30,16 +30,13 @@ class EntryFormComponent : public ftxui::ComponentBase {
     std::string error_;
 
     ftxui::Component titleInput_;
-    ftxui::Component submitButton_;
-    ftxui::Component cancelButton_;
+    ftxui::Component intervalInput_;
 
     onSubmitCallback_t onSubmit_;
     onCancelCallback_t onCancel_;
 
   private:
     auto clear() -> void;
-
-    auto createElements() -> std::vector<ftxui::Element>;
 
   private:
     auto submit() -> void;
