@@ -1,7 +1,64 @@
 #include <occurrence.hpp>
 
 namespace hbt::mods {
-Occurrence::Occurrence(hbt::mods::Date date, recurrenceModel_t recurrenceModel)
+[[nodiscard]] auto Occurrence::NonRecurrent::toJSON() const -> nlohmann::json {
+    return {{"type", "non-recurrent"}};
+}
+
+[[nodiscard]] auto
+Occurrence::NonRecurrent::fromJSON(const nlohmann::json &json)
+    -> std::optional<NonRecurrent> {
+    return NonRecurrent{};
+}
+
+[[nodiscard]] auto Occurrence::IntervalRecurrent::toJSON() const
+    -> nlohmann::json {
+    return {{"type", "interval-recurrent"}, {"interval", interval.toJSON()}};
+}
+
+[[nodiscard]] auto
+Occurrence::IntervalRecurrent::fromJSON(const nlohmann::json &json)
+    -> std::optional<IntervalRecurrent> {
+    if (!json.contains("interval")) {
+        return std::nullopt;
+    }
+
+    auto intervalFromJSON{hbt::mods::Interval::fromJSON(json["interval"])};
+    if (!intervalFromJSON.has_value()) {
+        return std::nullopt;
+    }
+
+    return IntervalRecurrent{intervalFromJSON.value()};
+}
+
+[[nodiscard]] auto Occurrence::WeekdayRecurrent::toJSON() const
+    -> nlohmann::json {
+    return {
+        {"type", "weekday-recurrent"},
+        {"weekdays", week.getDays().to_string()},
+        {"interval", interval.toJSON()},
+    };
+}
+
+[[nodiscard]] auto
+Occurrence::WeekdayRecurrent::fromJSON(const nlohmann::json &json)
+    -> std::optional<WeekdayRecurrent> {
+    if (!json.contains("interval") || !json.contains("weekdays")) {
+        return std::nullopt;
+    }
+
+    auto intervalFromJSON{hbt::mods::Interval::fromJSON(json["interval"])};
+
+    if (!intervalFromJSON.has_value()) {
+        return std::nullopt;
+    }
+
+    return WeekdayRecurrent{.week =
+                                Date::Week{json["weekdays"].get<std::string>()},
+                            .interval = intervalFromJSON.value()};
+}
+
+Occurrence::Occurrence(hbt::mods::Date date, recurrencePattern_t recurrenceModel)
     : date_{date}, recurrenceModel_{std::move(recurrenceModel)} {}
 
 Occurrence::Occurrence(hbt::mods::Date date,
@@ -32,7 +89,7 @@ Occurrence::Occurrence(hbt::mods::Date date, hbt::mods::Date::Week week,
 
 [[nodiscard]] auto
 Occurrence::recurrenceModelFromJSON(const nlohmann::json &json)
-    -> std::optional<recurrenceModel_t> {
+    -> std::optional<recurrencePattern_t> {
     if (!json.contains("type")) {
         return std::nullopt;
     }
@@ -49,7 +106,7 @@ Occurrence::recurrenceModelFromJSON(const nlohmann::json &json)
 }
 
 [[nodiscard]] auto Occurrence::recurrenceModelToJSON(
-    const recurrenceModel_t &recurrenceModel) const -> nlohmann::json {
+    const recurrencePattern_t &recurrenceModel) const -> nlohmann::json {
     return std::visit(
         [](const auto &type) -> nlohmann::json { return type.toJSON(); },
         recurrenceModel_);
@@ -59,7 +116,7 @@ Occurrence::recurrenceModelFromJSON(const nlohmann::json &json)
     return date_;
 }
 
-[[nodiscard]] auto Occurrence::getRecurrenceModel() const -> recurrenceModel_t {
+[[nodiscard]] auto Occurrence::getRecurrenceModel() const -> recurrencePattern_t {
     return recurrenceModel_;
 }
 

@@ -14,14 +14,10 @@ class Occurrence {
     struct NonRecurrent {
         auto operator==(const NonRecurrent &) const -> bool = default;
 
-        [[nodiscard]] auto toJSON() const -> nlohmann::json {
-            return {{"type", "non-recurrent"}};
-        }
+        [[nodiscard]] auto toJSON() const -> nlohmann::json;
 
         [[nodiscard]] static auto fromJSON(const nlohmann::json &json)
-            -> std::optional<NonRecurrent> {
-            return NonRecurrent{};
-        }
+            -> std::optional<NonRecurrent>;
     };
 
     struct IntervalRecurrent {
@@ -29,25 +25,10 @@ class Occurrence {
 
         auto operator==(const IntervalRecurrent &other) const -> bool = default;
 
-        [[nodiscard]] auto toJSON() const -> nlohmann::json {
-            return {{"type", "interval-recurrent"},
-                    {"interval", interval.toJSON()}};
-        }
+        [[nodiscard]] auto toJSON() const -> nlohmann::json;
 
         [[nodiscard]] static auto fromJSON(const nlohmann::json &json)
-            -> std::optional<IntervalRecurrent> {
-            if (!json.contains("interval")) {
-                return std::nullopt;
-            }
-
-            auto intervalFromJSON{
-                hbt::mods::Interval::fromJSON(json["interval"])};
-            if (!intervalFromJSON.has_value()) {
-                return std::nullopt;
-            }
-
-            return IntervalRecurrent{intervalFromJSON.value()};
-        }
+            -> std::optional<IntervalRecurrent>;
     };
 
     struct WeekdayRecurrent {
@@ -56,31 +37,10 @@ class Occurrence {
 
         auto operator==(const WeekdayRecurrent &other) const -> bool = default;
 
-        [[nodiscard]] auto toJSON() const -> nlohmann::json {
-            return {
-                {"type", "weekday-recurrent"},
-                {"weekdays", week.getDays().to_string()},
-                {"interval", interval.toJSON()},
-            };
-        }
+        [[nodiscard]] auto toJSON() const -> nlohmann::json;
 
         [[nodiscard]] static auto fromJSON(const nlohmann::json &json)
-            -> std::optional<WeekdayRecurrent> {
-            if (!json.contains("interval") || !json.contains("weekdays")) {
-                return std::nullopt;
-            }
-
-            auto intervalFromJSON{
-                hbt::mods::Interval::fromJSON(json["interval"])};
-
-            if (!intervalFromJSON.has_value()) {
-                return std::nullopt;
-            }
-
-            return WeekdayRecurrent{
-                .week = Date::Week{json["weekdays"].get<std::string>()},
-                .interval = intervalFromJSON.value()};
-        }
+            -> std::optional<WeekdayRecurrent>;
     };
 
   private:
@@ -90,20 +50,20 @@ class Occurrence {
         recurrenceModel_;
 
   public:
-    using recurrenceModel_t =
+    using recurrencePattern_t =
         std::variant<NonRecurrent, IntervalRecurrent, WeekdayRecurrent>;
 
     [[nodiscard]] static auto
     recurrenceModelFromJSON(const nlohmann::json &json)
-        -> std::optional<recurrenceModel_t>;
+        -> std::optional<recurrencePattern_t>;
 
     [[nodiscard]] auto
-    recurrenceModelToJSON(const recurrenceModel_t &recurrenceModel) const
+    recurrenceModelToJSON(const recurrencePattern_t &recurrenceModel) const
         -> nlohmann::json;
 
   public:
     Occurrence(hbt::mods::Date date = hbt::mods::Date{},
-               recurrenceModel_t recurrenceModel = NonRecurrent{});
+               recurrencePattern_t recurrenceModel = NonRecurrent{});
 
     Occurrence(hbt::mods::Date date, const hbt::mods::Interval &interval);
 
@@ -113,7 +73,7 @@ class Occurrence {
   public:
     [[nodiscard]] auto getDate() const -> hbt::mods::Date;
 
-    [[nodiscard]] auto getRecurrenceModel() const -> recurrenceModel_t;
+    [[nodiscard]] auto getRecurrenceModel() const -> recurrencePattern_t;
 
     [[nodiscard]] auto getWeekday() const -> hbt::mods::Date::weekday_t;
 
