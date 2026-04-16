@@ -9,15 +9,12 @@
 #include <variant>
 
 namespace hbt::mods {
-
 class Occurrence {
-  private:
-    hbt::mods::Date date_;
-
+  public:
     struct NonRecurrent {
         auto operator==(const NonRecurrent &) const -> bool = default;
 
-        [[nodiscard]] static auto toJSON() -> nlohmann::json {
+        [[nodiscard]] auto toJSON() const -> nlohmann::json {
             return {{"type", "non-recurrent"}};
         }
 
@@ -54,7 +51,7 @@ class Occurrence {
     };
 
     struct WeekdayRecurrent {
-        hbt::mods::Date::weekdays_t weekdays;
+        hbt::mods::Date::Week week;
         hbt::mods::Interval interval;
 
         auto operator==(const WeekdayRecurrent &other) const -> bool = default;
@@ -62,7 +59,7 @@ class Occurrence {
         [[nodiscard]] auto toJSON() const -> nlohmann::json {
             return {
                 {"type", "weekday-recurrent"},
-                {"weekdays", weekdays.to_string()},
+                {"weekdays", week.getDays().to_string()},
                 {"interval", interval.toJSON()},
             };
         }
@@ -81,16 +78,18 @@ class Occurrence {
             }
 
             return WeekdayRecurrent{
-                .weekdays =
-                    Date::weekdays_t{json["weekdays"].get<std::string>()},
+                .week = Date::Week{json["weekdays"].get<std::string>()},
                 .interval = intervalFromJSON.value()};
         }
     };
 
+  private:
+    hbt::mods::Date date_;
+
     std::variant<NonRecurrent, IntervalRecurrent, WeekdayRecurrent>
         recurrenceModel_;
 
-  private:
+  public:
     using recurrenceModel_t =
         std::variant<NonRecurrent, IntervalRecurrent, WeekdayRecurrent>;
 
@@ -98,19 +97,23 @@ class Occurrence {
     recurrenceModelFromJSON(const nlohmann::json &json)
         -> std::optional<recurrenceModel_t>;
 
+    [[nodiscard]] auto
+    recurrenceModelToJSON(const recurrenceModel_t &recurrenceModel) const
+        -> nlohmann::json;
+
   public:
-    Occurrence(hbt::mods::Date date = hbt::mods::Date{});
+    Occurrence(hbt::mods::Date date = hbt::mods::Date{},
+               recurrenceModel_t recurrenceModel = NonRecurrent{});
 
     Occurrence(hbt::mods::Date date, const hbt::mods::Interval &interval);
 
-    Occurrence(hbt::mods::Date date,
-               std::vector<hbt::mods::Date::weekday_t> weekdays,
+    Occurrence(hbt::mods::Date date, hbt::mods::Date::Week week,
                const hbt::mods::Interval &interval);
-
-    Occurrence(hbt::mods::Date date, recurrenceModel_t recurrenceModel);
 
   public:
     [[nodiscard]] auto getDate() const -> hbt::mods::Date;
+
+    [[nodiscard]] auto getRecurrenceModel() const -> recurrenceModel_t;
 
     [[nodiscard]] auto getWeekday() const -> hbt::mods::Date::weekday_t;
 

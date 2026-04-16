@@ -4,6 +4,7 @@
 
 #include <interval.hpp>
 
+#include <bitset>
 #include <chrono>
 
 namespace hbt::mods {
@@ -20,7 +21,27 @@ class Date {
         COUNT_,
     };
 
-    using weekdays_t = std::bitset<static_cast<size_t>(weekday_t::COUNT_)>;
+    class Week {
+      private:
+        using days_t = std::bitset<static_cast<size_t>(weekday_t::COUNT_)>;
+
+        days_t days_;
+
+      public:
+        [[nodiscard]] auto operator==(const Week &) const -> bool = default;
+
+      public:
+        Week(const std::vector<weekday_t> &weekdays) {
+            for (const auto wd : weekdays) {
+                days_.set(static_cast<size_t>(wd));
+            }
+        }
+
+        Week(const std::string &daysString) : days_{days_t(daysString)} {}
+
+      public:
+        [[nodiscard]] auto getDays() const -> days_t { return days_; }
+    };
 
   private:
     std::chrono::year_month_day ymd_;
