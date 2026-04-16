@@ -17,19 +17,19 @@ namespace hbt::mods::util {
     std::string string, const std::unordered_set<std::string> &exclude)
     -> std::unordered_set<std::string> {
     auto result{std::unordered_set<std::string>{}};
-    auto n{string.size()};
+    auto substringCount{string.size()};
 
-    for (size_t mask = 1; mask < (1ull << n); ++mask) {
-        auto subsequence{std::string{}};
+    for (size_t mask{1}; mask < (1ULL << substringCount); ++mask) {
+        auto substring{std::string{}};
 
-        for (size_t i = 0; i < n; ++i) {
-            if (mask & (1ull << i)) {
-                subsequence += string[i];
+        for (size_t i{0}; i < substringCount; ++i) {
+            if ((mask & (1ULL << i)) != 0U) {
+                substring += string[i];
             }
         }
 
-        if (!exclude.contains(subsequence)) {
-            result.insert(subsequence);
+        if (!exclude.contains(substring)) {
+            result.insert(substring);
         }
     }
 
@@ -131,10 +131,10 @@ DurationUnitsParser::fromNaturalLanguage(const std::string &input)
     auto valueString{std::to_string(value)};
 
     if (value == 1) {
-        return valueString + unitString;
+        unitString.pop_back();
     }
 
-    return valueString + unitString + "s";
+    return valueString + unitString;
 }
 
 [[nodiscard]] auto

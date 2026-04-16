@@ -51,6 +51,12 @@ class DurationUnitsParser {
     using matchedBuckets_t = std::bitset<DurationUnits::unit_t::COUNT_>;
 
   private:
+    [[nodiscard]] static auto
+    getAllSubstrings(std::string strings,
+                     const std::unordered_set<std::string> &exclude)
+        -> std::unordered_set<std::string>;
+
+  private:
     inline static const auto fullRegexPattern{
         std::regex(R"(^([\W_]*\d+[\W_]*[a-zA-Z]+[\W_]*){1,6}$)")};
 
@@ -60,26 +66,37 @@ class DurationUnitsParser {
     inline static const size_t pairRegexPatternUnitGroup{2};
 
   private:
-    [[nodiscard]] static auto
-    getAllSubstrings(std::string strings,
-                     const std::unordered_set<std::string> &exclude)
-        -> std::unordered_set<std::string>;
+    inline static const std::array<std::string, DurationUnits::unit_t::COUNT_>
+        preferredNaturalLanguageValues{"years", "months", "weeks",
+                                       "days",  "hours",  "minutes"};
 
-  private:
     inline static const std::array<std::unordered_set<std::string>,
                                    DurationUnits::unit_t::COUNT_>
         possibleValues{
-            getAllSubstrings("years", {"e", "a", "r", "s"}),
-            getAllSubstrings("months", {"m", "o", "n", "t", "h", "s"}),
-            getAllSubstrings("weeks", {"e", "k", "s"}),
-            getAllSubstrings("days", {"a", "y", "s"}),
-            getAllSubstrings("hours", {"o", "u", "r", "s"}),
-            getAllSubstrings("minutes", {"i", "n", "u", "t", "e", "s"}),
-        };
+            getAllSubstrings(
+                preferredNaturalLanguageValues[DurationUnits::unit_t::YEAR],
+                {"e", "a", "r", "s"}),
 
-    inline static const std::array<std::string, DurationUnits::unit_t::COUNT_>
-        preferredNaturalLanguageValues{"year", "month", "week",
-                                       "day",  "hour",  "minute"};
+            getAllSubstrings(
+                preferredNaturalLanguageValues[DurationUnits::unit_t::MONTH],
+                {"o", "n", "t", "h", "s", "hs"}),
+
+            getAllSubstrings(
+                preferredNaturalLanguageValues[DurationUnits::unit_t::WEEK],
+                {"e", "k", "s"}),
+
+            getAllSubstrings(
+                preferredNaturalLanguageValues[DurationUnits::unit_t::DAY],
+                {"a", "y", "s"}),
+
+            getAllSubstrings(
+                preferredNaturalLanguageValues[DurationUnits::unit_t::HOUR],
+                {"o", "u", "r", "s"}),
+
+            getAllSubstrings(
+                preferredNaturalLanguageValues[DurationUnits::unit_t::MINUTE],
+                {"m", "i", "n", "u", "t", "e", "s", "ms", "mt"}),
+        };
 
   private:
     inline static const UnitBucket yearBucket{

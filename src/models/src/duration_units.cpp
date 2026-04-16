@@ -65,6 +65,10 @@ auto DurationUnits::addMinutes(value_t value) -> void {
     units_[unit_t::MINUTE] += value % DurationUnits::minutesInHour;
 }
 
+auto DurationUnits::addUnit(unit_t unit, value_t value) -> void {
+    units_[unit] += value;
+}
+
 [[nodiscard]] auto DurationUnits::getUnit(unit_t unit) const -> value_t {
     return units_[unit];
 }

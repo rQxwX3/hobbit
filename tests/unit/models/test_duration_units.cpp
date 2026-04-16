@@ -320,7 +320,7 @@ TEST(DurationUnitsTest, FromValidNaturalLanguage) {
                                                           .minutes = 6}}};
     EXPECT_EQ(parsed.value(), durationUnits);
 
-    input = "1y2mo3w4d5h6m";
+    input = "1y2m3w4d5h6min";
     parsed = DurationUnits::fromNaturalLanguage(input);
     ASSERT_TRUE(parsed.has_value());
     durationUnits = DurationUnits{DurationUnits::Units{.years = 1,
@@ -390,7 +390,7 @@ TEST(DurationUnitsTest, FromValidNaturalLanguage) {
                                                        .minutes = 0}};
     EXPECT_EQ(parsed.value(), durationUnits);
 
-    input = "6m5h4d3w2mo1y";
+    input = "6min5h4d3w2m1y";
     parsed = DurationUnits::fromNaturalLanguage(input);
     ASSERT_TRUE(parsed.has_value());
     durationUnits = DurationUnits{DurationUnits::Units{.years = 1,
@@ -401,7 +401,7 @@ TEST(DurationUnitsTest, FromValidNaturalLanguage) {
                                                        .minutes = 6}};
     EXPECT_EQ(parsed.value(), durationUnits);
 
-    input = "6m1y";
+    input = "6min1y";
     parsed = DurationUnits::fromNaturalLanguage(input);
     ASSERT_TRUE(parsed.has_value());
     durationUnits = DurationUnits{DurationUnits::Units{.years = 1,
@@ -420,11 +420,23 @@ TEST(DurationUnitsTest, FromInvalidNaturalLanguage) {
     input = "year";
     ASSERT_FALSE(DurationUnits::fromNaturalLanguage(input).has_value());
 
+    input = "nothing";
+    ASSERT_FALSE(DurationUnits::fromNaturalLanguage(input).has_value());
+
     input = "1 nothing";
+    ASSERT_FALSE(DurationUnits::fromNaturalLanguage(input).has_value());
+
+    input = "!@#$%^&&*()";
+    EXPECT_FALSE(DurationUnits::fromNaturalLanguage(input).has_value());
+
+    input = "year 1";
     ASSERT_FALSE(DurationUnits::fromNaturalLanguage(input).has_value());
 
     input = "1 yera";
     ASSERT_FALSE(DurationUnits::fromNaturalLanguage(input).has_value());
+
+    input = "1yesterday";
+    EXPECT_FALSE(DurationUnits::fromNaturalLanguage(input).has_value());
 
     input = "1 monht";
     ASSERT_FALSE(DurationUnits::fromNaturalLanguage(input).has_value());
@@ -462,10 +474,10 @@ TEST(DurationUnitsTest, FromInvalidNaturalLanguage) {
     input = "1y1y";
     ASSERT_FALSE(DurationUnits::fromNaturalLanguage(input).has_value());
 
-    input = "1000y";
-    ASSERT_FALSE(DurationUnits::fromNaturalLanguage(input).has_value());
+    auto input1{std::to_string(DurationUnits::maxValue + 1) + "y"};
+    ASSERT_FALSE(DurationUnits::fromNaturalLanguage(input1).has_value());
 
-    input = "1y1000m";
-    ASSERT_FALSE(DurationUnits::fromNaturalLanguage(input).has_value());
+    auto input2{"1y" + std::to_string(DurationUnits::maxValue + 1) + "m"};
+    ASSERT_FALSE(DurationUnits::fromNaturalLanguage(input2).has_value());
 }
 }; // namespace test::mods

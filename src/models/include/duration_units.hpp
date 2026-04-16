@@ -70,6 +70,8 @@ class DurationUnits {
 
     auto addMinutes(value_t value) -> void;
 
+    auto addUnit(unit_t unit, value_t value) -> void;
+
   public:
     [[nodiscard]] auto getUnit(unit_t unit) const -> value_t;
 
