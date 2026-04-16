@@ -21,6 +21,12 @@ Occurrence::Occurrence(hbt::mods::Date date, hbt::mods::Date::Week week,
                                     "weekday-reccurrent occurrences");
     }
 
+    if (!week.getDays().test(static_cast<size_t>(date.getWeekday()))) {
+        throw std::invalid_argument(
+            "Weekday of weekday-recurrent event's start date must be listed in "
+            "weekdays list argument");
+    }
+
     recurrenceModel_ = WeekdayRecurrent{.week = week, .interval = interval};
 }
 

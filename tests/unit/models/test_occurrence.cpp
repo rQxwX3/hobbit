@@ -6,7 +6,27 @@
 namespace test::mods {
 using hbt::mods::Occurrence, hbt::mods::Date, hbt::mods::Interval;
 
-TEST(OccurrenceTest, WeekdayRecurrentDoesntAcceptNonWeekInterval) {
+TEST(OccurrenceTest, WeekdayRecurrentEnforcesWeekInterval) {
+    EXPECT_THROW(Occurrence(Date::today(),
+                            Date::Week{{Date::weekday_t::FRIDAY}},
+                            Interval::days(1)),
+                 std::invalid_argument);
+}
+
+TEST(OccurrenceTest, WeekdayRecurrentEnforcesNonEmptyWeek) {
+    EXPECT_THROW(Occurrence(Date::today(),
+                            Date::Week(std::vector<Date::weekday_t>{}),
+                            Interval::days(1)),
+                 std::invalid_argument);
+}
+
+TEST(OccurrenceTest, WeekdayRecurrentEnforcesDateListedInWeekdaysList) {
+    auto date{Date{
+        std::chrono::year{2026},
+        std::chrono::month{4},
+        std::chrono::day{16},
+    }}; // Thursday
+
     EXPECT_THROW(Occurrence(Date::today(),
                             Date::Week{{Date::weekday_t::FRIDAY}},
                             Interval::days(1)),
@@ -42,7 +62,7 @@ TEST(OccurrenceTest, IntervalRecurrentGetterFunctions) {
 TEST(OccurrenceTest, WeekdayRecurrentGetterFunctions) {
     auto occurrence{Occurrence{
         Date::today(),
-        Date::Week{{Date::weekday_t::SATURDAY, Date::weekday_t::SUNDAY}},
+        Date::Week{{Date::today().getWeekday(), Date::weekday_t::SUNDAY}},
         Interval::weeks(2)}};
 
     ASSERT_TRUE(occurrence.getInterval().has_value());
@@ -98,7 +118,7 @@ TEST(OccurrenceTest, IntervalRecurrentToFromJSON) {
 TEST(OccurrenceTest, WeekdayRecurrentToFromJSON) {
     auto original{Occurrence{
         Date::today(),
-        Date::Week{{Date::weekday_t::TUESDAY, Date::weekday_t::THURSDAY}},
+        Date::Week{{Date::today().getWeekday(), Date::weekday_t::THURSDAY}},
         Interval::weeks(1)}};
     auto json = original.toJSON();
     ASSERT_EQ(std::string(json.type_name()), "object");
