@@ -68,6 +68,8 @@ class Interval {
   public:
     [[nodiscard]] auto isZero() const -> bool;
 
+    [[nodiscard]] auto onlyContainsUnit(unit_t unit) const -> bool;
+
   public:
     [[nodiscard]] auto toJSON() const -> nlohmann::json;
 

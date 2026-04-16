@@ -9,7 +9,18 @@
 namespace hbt::mods {
 class Date {
   public:
-    using weekday_t = std::chrono::weekday;
+    enum class weekday_t : char {
+        MONDAY = 0,
+        TUESDAY,
+        WEDNESDAY,
+        THURSDAY,
+        FRIDAY,
+        SATURDAY,
+        SUNDAY,
+        COUNT_,
+    };
+
+    using weekdays_t = std::bitset<static_cast<size_t>(weekday_t::COUNT_)>;
 
   private:
     std::chrono::year_month_day ymd_;
@@ -52,8 +63,8 @@ class Date {
         -> std::optional<Date>;
 
   public:
-    [[nodiscard]] auto operator+(Interval interval) const -> Date;
+    [[nodiscard]] auto operator+(const Interval &interval) const -> Date;
 
-    auto operator+=(Interval interval) -> Date &;
+    auto operator+=(const Interval &interval) -> Date &;
 };
 } // namespace hbt::mods

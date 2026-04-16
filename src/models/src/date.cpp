@@ -43,7 +43,7 @@ Date::Date(std::chrono::year year, std::chrono::month month,
 }
 
 [[nodiscard]] auto Date::getWeekday() const -> weekday_t {
-    return std::chrono::weekday{ymd_};
+    return static_cast<weekday_t>(std::chrono::weekday{ymd_}.c_encoding());
 }
 
 [[nodiscard]] auto Date::isToday() const -> bool {
@@ -93,7 +93,7 @@ Date::Date(std::chrono::year year, std::chrono::month month,
     return Date{ymd};
 }
 
-[[nodiscard]] auto Date::operator+(Interval interval) const -> Date {
+[[nodiscard]] auto Date::operator+(const Interval &interval) const -> Date {
     auto clampToMonthEnd = [](auto ymd) -> auto {
         return std::chrono::year_month_day_last{
             ymd.year(), std::chrono::month_day_last{ymd.month()}};
@@ -115,7 +115,7 @@ Date::Date(std::chrono::year year, std::chrono::month month,
     return Date{newSysDays};
 }
 
-auto Date::operator+=(Interval interval) -> Date & {
+auto Date::operator+=(const Interval &interval) -> Date & {
     *this = *this + interval;
     return *this;
 }

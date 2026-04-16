@@ -78,6 +78,20 @@ auto DurationUnits::addUnit(unit_t unit, value_t value) -> void {
                                [](auto value) -> bool { return value == 0; });
 }
 
+[[nodiscard]] auto DurationUnits::onlyContainsUnit(unit_t unit) const -> bool {
+    for (size_t currUnit{0}; currUnit != unit_t::COUNT_; ++currUnit) {
+        if (currUnit == static_cast<size_t>(unit) && units_[currUnit] == 0) {
+            return false;
+        }
+
+        if (currUnit != static_cast<size_t>(unit) && units_[currUnit] != 0) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 [[nodiscard]] auto DurationUnits::isValidValue(value_t value) -> bool {
     return value <= maxValue;
 }

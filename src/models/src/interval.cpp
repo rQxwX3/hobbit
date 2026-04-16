@@ -83,6 +83,10 @@ auto Interval::setMonthHandling(MonthHandling monthHandling) -> void {
     return durationUnits_.isZero();
 }
 
+[[nodiscard]] auto Interval::onlyContainsUnit(unit_t unit) const -> bool {
+    return durationUnits_.onlyContainsUnit(unit);
+}
+
 [[nodiscard]] auto Interval::toJSON() const -> nlohmann::json {
     return {
         {"duration_units", durationUnits_.toISO8601String()},

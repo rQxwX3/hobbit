@@ -1,15 +1,54 @@
 #include <occurrence.hpp>
 
 namespace hbt::mods {
-Occurrence::Occurrence(hbt::mods::Date date, hbt::mods::Interval interval)
-    : date_{date}, interval_{interval} {}
+Occurrence::Occurrence(hbt::mods::Date date)
+    : date_{date}, recurrenceModel_{NonRecurrent{}} {}
+
+Occurrence::Occurrence(hbt::mods::Date date,
+                       const hbt::mods::Interval &interval)
+    : date_{date}, recurrenceModel_{IntervalRecurrent{interval}} {}
+
+Occurrence::Occurrence(hbt::mods::Date date,
+                       std::vector<hbt::mods::Date::weekday_t> weekdays,
+                       const hbt::mods::Interval &interval)
+    : date_{date} {
+    if (!interval.onlyContainsUnit(DurationUnits::WEEK)) {
+        throw std::invalid_argument(
+            "Interval for weekday-recurrent occurrences must be in weeks");
+    }
+
+    if (weekdays.empty()) {
+        throw std::invalid_argument("At least one weekday must be provided for "
+                                    "weekday-reccurrent occurrences");
+    }
+
+    recurrenceModel_ =
+        WeekdayRecurrent{.weekdays = std::move(weekdays), .interval = interval};
+}
+
+Occurrence::Occurrence(hbt::mods::Date date, recurrenceModel_t recurrenceModel)
+    : date_{date}, recurrenceModel_{std::move(recurrenceModel)} {}
+
+[[nodiscard]] auto
+Occurrence::recurrenceModelFromJSON(const nlohmann::json &json)
+    -> std::optional<recurrenceModel_t> {
+    if (!json.contains("type")) {
+        return std::nullopt;
+    }
+
+    if (auto type{json["type"]}; type == "non-recurrent") {
+        return NonRecurrent::fromJSON(json);
+    } else if (type == "interval-recurrent") {
+        return IntervalRecurrent::fromJSON(json);
+    } else if (type == "weekday-recurrent") {
+        return WeekdayRecurrent::fromJSON(json);
+    }
+
+    return std::nullopt;
+}
 
 [[nodiscard]] auto Occurrence::getDate() const -> hbt::mods::Date {
     return date_;
-}
-
-[[nodiscard]] auto Occurrence::getInterval() const -> hbt::mods::Interval {
-    return interval_;
 }
 
 [[nodiscard]] auto Occurrence::getWeekday() const
@@ -17,14 +56,35 @@ Occurrence::Occurrence(hbt::mods::Date date, hbt::mods::Interval interval)
     return date_.getWeekday();
 }
 
+[[nodiscard]] auto Occurrence::getInterval() const
+    -> std::optional<hbt::mods::Interval> {
+    if (const auto *itr{std::get_if<IntervalRecurrent>(&recurrenceModel_)}) {
+        return itr->interval;
+    }
+
+    if (const auto *wdr{std::get_if<WeekdayRecurrent>(&recurrenceModel_)}) {
+        return wdr->interval;
+    }
+
+    return std::nullopt;
+}
+
+[[nodiscard]] auto Occurrence::isRecurrent() const -> bool {
+    return recurrenceModel_.index() != 0;
+}
+
 [[nodiscard]] auto Occurrence::toJSON() const -> nlohmann::json {
     return {{"date", date_.toISO8601String()},
-            {"interval", interval_.toJSON()}};
+            {"reccurrence_model", std::visit(
+                                      [](const auto &type) -> nlohmann::json {
+                                          return type.toJSON();
+                                      },
+                                      recurrenceModel_)}};
 }
 
 [[nodiscard]] auto Occurrence::fromJSON(const nlohmann::json &json)
     -> std::optional<Occurrence> {
-    if (!json.contains("date") || !json.contains("interval")) {
+    if (!json.contains("date") || !json.contains("recurrence_model")) {
         return std::nullopt;
     }
 
@@ -34,20 +94,22 @@ Occurrence::Occurrence(hbt::mods::Date date, hbt::mods::Interval interval)
         return std::nullopt;
     }
 
-    auto intervalFromJSON{hbt::mods::Interval::fromJSON(json["interval"])};
-    if (!intervalFromJSON.has_value()) {
+    auto recurrenceModel{recurrenceModelFromJSON(json["recurrence_model"])};
+    if (!recurrenceModel.has_value()) {
         return std::nullopt;
     }
 
-    return Occurrence{dateFromISO8601String.value(), intervalFromJSON.value()};
+    return Occurrence{dateFromISO8601String.value(), recurrenceModel.value()};
 }
 
 [[nodiscard]] auto Occurrence::isForDate(Date date) const -> bool {
-    if (interval_.isZero() && date_ != date) {
+    auto interval{getInterval()};
+
+    if (interval.has_value() && date_ != date) {
         return false;
     }
 
-    for (auto dateCopy{date_}; dateCopy <= date; dateCopy += interval_) {
+    for (auto dateCopy{date_}; dateCopy <= date; dateCopy += interval.value()) {
         if (dateCopy == date) {
             return true;
         }
@@ -58,6 +120,6 @@ Occurrence::Occurrence(hbt::mods::Date date, hbt::mods::Interval interval)
 
 [[nodiscard]] auto Occurrence::operator==(const Occurrence &other) const
     -> bool {
-    return date_ == date_ && interval_ == other.interval_;
+    return date_ == date_ && recurrenceModel_ == other.recurrenceModel_;
 }
 } // namespace hbt::mods

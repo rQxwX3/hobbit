@@ -81,6 +81,8 @@ class DurationUnits {
   public:
     [[nodiscard]] auto isZero() const -> bool;
 
+    [[nodiscard]] auto onlyContainsUnit(unit_t unit) const -> bool;
+
     [[nodiscard]] static auto isValidValue(value_t value) -> bool;
 
   public:
