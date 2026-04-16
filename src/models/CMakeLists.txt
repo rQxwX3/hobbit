@@ -6,6 +6,7 @@ add_library(models_lib STATIC
 	src/interval.cpp
 	src/duration_units.cpp
 	src/duration_units_parser.cpp
+	src/week.cpp
 )
 
 target_include_directories(models_lib PUBLIC include)

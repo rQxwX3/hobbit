@@ -53,19 +53,19 @@ Occurrence::WeekdayRecurrent::fromJSON(const nlohmann::json &json)
         return std::nullopt;
     }
 
-    return WeekdayRecurrent{.week =
-                                Date::Week{json["weekdays"].get<std::string>()},
+    return WeekdayRecurrent{.week = Week{json["weekdays"].get<std::string>()},
                             .interval = intervalFromJSON.value()};
 }
 
-Occurrence::Occurrence(hbt::mods::Date date, recurrencePattern_t recurrenceModel)
+Occurrence::Occurrence(hbt::mods::Date date,
+                       recurrencePattern_t recurrenceModel)
     : date_{date}, recurrenceModel_{std::move(recurrenceModel)} {}
 
 Occurrence::Occurrence(hbt::mods::Date date,
                        const hbt::mods::Interval &interval)
     : date_{date}, recurrenceModel_{IntervalRecurrent{interval}} {}
 
-Occurrence::Occurrence(hbt::mods::Date date, hbt::mods::Date::Week week,
+Occurrence::Occurrence(hbt::mods::Date date, hbt::mods::Week week,
                        const hbt::mods::Interval &interval)
     : date_{date} {
     if (!interval.onlyContainsUnit(DurationUnits::WEEK)) {
@@ -116,7 +116,8 @@ Occurrence::recurrenceModelFromJSON(const nlohmann::json &json)
     return date_;
 }
 
-[[nodiscard]] auto Occurrence::getRecurrenceModel() const -> recurrencePattern_t {
+[[nodiscard]] auto Occurrence::getRecurrenceModel() const
+    -> recurrencePattern_t {
     return recurrenceModel_;
 }
 

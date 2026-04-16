@@ -4,18 +4,17 @@
 #include <occurrence.hpp>
 
 namespace test::mods {
-using hbt::mods::Occurrence, hbt::mods::Date, hbt::mods::Interval;
+using hbt::mods::Occurrence, hbt::mods::Date, hbt::mods::Interval,
+    hbt::mods::Week;
 
 TEST(OccurrenceTest, WeekdayRecurrentEnforcesWeekInterval) {
-    EXPECT_THROW(Occurrence(Date::today(),
-                            Date::Week{{Date::weekday_t::FRIDAY}},
+    EXPECT_THROW(Occurrence(Date::today(), Week{{Date::weekday_t::FRIDAY}},
                             Interval::days(1)),
                  std::invalid_argument);
 }
 
 TEST(OccurrenceTest, WeekdayRecurrentEnforcesNonEmptyWeek) {
-    EXPECT_THROW(Occurrence(Date::today(),
-                            Date::Week(std::vector<Date::weekday_t>{}),
+    EXPECT_THROW(Occurrence(Date::today(), Week(std::vector<Date::weekday_t>{}),
                             Interval::days(1)),
                  std::invalid_argument);
 }
@@ -27,8 +26,7 @@ TEST(OccurrenceTest, WeekdayRecurrentEnforcesDateListedInWeekdaysList) {
         std::chrono::day{16},
     }}; // Thursday
 
-    EXPECT_THROW(Occurrence(Date::today(),
-                            Date::Week{{Date::weekday_t::FRIDAY}},
+    EXPECT_THROW(Occurrence(Date::today(), Week{{Date::weekday_t::FRIDAY}},
                             Interval::days(1)),
                  std::invalid_argument);
 }
@@ -60,10 +58,10 @@ TEST(OccurrenceTest, IntervalRecurrentGetterFunctions) {
 }
 
 TEST(OccurrenceTest, WeekdayRecurrentGetterFunctions) {
-    auto occurrence{Occurrence{
-        Date::today(),
-        Date::Week{{Date::today().getWeekday(), Date::weekday_t::SUNDAY}},
-        Interval::weeks(2)}};
+    auto occurrence{
+        Occurrence{Date::today(),
+                   Week{{Date::today().getWeekday(), Date::weekday_t::SUNDAY}},
+                   Interval::weeks(2)}};
 
     ASSERT_TRUE(occurrence.getInterval().has_value());
     EXPECT_EQ(occurrence.getInterval(), Interval::weeks(2));
@@ -95,10 +93,10 @@ TEST(OccurrenceTest, NonRecurrentToFromJSON) {
 }
 
 TEST(OccurrenceTest, IntervalRecurrentToFromJSON) {
-    auto original{Occurrence{
-        Date::today(),
-        Date::Week{{Date::weekday_t::FRIDAY, Date::weekday_t::SATURDAY}},
-        Interval::weeks(1)}};
+    auto original{
+        Occurrence{Date::today(),
+                   Week{{Date::weekday_t::FRIDAY, Date::weekday_t::SATURDAY}},
+                   Interval::weeks(1)}};
     auto json = original.toJSON();
     ASSERT_EQ(std::string(json.type_name()), "object");
 
@@ -118,7 +116,7 @@ TEST(OccurrenceTest, IntervalRecurrentToFromJSON) {
 TEST(OccurrenceTest, WeekdayRecurrentToFromJSON) {
     auto original{Occurrence{
         Date::today(),
-        Date::Week{{Date::today().getWeekday(), Date::weekday_t::THURSDAY}},
+        Week{{Date::today().getWeekday(), Date::weekday_t::THURSDAY}},
         Interval::weeks(1)}};
     auto json = original.toJSON();
     ASSERT_EQ(std::string(json.type_name()), "object");
@@ -180,19 +178,19 @@ TEST(OccurrenceTest, WeekdayRecurrentIsForDateTrueForFutureDate) {
     }};
 
     auto occurrence1{
-        Occurrence{date, Date::Week{{date.getWeekday()}}, Interval::weeks(1)}};
+        Occurrence{date, Week{{date.getWeekday()}}, Interval::weeks(1)}};
     EXPECT_TRUE(occurrence1.isForDate(date + Interval::weeks(1)));
     EXPECT_TRUE(occurrence1.isForDate(date + Interval::weeks(2)));
     EXPECT_TRUE(occurrence1.isForDate(date + Interval::days(7)));
 
     auto occurrence2{
-        Occurrence{date, Date::Week{{date.getWeekday()}}, Interval::weeks(4)}};
+        Occurrence{date, Week{{date.getWeekday()}}, Interval::weeks(4)}};
     EXPECT_TRUE(occurrence2.isForDate(date + Interval::weeks(4)));
     EXPECT_TRUE(occurrence2.isForDate(date + Interval::weeks(8)));
     EXPECT_TRUE(occurrence2.isForDate(date + Interval::weeks(12)));
 
     auto occurrence3{
-        Occurrence{date, Date::Week{{date.getWeekday()}}, Interval::weeks(56)}};
+        Occurrence{date, Week{{date.getWeekday()}}, Interval::weeks(56)}};
     EXPECT_TRUE(occurrence3.isForDate(date + Interval::weeks(56)));
     EXPECT_TRUE(occurrence3.isForDate(date + Interval::weeks(112)));
     EXPECT_TRUE(occurrence3.isForDate(date + Interval::weeks(168)));
@@ -227,7 +225,7 @@ TEST(OccurrenceTest, WeekdayRecurrentIsForDateTrueForSelf) {
         std::chrono::day{16},
     }};
 
-    auto occurrence{Occurrence{date1, Date::Week{{Date::weekday_t::TUESDAY}},
+    auto occurrence{Occurrence{date1, Week{{Date::weekday_t::TUESDAY}},
                                Interval::weeks(1)}};
     EXPECT_TRUE(occurrence.isForDate(date1));
 }
@@ -281,8 +279,8 @@ TEST(OccurrenceTest, WeekdayRecurrentIsForDateFalseForPastDate) {
         std::chrono::day{16},
     }};
 
-    auto occurrence{Occurrence{date1, Date::Week{{date1.getWeekday()}},
-                               Interval::weeks(7)}};
+    auto occurrence{
+        Occurrence{date1, Week{{date1.getWeekday()}}, Interval::weeks(7)}};
 
     EXPECT_FALSE(occurrence.isForDate(date2));
 }
@@ -336,8 +334,8 @@ TEST(OccurrenceTest, WeekdayRecurrentIsForDateFalseForWrongDate) {
         std::chrono::day{17},
     }};
 
-    auto occurrence{Occurrence{date1, Date::Week{{date1.getWeekday()}},
-                               Interval::weeks(7)}};
+    auto occurrence{
+        Occurrence{date1, Week{{date1.getWeekday()}}, Interval::weeks(7)}};
 
     EXPECT_FALSE(occurrence.isForDate(date2));
 }

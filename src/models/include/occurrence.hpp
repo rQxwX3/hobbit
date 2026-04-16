@@ -4,6 +4,7 @@
 
 #include <date.hpp>
 #include <interval.hpp>
+#include <week.hpp>
 
 #include <optional>
 #include <variant>
@@ -32,7 +33,7 @@ class Occurrence {
     };
 
     struct WeekdayRecurrent {
-        hbt::mods::Date::Week week;
+        hbt::mods::Week week;
         hbt::mods::Interval interval;
 
         auto operator==(const WeekdayRecurrent &other) const -> bool = default;
@@ -67,7 +68,7 @@ class Occurrence {
 
     Occurrence(hbt::mods::Date date, const hbt::mods::Interval &interval);
 
-    Occurrence(hbt::mods::Date date, hbt::mods::Date::Week week,
+    Occurrence(hbt::mods::Date date, hbt::mods::Week week,
                const hbt::mods::Interval &interval);
 
   public:
