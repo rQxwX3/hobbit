@@ -31,39 +31,39 @@ DurationUnits::DurationUnits(const Units &unitsStruct)
     return result;
 }
 
-auto DurationUnits::addYears(value_t value) -> void {
-    units_[unit_t::YEAR] += value;
-}
+// auto DurationUnits::addYears(value_t value) -> void {
+//     units_[unit_t::YEAR] += value;
+// }
+//
+// auto DurationUnits::addMonths(value_t value) -> void {
+//     this->addYears(value / DurationUnits::monthsInYear);
+//
+//     units_[unit_t::MONTH] += value % DurationUnits::monthsInYear;
+// }
+//
+// auto DurationUnits::addWeeks(value_t value) -> void {
+// There is 4.35 weeks in a month -> unit conversion is not accurate
 
-auto DurationUnits::addMonths(value_t value) -> void {
-    this->addYears(value / DurationUnits::monthsInYear);
-
-    units_[unit_t::MONTH] += value % DurationUnits::monthsInYear;
-}
-
-auto DurationUnits::addWeeks(value_t value) -> void {
-    this->addMonths(value / DurationUnits::weeksInMonth);
-
-    units_[unit_t::WEEK] += value % DurationUnits::weeksInMonth;
-}
-
-auto DurationUnits::addDays(value_t value) -> void {
-    this->addWeeks(value / DurationUnits::daysInWeek);
-
-    units_[unit_t::DAY] += value % DurationUnits::daysInWeek;
-}
-
-auto DurationUnits::addHours(value_t value) -> void {
-    this->addDays(value / DurationUnits::hoursInDay);
-
-    units_[unit_t::HOUR] += value % DurationUnits::hoursInDay;
-}
-
-auto DurationUnits::addMinutes(value_t value) -> void {
-    this->addHours(value / DurationUnits::minutesInHour);
-
-    units_[unit_t::MINUTE] += value % DurationUnits::minutesInHour;
-}
+//     units_[unit_t::WEEK] += value;
+// }
+//
+// auto DurationUnits::addDays(value_t value) -> void {
+//     this->addWeeks(value / DurationUnits::daysInWeek);
+//
+//     units_[unit_t::DAY] += value % DurationUnits::daysInWeek;
+// }
+//
+// auto DurationUnits::addHours(value_t value) -> void {
+//     this->addDays(value / DurationUnits::hoursInDay);
+//
+//     units_[unit_t::HOUR] += value % DurationUnits::hoursInDay;
+// }
+//
+// auto DurationUnits::addMinutes(value_t value) -> void {
+//     this->addHours(value / DurationUnits::minutesInHour);
+//
+//     units_[unit_t::MINUTE] += value % DurationUnits::minutesInHour;
+// }
 
 auto DurationUnits::addUnit(unit_t unit, value_t value) -> void {
     units_[unit] += value;
@@ -86,12 +86,11 @@ auto DurationUnits::addUnit(unit_t unit, value_t value) -> void {
     -> DurationUnits {
     auto result{DurationUnits{*this}};
 
-    result.addYears(other.getUnit(unit_t::YEAR));
-    result.addMonths(other.getUnit(unit_t::MONTH));
-    result.addWeeks(other.getUnit(unit_t::WEEK));
-    result.addDays(other.getUnit(unit_t::DAY));
-    result.addHours(other.getUnit(unit_t::HOUR));
-    result.addMinutes(other.getUnit(unit_t::MINUTE));
+    for (size_t unitInt{unit_t::YEAR}; unitInt != unit_t::COUNT_; ++unitInt) {
+        auto unit{static_cast<unit_t>(unitInt)};
+
+        result.addUnit(unit, other.getUnit(unit));
+    }
 
     return result;
 }
@@ -210,37 +209,37 @@ auto DurationUnits::addUnit(unit_t unit, value_t value) -> void {
     if (matches[yearsGroup].matched) {
         auto str{matches[yearsGroup].str()};
         str.pop_back(); // Remove trailing 'Y'
-        result.addYears(static_cast<long long>(std::stod(str)));
+        result.addUnit(unit_t::YEAR, static_cast<long long>(std::stod(str)));
     }
 
     if (matches[monthsGroup].matched) {
         auto str{matches[monthsGroup].str()};
         str.pop_back(); // Remove trailing 'M'
-        result.addMonths(static_cast<long long>(std::stod(str)));
+        result.addUnit(unit_t::MONTH, static_cast<long long>(std::stod(str)));
     }
 
     if (matches[weeksGroup].matched) {
         auto str{matches[weeksGroup].str()};
         str.pop_back(); // Remove trailing 'W'
-        result.addWeeks(static_cast<long long>(std::stod(str)));
+        result.addUnit(unit_t::WEEK, static_cast<long long>(std::stod(str)));
     }
 
     if (matches[daysGroup].matched) {
         auto str{matches[daysGroup].str()};
         str.pop_back(); // Remove trailing 'D'
-        result.addDays(static_cast<long long>(std::stod(str)));
+        result.addUnit(unit_t::DAY, static_cast<long long>(std::stod(str)));
     }
 
     if (matches[hoursGroup].matched) {
         auto str{matches[hoursGroup].str()};
         str.pop_back(); // Remove trailing 'H'
-        result.addHours(static_cast<long long>(std::stod(str)));
+        result.addUnit(unit_t::HOUR, static_cast<long long>(std::stod(str)));
     }
 
     if (matches[minutesGroup].matched) {
         auto str{matches[minutesGroup].str()};
         str.pop_back(); // Remove trailing 'M'
-        result.addMinutes(static_cast<long long>(std::stod(str)));
+        result.addUnit(unit_t::MINUTE, static_cast<long long>(std::stod(str)));
     }
 
     return result;

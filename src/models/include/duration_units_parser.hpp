@@ -99,46 +99,32 @@ class DurationUnitsParser {
         };
 
   private:
+    static auto createUnitBucket(DurationUnits::unit_t unit) -> UnitBucket {
+        return UnitBucket{unit, possibleValues[unit],
+                          [unit](DurationUnits &durationUnits,
+                                 DurationUnits::value_t value) -> void {
+                              durationUnits.addUnit(unit, value);
+                          }};
+    }
+
+  private:
     inline static const UnitBucket yearBucket{
-        DurationUnits::unit_t::YEAR,
-        possibleValues[DurationUnits::unit_t::YEAR],
-        [](DurationUnits &durationUnits, DurationUnits::value_t value) -> void {
-            durationUnits.addYears(value);
-        }};
+        createUnitBucket(DurationUnits::unit_t::YEAR)};
 
     inline static const UnitBucket monthBucket{
-        DurationUnits::unit_t::MONTH,
-        possibleValues[DurationUnits::unit_t::MONTH],
-        [](DurationUnits &durationUnits, DurationUnits::value_t value) -> void {
-            durationUnits.addMonths(value);
-        }};
+        createUnitBucket(DurationUnits::unit_t::MONTH)};
 
     inline static const UnitBucket weekBucket{
-        DurationUnits::unit_t::WEEK,
-        possibleValues[DurationUnits::unit_t::WEEK],
-        [](DurationUnits &durationUnits, DurationUnits::value_t value) -> void {
-            durationUnits.addWeeks(value);
-        }};
+        createUnitBucket(DurationUnits::unit_t::WEEK)};
 
     inline static const UnitBucket dayBucket{
-        DurationUnits::unit_t::DAY, possibleValues[DurationUnits::unit_t::DAY],
-        [](DurationUnits &durationUnits, DurationUnits::value_t value) -> void {
-            durationUnits.addDays(value);
-        }};
+        createUnitBucket(DurationUnits::unit_t::DAY)};
 
     inline static const UnitBucket hourBucket{
-        DurationUnits::unit_t::HOUR,
-        possibleValues[DurationUnits::unit_t::HOUR],
-        [](DurationUnits &durationUnits, DurationUnits::value_t value) -> void {
-            durationUnits.addHours(value);
-        }};
+        createUnitBucket(DurationUnits::unit_t::HOUR)};
 
     inline static const UnitBucket minuteBucket{
-        DurationUnits::unit_t::MINUTE,
-        possibleValues[DurationUnits::unit_t::MINUTE],
-        [](DurationUnits &durationUnits, DurationUnits::value_t value) -> void {
-            durationUnits.addMinutes(value);
-        }};
+        createUnitBucket(DurationUnits::unit_t::MINUTE)};
 
     inline static unitBuckets_t buckets{yearBucket, monthBucket, weekBucket,
                                         dayBucket,  hourBucket,  minuteBucket};

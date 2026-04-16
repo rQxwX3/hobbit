@@ -48,125 +48,48 @@ TEST(DurationUnitsTest, IsZero) {
     auto durationUnits{DurationUnits{}};
     EXPECT_TRUE(durationUnits.isZero());
 
-    durationUnits.addDays(1);
+    durationUnits.addUnit(unit_t::DAY, 1);
     EXPECT_FALSE(durationUnits.isZero());
 }
 
 TEST(DurationUnitsTest, AddGetUnits) {
     auto durationUnits{DurationUnits{}};
 
-    durationUnits.addYears(1);
+    durationUnits.addUnit(unit_t::YEAR, 1);
     EXPECT_EQ(durationUnits.getUnit(unit_t::YEAR), 1);
 
-    durationUnits.addMonths(1);
+    durationUnits.addUnit(unit_t::MONTH, 1);
     EXPECT_EQ(durationUnits.getUnit(unit_t::MONTH), 1);
 
-    durationUnits.addWeeks(1);
+    durationUnits.addUnit(unit_t::WEEK, 1);
     EXPECT_EQ(durationUnits.getUnit(unit_t::WEEK), 1);
 
-    durationUnits.addDays(1);
+    durationUnits.addUnit(unit_t::DAY, 1);
     EXPECT_EQ(durationUnits.getUnit(unit_t::DAY), 1);
 
-    durationUnits.addHours(1);
+    durationUnits.addUnit(unit_t::HOUR, 1);
     EXPECT_EQ(durationUnits.getUnit(unit_t::HOUR), 1);
 
-    durationUnits.addMinutes(1);
+    durationUnits.addUnit(unit_t::MINUTE, 1);
     EXPECT_EQ(durationUnits.getUnit(unit_t::MINUTE), 1);
-}
-
-TEST(DurationUnitsTest, AddAutoChangesUnits) {
-    auto monthsToYears1{DurationUnits{}};
-    monthsToYears1.addMonths(DurationUnits::monthsInYear);
-    EXPECT_EQ(monthsToYears1.getUnit(unit_t::MONTH), 0);
-    EXPECT_EQ(monthsToYears1.getUnit(unit_t::YEAR), 1);
-
-    auto monthsToYears2{DurationUnits{}};
-    monthsToYears2.addMonths(DurationUnits::monthsInYear * 2);
-    EXPECT_EQ(monthsToYears2.getUnit(unit_t::MONTH), 0);
-    EXPECT_EQ(monthsToYears2.getUnit(unit_t::YEAR), 2);
-
-    auto monthsToYears3{DurationUnits{}};
-    monthsToYears3.addMonths(DurationUnits::monthsInYear + 1);
-    EXPECT_EQ(monthsToYears3.getUnit(unit_t::MONTH), 1);
-    EXPECT_EQ(monthsToYears3.getUnit(unit_t::YEAR), 1);
-
-    auto weeksToMonths1{DurationUnits{}};
-    weeksToMonths1.addWeeks(DurationUnits::weeksInMonth);
-    EXPECT_EQ(weeksToMonths1.getUnit(unit_t::WEEK), 0);
-    EXPECT_EQ(weeksToMonths1.getUnit(unit_t::MONTH), 1);
-
-    auto weeksToMonths2{DurationUnits{}};
-    weeksToMonths2.addWeeks(DurationUnits::weeksInMonth * 3);
-    EXPECT_EQ(weeksToMonths2.getUnit(unit_t::WEEK), 0);
-    EXPECT_EQ(weeksToMonths2.getUnit(unit_t::MONTH), 3);
-
-    auto weeksToMonths3{DurationUnits{}};
-    weeksToMonths3.addWeeks(DurationUnits::weeksInMonth + 2);
-    EXPECT_EQ(weeksToMonths3.getUnit(unit_t::WEEK), 2);
-    EXPECT_EQ(weeksToMonths3.getUnit(unit_t::MONTH), 1);
-
-    auto daysToWeek1{DurationUnits{}};
-    daysToWeek1.addDays(DurationUnits::daysInWeek);
-    EXPECT_EQ(daysToWeek1.getUnit(unit_t::DAY), 0);
-    EXPECT_EQ(daysToWeek1.getUnit(unit_t::WEEK), 1);
-
-    auto daysToWeek2{DurationUnits{}};
-    daysToWeek2.addDays(DurationUnits::daysInWeek * 3);
-    EXPECT_EQ(daysToWeek2.getUnit(unit_t::DAY), 0);
-    EXPECT_EQ(daysToWeek2.getUnit(unit_t::WEEK), 3);
-
-    auto daysToWeek3{DurationUnits{}};
-    daysToWeek3.addDays(DurationUnits::daysInWeek + 4);
-    EXPECT_EQ(daysToWeek3.getUnit(unit_t::DAY), 4);
-    EXPECT_EQ(daysToWeek3.getUnit(unit_t::WEEK), 1);
-
-    auto hoursToDays1{DurationUnits{}};
-    hoursToDays1.addHours(DurationUnits::hoursInDay);
-    EXPECT_EQ(hoursToDays1.getUnit(unit_t::HOUR), 0);
-    EXPECT_EQ(hoursToDays1.getUnit(unit_t::DAY), 1);
-
-    auto hoursToDays2{DurationUnits{}};
-    hoursToDays2.addHours(DurationUnits::hoursInDay * 5);
-    EXPECT_EQ(hoursToDays2.getUnit(unit_t::HOUR), 0);
-    EXPECT_EQ(hoursToDays2.getUnit(unit_t::DAY), 5);
-
-    auto hoursToDays3{DurationUnits{}};
-    hoursToDays3.addHours(DurationUnits::hoursInDay + 15);
-    EXPECT_EQ(hoursToDays3.getUnit(unit_t::HOUR), 15);
-    EXPECT_EQ(hoursToDays3.getUnit(unit_t::DAY), 1);
-
-    auto minutesToHours1{DurationUnits{}};
-    minutesToHours1.addMinutes(DurationUnits::minutesInHour);
-    EXPECT_EQ(minutesToHours1.getUnit(unit_t::MINUTE), 0);
-    EXPECT_EQ(minutesToHours1.getUnit(unit_t::HOUR), 1);
-
-    auto minutesToHours2{DurationUnits{}};
-    minutesToHours2.addMinutes(DurationUnits::minutesInHour * 6);
-    EXPECT_EQ(minutesToHours2.getUnit(unit_t::MINUTE), 0);
-    EXPECT_EQ(minutesToHours2.getUnit(unit_t::HOUR), 6);
-
-    auto minutesToHours3{DurationUnits{}};
-    minutesToHours3.addMinutes(DurationUnits::minutesInHour + 30);
-    EXPECT_EQ(minutesToHours3.getUnit(unit_t::MINUTE), 30);
-    EXPECT_EQ(minutesToHours3.getUnit(unit_t::HOUR), 1);
 }
 
 TEST(DurationUnitsTest, OperatorPlus) {
     auto first{DurationUnits{}};
-    first.addYears(1);
-    first.addMonths(1);
-    first.addWeeks(1);
-    first.addDays(1);
-    first.addHours(1);
-    first.addMinutes(1);
+    first.addUnit(unit_t::YEAR, 1);
+    first.addUnit(unit_t::MONTH, 1);
+    first.addUnit(unit_t::WEEK, 1);
+    first.addUnit(unit_t::DAY, 1);
+    first.addUnit(unit_t::HOUR, 1);
+    first.addUnit(unit_t::MINUTE, 1);
 
     auto second{DurationUnits{}};
-    second.addYears(1);
-    second.addMonths(2);
-    second.addWeeks(3);
-    second.addDays(4);
-    second.addHours(5);
-    second.addMinutes(6);
+    second.addUnit(unit_t::YEAR, 1);
+    second.addUnit(unit_t::MONTH, 2);
+    second.addUnit(unit_t::WEEK, 3);
+    second.addUnit(unit_t::DAY, 4);
+    second.addUnit(unit_t::HOUR, 5);
+    second.addUnit(unit_t::MINUTE, 6);
 
     auto result{first + second};
     EXPECT_EQ(result.getUnit(unit_t::YEAR), 2);
@@ -183,20 +106,20 @@ TEST(DurationUnitsTest, ComparisonOperators) {
     EXPECT_TRUE(first == second);
     EXPECT_TRUE(second == first);
 
-    first.addDays(1);
+    first.addUnit(unit_t::DAY, 1);
     EXPECT_TRUE(first > second);
     EXPECT_TRUE(second < first);
 
-    second.addDays(2);
+    second.addUnit(unit_t::DAY, 2);
     EXPECT_TRUE(second > first);
     EXPECT_TRUE(first < second);
 
-    first.addMonths(1);
+    first.addUnit(unit_t::MONTH, 1);
     EXPECT_TRUE(first > second);
     EXPECT_TRUE(second < first);
 
-    second.addMonths(1);
-    first.addDays(1);
+    second.addUnit(unit_t::MONTH, 1);
+    first.addUnit(unit_t::DAY, 1);
     EXPECT_TRUE(first == second);
     EXPECT_TRUE(second == first);
 }
@@ -209,42 +132,42 @@ TEST(DurationUnitsTest, ToFromValidISO8601String) {
     ASSERT_TRUE(restored.has_value());
     EXPECT_EQ(restored.value(), first);
 
-    first.addMinutes(1);
+    first.addUnit(unit_t::MINUTE, 1);
     firstISO = first.toISO8601String();
     EXPECT_EQ(firstISO, "PT1M");
     restored = DurationUnits::fromISO8601String(firstISO);
     ASSERT_TRUE(restored.has_value());
     EXPECT_EQ(restored.value(), first);
 
-    first.addHours(1);
+    first.addUnit(unit_t::HOUR, 1);
     firstISO = first.toISO8601String();
     EXPECT_EQ(firstISO, "PT1H1M");
     restored = DurationUnits::fromISO8601String(firstISO);
     ASSERT_TRUE(restored.has_value());
     EXPECT_EQ(restored.value(), first);
 
-    first.addDays(1);
+    first.addUnit(unit_t::DAY, 1);
     firstISO = first.toISO8601String();
     EXPECT_EQ(firstISO, "P1DT1H1M");
     restored = DurationUnits::fromISO8601String(firstISO);
     ASSERT_TRUE(restored.has_value());
     EXPECT_EQ(restored.value(), first);
 
-    first.addWeeks(1);
+    first.addUnit(unit_t::WEEK, 1);
     firstISO = first.toISO8601String();
     EXPECT_EQ(firstISO, "P1W1DT1H1M");
     restored = DurationUnits::fromISO8601String(firstISO);
     ASSERT_TRUE(restored.has_value());
     EXPECT_EQ(restored.value(), first);
 
-    first.addMonths(1);
+    first.addUnit(unit_t::MONTH, 1);
     firstISO = first.toISO8601String();
     EXPECT_EQ(firstISO, "P1M1W1DT1H1M");
     restored = DurationUnits::fromISO8601String(firstISO);
     ASSERT_TRUE(restored.has_value());
     EXPECT_EQ(restored.value(), first);
 
-    first.addYears(1);
+    first.addUnit(unit_t::YEAR, 1);
     firstISO = first.toISO8601String();
     EXPECT_EQ(firstISO, "P1Y1M1W1DT1H1M");
     restored = DurationUnits::fromISO8601String(firstISO);

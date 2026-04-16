@@ -17,7 +17,7 @@ Interval::Interval(hbt::mods::DurationUnits::Units units,
 [[nodiscard]] auto Interval::years(value_t value) -> Interval {
     auto durationUnits{hbt::mods::DurationUnits{}};
 
-    durationUnits.addYears(value);
+    durationUnits.addUnit(unit_t::YEAR, value);
 
     return Interval{durationUnits};
 }
@@ -25,7 +25,7 @@ Interval::Interval(hbt::mods::DurationUnits::Units units,
 [[nodiscard]] auto Interval::months(value_t value) -> Interval {
     auto durationUnits{hbt::mods::DurationUnits{}};
 
-    durationUnits.addMonths(value);
+    durationUnits.addUnit(unit_t::MONTH, value);
 
     return Interval{durationUnits, MonthHandling::CUT_OFF};
 }
@@ -33,7 +33,7 @@ Interval::Interval(hbt::mods::DurationUnits::Units units,
 [[nodiscard]] auto Interval::weeks(value_t value) -> Interval {
     auto durationUnits{hbt::mods::DurationUnits{}};
 
-    durationUnits.addWeeks(value);
+    durationUnits.addUnit(unit_t::WEEK, value);
 
     return Interval{durationUnits};
 }
@@ -41,7 +41,7 @@ Interval::Interval(hbt::mods::DurationUnits::Units units,
 [[nodiscard]] auto Interval::days(value_t value) -> Interval {
     auto durationUnits{hbt::mods::DurationUnits{}};
 
-    durationUnits.addDays(value);
+    durationUnits.addUnit(unit_t::DAY, value);
 
     return Interval{durationUnits};
 }
@@ -49,7 +49,7 @@ Interval::Interval(hbt::mods::DurationUnits::Units units,
 [[nodiscard]] auto Interval::hours(value_t value) -> Interval {
     auto durationUnits{hbt::mods::DurationUnits{}};
 
-    durationUnits.addHours(value);
+    durationUnits.addUnit(unit_t::HOUR, value);
 
     return Interval{durationUnits};
 }
@@ -57,7 +57,7 @@ Interval::Interval(hbt::mods::DurationUnits::Units units,
 [[nodiscard]] auto Interval::minutes(value_t value) -> Interval {
     auto durationUnits{hbt::mods::DurationUnits{}};
 
-    durationUnits.addMinutes(value);
+    durationUnits.addUnit(unit_t::MINUTE, value);
 
     return Interval{durationUnits};
 }
