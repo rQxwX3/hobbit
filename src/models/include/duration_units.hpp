@@ -3,6 +3,7 @@
 #include <array>
 #include <cstdint>
 #include <optional>
+#include <regex>
 #include <string>
 #include <utility>
 #include <vector>
@@ -39,13 +40,21 @@ class DurationUnits {
     };
 
   public:
-    // static constexpr value_t monthsInYear{12};
-    // static constexpr value_t weeksInMonth{4};
-    // static constexpr value_t daysInWeek{7};
-    // static constexpr value_t hoursInDay{24};
-    // static constexpr value_t minutesInHour{60};
+    static constexpr value_t monthsInYear{12};
+    static constexpr value_t weeksInMonth{4};
+    static constexpr value_t daysInWeek{7};
+    static constexpr value_t hoursInDay{24};
+    static constexpr value_t minutesInHour{60};
 
     static constexpr value_t maxValue{999};
+
+    /*
+     * ISO8601 Duration regex pattern adapted from:
+     * https://stackoverflow.com/a/32045167
+     * (modified to exclude seconds group)
+     */
+    static inline const auto ISO8601Durationpattern{std::regex{
+        R"(^P(?!$)(\d+(?:\.\d+)?Y)?(\d+(?:\.\d+)?M)?(\d+(?:\.\d+)?W)?(\d+(?:\.\d+)?D)?(T(?=\d)(\d+(?:\.\d+)?H)?(\d+(?:\.\d+)?M)?)?$)"}};
 
   private:
     array_t units_;
@@ -58,18 +67,6 @@ class DurationUnits {
     explicit DurationUnits(const Units &unitsStruct);
 
   public:
-    // auto addYears(value_t value) -> void;
-    //
-    // auto addMonths(value_t value) -> void;
-    //
-    // auto addWeeks(value_t value) -> void;
-    //
-    // auto addDays(value_t value) -> void;
-    //
-    // auto addHours(value_t value) -> void;
-    //
-    // auto addMinutes(value_t value) -> void;
-
     auto addUnit(unit_t unit, value_t value) -> void;
 
   public:

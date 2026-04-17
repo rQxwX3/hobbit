@@ -4,7 +4,7 @@
 #include <entry.hpp>
 
 namespace test::mods {
-using hbt::mods::Entry, hbt::mods::Occurrence, hbt::mods::Date,
+using hbt::mods::Entry, hbt::mods::Occurrence, hbt::mods::DateTime,
     hbt::mods::Interval;
 
 TEST(EntryTest, GetSetTitle) {
@@ -24,12 +24,12 @@ TEST(EntryTest, GetSetIsCompleted) {
 }
 
 TEST(EntryTest, GetSetOccurrences) {
-    auto occurrences1{
-        std::vector<Occurrence>{Occurrence{Date::today()},
-                                Occurrence{Date::today() + Interval::days(1)}}};
-    auto occurrences2{
-        std::vector<Occurrence>{Occurrence{Date::today() + Interval::weeks(5)},
-                                Occurrence{Date::today()}}};
+    auto occurrences1{std::vector<Occurrence>{
+        Occurrence{DateTime::today()},
+        Occurrence{DateTime::today() + Interval::days(1)}}};
+    auto occurrences2{std::vector<Occurrence>{
+        Occurrence{DateTime::today() + Interval::weeks(5)},
+        Occurrence{DateTime::today()}}};
 
     auto entry{Entry{"todo", occurrences1}};
     EXPECT_THAT(entry.getOccurrences(),
@@ -69,17 +69,17 @@ TEST(EntryTest, ToFromJSON) {
 
 TEST(EntryTest, IsForDate) {
     auto occurrences{std::vector<Occurrence>{
-        Occurrence{Date::today(), Interval::years(1)},
-        Occurrence{Date::today(), Interval::months(1)},
+        Occurrence{DateTime::today(), Interval::years(1)},
+        Occurrence{DateTime::today(), Interval::months(1)},
     }};
 
     auto entry{Entry{"todo", occurrences}};
 
-    EXPECT_TRUE(entry.isForDate(Date::today()));
-    EXPECT_TRUE(entry.isForDate(Date::today() + Interval::years(1)));
-    EXPECT_TRUE(entry.isForDate(Date::today() + Interval::months(1)));
+    EXPECT_TRUE(entry.isForDate(DateTime::today()));
+    EXPECT_TRUE(entry.isForDate(DateTime::today() + Interval::years(1)));
+    EXPECT_TRUE(entry.isForDate(DateTime::today() + Interval::months(1)));
 
-    EXPECT_FALSE(entry.isForDate(Date::today() + Interval::weeks(1)));
-    EXPECT_FALSE(entry.isForDate(Date::today() + Interval::days(1)));
+    EXPECT_FALSE(entry.isForDate(DateTime::today() + Interval::weeks(1)));
+    EXPECT_FALSE(entry.isForDate(DateTime::today() + Interval::days(1)));
 }
 } // namespace test::mods

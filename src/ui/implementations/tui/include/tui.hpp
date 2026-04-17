@@ -4,7 +4,7 @@
 #include <ftxui/component/component.hpp>
 #include <ftxui/screen/screen.hpp>
 
-#include <date.hpp>
+#include <datetime.hpp>
 #include <entry.hpp>
 #include <ui.hpp>
 

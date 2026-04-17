@@ -1,6 +1,6 @@
 #pragma once
 
-#include <date.hpp>
+#include <datetime.hpp>
 #include <entry.hpp>
 #include <repository.hpp>
 
@@ -40,7 +40,7 @@ class EntryService {
     auto uncompleteEntry(id_t id) -> void;
 
   public:
-    [[nodiscard]] auto getEntriesForDate(const mods::Date &date) const
+    [[nodiscard]] auto getEntriesForDate(const mods::DateTime &date) const
         -> std::vector<hbt::mods::Entry>;
 
     [[nodiscard]] auto getCount() const -> size_t;

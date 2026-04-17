@@ -2,7 +2,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include <date.hpp>
+#include <datetime.hpp>
 #include <occurrence.hpp>
 
 #include <string>
@@ -46,6 +46,6 @@ class Entry {
         -> std::optional<Entry>;
 
   public:
-    [[nodiscard]] auto isForDate(hbt::mods::Date date) const -> bool;
+    [[nodiscard]] auto isForDate(hbt::mods::DateTime date) const -> bool;
 };
 } // namespace hbt::mods

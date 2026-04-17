@@ -2,7 +2,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include <date.hpp>
+#include <datetime.hpp>
 #include <interval.hpp>
 #include <week.hpp>
 
@@ -45,7 +45,7 @@ class Occurrence {
     };
 
   private:
-    hbt::mods::Date date_;
+    hbt::mods::DateTime datetime_;
 
     std::variant<NonRecurrent, IntervalRecurrent, WeekdayRecurrent>
         recurrenceModel_;
@@ -63,20 +63,21 @@ class Occurrence {
         -> nlohmann::json;
 
   public:
-    Occurrence(hbt::mods::Date date = hbt::mods::Date{},
+    Occurrence(hbt::mods::DateTime datetime = hbt::mods::DateTime{},
                recurrencePattern_t recurrenceModel = NonRecurrent{});
 
-    Occurrence(hbt::mods::Date date, const hbt::mods::Interval &interval);
+    Occurrence(hbt::mods::DateTime datetime,
+               const hbt::mods::Interval &interval);
 
-    Occurrence(hbt::mods::Date date, hbt::mods::Week week,
+    Occurrence(hbt::mods::DateTime datetime, hbt::mods::Week week,
                const hbt::mods::Interval &interval);
 
   public:
-    [[nodiscard]] auto getDate() const -> hbt::mods::Date;
+    [[nodiscard]] auto getDateTime() const -> hbt::mods::DateTime;
 
     [[nodiscard]] auto getRecurrenceModel() const -> recurrencePattern_t;
 
-    [[nodiscard]] auto getWeekday() const -> hbt::mods::Date::weekday_t;
+    [[nodiscard]] auto getWeekday() const -> hbt::mods::DateTime::weekday_t;
 
     [[nodiscard]] auto isRecurrent() const -> bool;
 
@@ -90,7 +91,7 @@ class Occurrence {
         -> std::optional<Occurrence>;
 
   public:
-    [[nodiscard]] auto isForDate(Date date) const -> bool;
+    [[nodiscard]] auto isForDate(DateTime datetime) const -> bool;
 
   public:
     [[nodiscard]] auto operator==(const Occurrence &other) const -> bool;

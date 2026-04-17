@@ -5,7 +5,7 @@ add_executable(models_test
 	unit/models/test_user.cpp
 	unit/models/test_duration_units.cpp
 	unit/models/test_interval.cpp
-	unit/models/test_date.cpp
+	unit/models/test_datetime.cpp
 	unit/models/test_occurrence.cpp
 	unit/models/test_entry.cpp
 )

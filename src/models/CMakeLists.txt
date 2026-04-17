@@ -2,7 +2,7 @@ add_library(models_lib STATIC
     src/entry.cpp
     src/user.cpp
 	src/occurrence.cpp
-	src/date.cpp
+	src/datetime.cpp
 	src/interval.cpp
 	src/duration_units.cpp
 	src/duration_units_parser.cpp

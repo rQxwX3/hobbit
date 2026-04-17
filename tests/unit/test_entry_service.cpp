@@ -1,7 +1,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include <date.hpp>
+#include <datetime.hpp>
 #include <entry_service.hpp>
 #include <fake_storage_engine.hpp>
 #include <json_repository.hpp>
@@ -38,13 +38,15 @@ class EntryServiceTest : public ::testing::Test {
 
         using namespace std::chrono;
 
-        occurrences1 = {
-            {hbt::mods::Date{year_month_day{year{2026}, month{3}, day{16}}}},
-            {hbt::mods::Date{year_month_day{year{2026}, month{3}, day{18}}}}};
+        occurrences1 = {{hbt::mods::DateTime{
+                            year_month_day{year{2026}, month{3}, day{16}}}},
+                        {hbt::mods::DateTime{
+                            year_month_day{year{2026}, month{3}, day{18}}}}};
 
-        occurrences2 = {
-            {hbt::mods::Date{year_month_day{year{2026}, month{3}, day{17}}}},
-            {hbt::mods::Date{year_month_day{year{2026}, month{3}, day{19}}}}};
+        occurrences2 = {{hbt::mods::DateTime{
+                            year_month_day{year{2026}, month{3}, day{17}}}},
+                        {hbt::mods::DateTime{
+                            year_month_day{year{2026}, month{3}, day{19}}}}};
     }
 };
 
@@ -296,7 +298,7 @@ TEST_F(EntryServiceTest, GetsEntriesForDate) {
     auto id3{service->createEntry("entry3", occurrences1)};
     auto id4{service->createEntry("entry4", occurrences2)};
 
-    auto date{hbt::mods::Date{occurrences1[0].getDate()}}; // wednesday
+    auto date{hbt::mods::DateTime{occurrences1[0].getDateTime()}}; // wednesday
     auto results{service->getEntriesForDate(date)};
 
     ASSERT_EQ(results.size(), 2);

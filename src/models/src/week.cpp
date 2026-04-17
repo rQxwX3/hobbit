@@ -1,7 +1,7 @@
 #include <week.hpp>
 
 namespace hbt::mods {
-Week::Week(const std::vector<Date::weekday_t> &weekdays) {
+Week::Week(const std::vector<DateTime::weekday_t> &weekdays) {
     for (const auto wd : weekdays) {
         days_.set(static_cast<size_t>(wd));
     }

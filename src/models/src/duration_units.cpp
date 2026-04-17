@@ -31,40 +31,6 @@ DurationUnits::DurationUnits(const Units &unitsStruct)
     return result;
 }
 
-// auto DurationUnits::addYears(value_t value) -> void {
-//     units_[unit_t::YEAR] += value;
-// }
-//
-// auto DurationUnits::addMonths(value_t value) -> void {
-//     this->addYears(value / DurationUnits::monthsInYear);
-//
-//     units_[unit_t::MONTH] += value % DurationUnits::monthsInYear;
-// }
-//
-// auto DurationUnits::addWeeks(value_t value) -> void {
-// There is 4.35 weeks in a month -> unit conversion is not accurate
-
-//     units_[unit_t::WEEK] += value;
-// }
-//
-// auto DurationUnits::addDays(value_t value) -> void {
-//     this->addWeeks(value / DurationUnits::daysInWeek);
-//
-//     units_[unit_t::DAY] += value % DurationUnits::daysInWeek;
-// }
-//
-// auto DurationUnits::addHours(value_t value) -> void {
-//     this->addDays(value / DurationUnits::hoursInDay);
-//
-//     units_[unit_t::HOUR] += value % DurationUnits::hoursInDay;
-// }
-//
-// auto DurationUnits::addMinutes(value_t value) -> void {
-//     this->addHours(value / DurationUnits::minutesInHour);
-//
-//     units_[unit_t::MINUTE] += value % DurationUnits::minutesInHour;
-// }
-
 auto DurationUnits::addUnit(unit_t unit, value_t value) -> void {
     units_[unit] += value;
 }
@@ -197,14 +163,6 @@ auto DurationUnits::addUnit(unit_t unit, value_t value) -> void {
 
 [[nodiscard]] auto DurationUnits::fromISO8601String(const std::string &string)
     -> std::optional<DurationUnits> {
-    /*
-     * ISO8601 Duration regex pattern adapted from:
-     * https://stackoverflow.com/a/32045167
-     * (modified to exclude seconds group)
-     */
-    const auto pattern{std::regex{
-        R"(^P(?!$)(\d+(?:\.\d+)?Y)?(\d+(?:\.\d+)?M)?(\d+(?:\.\d+)?W)?(\d+(?:\.\d+)?D)?(T(?=\d)(\d+(?:\.\d+)?H)?(\d+(?:\.\d+)?M)?)?$)"}};
-
     constexpr size_t yearsGroup{1};
     constexpr size_t monthsGroup{2};
     constexpr size_t weeksGroup{3};
@@ -214,7 +172,7 @@ auto DurationUnits::addUnit(unit_t unit, value_t value) -> void {
     constexpr size_t minutesGroup{7};
 
     std::smatch matches;
-    if (!std::regex_match(string, matches, pattern)) {
+    if (!std::regex_match(string, matches, ISO8601Durationpattern)) {
         return std::nullopt;
     }
 
