@@ -1,29 +1,29 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include <entry.hpp>
+#include <task.hpp>
 
 namespace test::mods {
-using hbt::mods::Entry, hbt::mods::Occurrence, hbt::mods::DateTime,
+using hbt::mods::Task, hbt::mods::Occurrence, hbt::mods::DateTime,
     hbt::mods::Interval;
 
-TEST(EntryTest, GetSetTitle) {
-    auto entry{Entry("todo", {})};
-    EXPECT_EQ(entry.getTitle(), "todo");
+TEST(TaskTest, GetSetTitle) {
+    auto task{Task("todo", {})};
+    EXPECT_EQ(task.getTitle(), "todo");
 
-    entry.setTitle("ornottodo");
-    EXPECT_EQ(entry.getTitle(), "ornottodo");
+    task.setTitle("ornottodo");
+    EXPECT_EQ(task.getTitle(), "ornottodo");
 }
 
-TEST(EntryTest, GetSetIsCompleted) {
-    auto entry{Entry("todo", {})};
-    EXPECT_EQ(entry.isCompleted(), false);
+TEST(TaskTest, GetSetIsCompleted) {
+    auto task{Task("todo", {})};
+    EXPECT_EQ(task.isCompleted(), false);
 
-    entry.setIsCompleted(true);
-    EXPECT_EQ(entry.isCompleted(), true);
+    task.setIsCompleted(true);
+    EXPECT_EQ(task.isCompleted(), true);
 }
 
-TEST(EntryTest, GetSetOccurrences) {
+TEST(TaskTest, GetSetOccurrences) {
     auto occurrences1{std::vector<Occurrence>{
         Occurrence{DateTime::today()},
         Occurrence{DateTime::today() + Interval::days(1)}}};
@@ -31,16 +31,16 @@ TEST(EntryTest, GetSetOccurrences) {
         Occurrence{DateTime::today() + Interval::weeks(5)},
         Occurrence{DateTime::today()}}};
 
-    auto entry{Entry{"todo", occurrences1}};
-    EXPECT_THAT(entry.getOccurrences(),
+    auto task{Task{"todo", occurrences1}};
+    EXPECT_THAT(task.getOccurrences(),
                 ::testing::UnorderedElementsAreArray(occurrences1));
 
-    entry.setOccurrences(occurrences2);
-    EXPECT_THAT(entry.getOccurrences(),
+    task.setOccurrences(occurrences2);
+    EXPECT_THAT(task.getOccurrences(),
                 ::testing::UnorderedElementsAreArray(occurrences2));
 }
 
-TEST(EntryTest, ToFromJSON) {
+TEST(TaskTest, ToFromJSON) {
     auto occurrences{std::vector<Occurrence>({{}, {}})};
 
     auto jsonOccurrences = nlohmann::json::array();
@@ -48,7 +48,7 @@ TEST(EntryTest, ToFromJSON) {
         jsonOccurrences.push_back(occ.toJSON());
     }
 
-    auto original{Entry("todo", occurrences)};
+    auto original{Task("todo", occurrences)};
 
     auto json = original.toJSON();
     ASSERT_EQ(std::string(json.type_name()), "object");
@@ -58,7 +58,7 @@ TEST(EntryTest, ToFromJSON) {
     EXPECT_THAT(json["occurrences"],
                 ::testing::UnorderedElementsAreArray(jsonOccurrences));
 
-    auto restored{Entry::fromJSON(json)};
+    auto restored{Task::fromJSON(json)};
     ASSERT_TRUE(restored.has_value());
 
     const auto &restoredOccurrences{restored.value().getOccurrences()};
@@ -67,19 +67,19 @@ TEST(EntryTest, ToFromJSON) {
                 ::testing::UnorderedElementsAreArray(occurrences));
 }
 
-TEST(EntryTest, IsForDate) {
+TEST(TaskTest, IsForDate) {
     auto occurrences{std::vector<Occurrence>{
         Occurrence{DateTime::today(), Interval::years(1)},
         Occurrence{DateTime::today(), Interval::months(1)},
     }};
 
-    auto entry{Entry{"todo", occurrences}};
+    auto task{Task{"todo", occurrences}};
 
-    EXPECT_TRUE(entry.isForDate(DateTime::today()));
-    EXPECT_TRUE(entry.isForDate(DateTime::today() + Interval::years(1)));
-    EXPECT_TRUE(entry.isForDate(DateTime::today() + Interval::months(1)));
+    EXPECT_TRUE(task.isForDate(DateTime::today()));
+    EXPECT_TRUE(task.isForDate(DateTime::today() + Interval::years(1)));
+    EXPECT_TRUE(task.isForDate(DateTime::today() + Interval::months(1)));
 
-    EXPECT_FALSE(entry.isForDate(DateTime::today() + Interval::weeks(1)));
-    EXPECT_FALSE(entry.isForDate(DateTime::today() + Interval::days(1)));
+    EXPECT_FALSE(task.isForDate(DateTime::today() + Interval::weeks(1)));
+    EXPECT_FALSE(task.isForDate(DateTime::today() + Interval::days(1)));
 }
 } // namespace test::mods

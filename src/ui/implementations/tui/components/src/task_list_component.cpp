@@ -1,17 +1,16 @@
-#include <entry_component.hpp>
-#include <entry_list_component.hpp>
+#include <task_component.hpp>
+#include <task_list_component.hpp>
 
 #include <ftxui/component/event.hpp>
 
 namespace hbt::ui::tui {
-[[nodiscard]] auto EntryListComponent::getMaxIndex() const -> index_t {
+[[nodiscard]] auto TaskListComponent::getMaxIndex() const -> index_t {
     auto childrenSize{static_cast<index_t>(children_.size())};
 
     return (childrenSize == 0) ? noSelectionIndex : childrenSize;
 }
 
-[[nodiscard]] auto EntryListComponent::isSafeIndex(index_t index) const
-    -> bool {
+[[nodiscard]] auto TaskListComponent::isSafeIndex(index_t index) const -> bool {
     if (index < 0) {
         return false;
     }
@@ -23,7 +22,7 @@ namespace hbt::ui::tui {
     return false;
 }
 
-auto EntryListComponent::updateSelection(index_t newSelectedIndex) -> void {
+auto TaskListComponent::updateSelection(index_t newSelectedIndex) -> void {
     if (!isSafeIndex(newSelectedIndex)) {
         return;
     }
@@ -36,21 +35,21 @@ auto EntryListComponent::updateSelection(index_t newSelectedIndex) -> void {
     selectedIndex_ = newSelectedIndex;
 }
 
-auto EntryListComponent::setEntries(
-    const std::vector<hbt::mods::Entry> &entries) -> void {
+auto TaskListComponent::setTasks(const std::vector<hbt::mods::Task> &tasks)
+    -> void {
     children_.clear();
 
-    for (const auto &entry : entries) {
-        auto child{std::make_shared<EntryComponent>(entry)};
+    for (const auto &task : tasks) {
+        auto child{std::make_shared<TaskComponent>(task)};
 
         children_.push_back(child);
-        EntryListComponent::Add(child);
+        TaskListComponent::Add(child);
     }
 
-    updateSelection(entries.empty() ? noSelectionIndex : 0);
+    updateSelection(tasks.empty() ? noSelectionIndex : 0);
 }
 
-auto EntryListComponent::OnRender() -> ftxui::Element {
+auto TaskListComponent::OnRender() -> ftxui::Element {
     using namespace ftxui;
 
     std::vector<Element> elements;
@@ -66,7 +65,7 @@ auto EntryListComponent::OnRender() -> ftxui::Element {
     return center(list) | flex;
 }
 
-auto EntryListComponent::OnEvent(ftxui::Event event) -> bool {
+auto TaskListComponent::OnEvent(ftxui::Event event) -> bool {
     using namespace ftxui;
 
     if (event == Event::Character('k') || event == Event::ArrowUp) {

@@ -1,53 +1,53 @@
-#include <entry_list_component.hpp>
 #include <orchestrator_component.hpp>
+#include <task_list_component.hpp>
 
 #include <tui.hpp>
 
 namespace hbt::ui::tui {
-auto TUI::createEntryListComponent() -> ftxui::Component {
-    auto entryList{ftxui::Make<EntryListComponent>()};
+auto TUI::createTaskListComponent() -> ftxui::Component {
+    auto taskList{ftxui::Make<TaskListComponent>()};
 
-    entryList->setEntries(entries_);
+    taskList->setTasks(tasks_);
 
-    return entryList;
+    return taskList;
 }
 
-auto TUI::createEntryFormComponent() -> ftxui::Component {
-    if (!createEntryCallback_) {
-        throw std::runtime_error("Missing create entry callback");
+auto TUI::createTaskFormComponent() -> ftxui::Component {
+    if (!createTaskCallback_) {
+        throw std::runtime_error("Missing create task callback");
     }
 
-    auto entryForm{ftxui::Make<EntryFormComponent>(
-        std::move(createEntryCallback_),
-        [this] -> void { switchToScreen(Screen::EntryList); })};
+    auto taskForm{ftxui::Make<TaskFormComponent>(
+        std::move(createTaskCallback_),
+        [this] -> void { switchToScreen(Screen::TaskList); })};
 
-    return entryForm;
+    return taskForm;
 }
 
 auto TUI::setupOrchestrator() -> void {
     auto orchestrator{ftxui::Make<OrchestatorComponent>()};
 
     orchestrator->registerComponentFactory(
-        Screen::EntryList,
-        [this] -> ftxui::Component { return createEntryListComponent(); });
+        Screen::TaskList,
+        [this] -> ftxui::Component { return createTaskListComponent(); });
 
     orchestrator->registerComponentFactory(
-        Screen::CreateEntry,
-        [this] -> ftxui::Component { return createEntryFormComponent(); });
+        Screen::CreateTask,
+        [this] -> ftxui::Component { return createTaskFormComponent(); });
 
-    orchestrator->switchToComponent(Screen::CreateEntry);
+    orchestrator->switchToComponent(Screen::CreateTask);
 
     orchestrator_ = orchestrator;
 }
 
-auto TUI::setCreateEntryCallback(
-    const createEntryCallback_t &createEntryCallback) -> void {
-    createEntryCallback_ =
-        [this, createEntryCallback](std::string title,
-                                    hbt::mods::Interval interval) -> void {
-        createEntryCallback(std::move(title), interval);
-        orchestrator_->invalidateComponent(Screen::EntryList);
-        switchToScreen(Screen::EntryList);
+auto TUI::setCreateTaskCallback(const createTaskCallback_t &createTaskCallback)
+    -> void {
+    createTaskCallback_ =
+        [this, createTaskCallback](std::string title,
+                                   hbt::mods::Interval interval) -> void {
+        createTaskCallback(std::move(title), interval);
+        orchestrator_->invalidateComponent(Screen::TaskList);
+        switchToScreen(Screen::TaskList);
     };
 }
 
@@ -71,14 +71,14 @@ auto TUI::start() -> void {
 
 TUI::TUI() : screen_{ftxui::App::FullscreenAlternateScreen()} {}
 
-auto TUI::setEntryList(std::vector<hbt::mods::Entry> entries) -> void {
-    entries_ = std::move(entries);
+auto TUI::setTaskList(std::vector<hbt::mods::Task> tasks) -> void {
+    tasks_ = std::move(tasks);
 
     refresh();
 }
 
-auto TUI::populateEntryList(hbt::mods::Entry entry) -> void {
-    entries_.push_back(entry);
+auto TUI::populateTaskList(hbt::mods::Task task) -> void {
+    tasks_.push_back(task);
 }
 
 auto TUI::switchToScreen(UI::Screen screen) -> void {

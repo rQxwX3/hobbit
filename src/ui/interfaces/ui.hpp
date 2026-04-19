@@ -2,14 +2,14 @@
 
 #include <datetime.hpp>
 #include <duration_units.hpp>
-#include <entry.hpp>
+#include <task.hpp>
 
 #include <vector>
 
 namespace hbt::ui {
 class UI {
   public:
-    using createEntryCallback_t =
+    using createTaskCallback_t =
         std::function<void(std::string, hbt::mods::Interval)>;
 
   public:
@@ -17,8 +17,8 @@ class UI {
 
   public:
     enum class Screen : uint8_t {
-        EntryList,
-        CreateEntry,
+        TaskList,
+        CreateTask,
         Statistics,
         Settings,
         NONE,
@@ -36,12 +36,11 @@ class UI {
 
   public:
     virtual auto
-    setCreateEntryCallback(const createEntryCallback_t &createEntryCallback)
+    setCreateTaskCallback(const createTaskCallback_t &createTaskCallback)
         -> void = 0;
 
-    virtual auto setEntryList(std::vector<hbt::mods::Entry> entries)
-        -> void = 0;
+    virtual auto setTaskList(std::vector<hbt::mods::Task> tasks) -> void = 0;
 
-    virtual auto populateEntryList(hbt::mods::Entry entry) -> void = 0;
+    virtual auto populateTaskList(hbt::mods::Task task) -> void = 0;
 };
 } // namespace hbt::ui

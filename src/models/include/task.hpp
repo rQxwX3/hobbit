@@ -3,37 +3,28 @@
 #include <nlohmann/json.hpp>
 
 #include <datetime.hpp>
-#include <occurrence.hpp>
+#include <recurrence_patterns.hpp>
 
 #include <string>
-#include <vector>
 
 namespace hbt::mods {
-class Entry {
+class Task {
   private:
-    std::vector<Occurrence> occurrences_;
-
     std::string title_;
     bool isCompleted_;
 
   public:
-    Entry(std::string title, std::vector<Occurrence> occurrences);
+    Task(std::string title);
 
-    Entry(std::string title, std::vector<Occurrence> occurrences,
-          bool isCompleted);
+    Task(std::string title, bool isCompleted);
 
   public:
     auto setTitle(std::string title) -> void;
-
-    auto setOccurrences(std::vector<Occurrence> occurrences) -> void;
 
     auto setIsCompleted(bool isCompleted) -> void;
 
   public:
     [[nodiscard]] auto getTitle() const & -> const std::string &;
-
-    [[nodiscard]] auto
-    getOccurrences() const & -> const std::vector<hbt::mods::Occurrence> &;
 
     [[nodiscard]] auto isCompleted() const -> bool;
 
@@ -43,9 +34,6 @@ class Entry {
     [[nodiscard]] auto toJSON() && -> nlohmann::json;
 
     [[nodiscard]] static auto fromJSON(const nlohmann::json &json)
-        -> std::optional<Entry>;
-
-  public:
-    [[nodiscard]] auto isForDate(hbt::mods::DateTime date) const -> bool;
+        -> std::optional<Task>;
 };
 } // namespace hbt::mods

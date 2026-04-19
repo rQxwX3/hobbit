@@ -9,23 +9,23 @@
 #include <string>
 
 namespace hbt::ui::tui {
-class EntryFormComponent : public ftxui::ComponentBase {
+class TaskFormComponent : public ftxui::ComponentBase {
   public:
     using onCancelCallback_t = std::function<void()>;
 
   private:
-    static constexpr std::string_view formTitle{" Create new Entry "};
+    static constexpr std::string_view formTitle{" Create new Task "};
     static constexpr std::string_view formHelpMenu{
         " Enter: Submit  Esc: Cancel "};
 
     static constexpr std::string_view titleInputPlaceholder{
-        "Enter entry title..."};
+        "Enter task title..."};
 
     static constexpr std::string_view emptyTitleError{
-        "Entry title cannot be empty"};
+        "Task title cannot be empty"};
 
     static constexpr std::string_view invalidIntervalError{
-        "Entry interval is invalid"};
+        "Task interval is invalid"};
 
   private:
     std::string title_;
@@ -38,7 +38,7 @@ class EntryFormComponent : public ftxui::ComponentBase {
     std::shared_ptr<IntervalInputComponent> intervalInput_;
     ftxui::Component container_;
 
-    UI::createEntryCallback_t onSubmit_;
+    UI::createTaskCallback_t onSubmit_;
     onCancelCallback_t onCancel_;
 
   private:
@@ -50,8 +50,8 @@ class EntryFormComponent : public ftxui::ComponentBase {
     auto cancel() -> void;
 
   public:
-    EntryFormComponent(UI::createEntryCallback_t onSubmit,
-                       onCancelCallback_t onCancel);
+    TaskFormComponent(UI::createTaskCallback_t onSubmit,
+                      onCancelCallback_t onCancel);
 
   public:
     auto OnRender() -> ftxui::Element override;

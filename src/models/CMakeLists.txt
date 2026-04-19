@@ -1,5 +1,5 @@
 add_library(models_lib STATIC
-    src/entry.cpp
+    src/task.cpp
     src/user.cpp
 	src/occurrence.cpp
 	src/datetime.cpp

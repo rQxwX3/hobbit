@@ -1,8 +1,8 @@
 add_library(tui_lib STATIC
     src/tui.cpp
-    components/src/entry_component.cpp
-	components/src/entry_list_component.cpp
-	components/src/entry_form_component.cpp
+    components/src/task_component.cpp
+	components/src/task_list_component.cpp
+	components/src/task_form_component.cpp
 	components/src/orchestrator_component.cpp
 	components/src/interval_input_component.cpp
 )

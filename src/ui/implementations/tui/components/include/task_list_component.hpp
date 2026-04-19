@@ -2,20 +2,20 @@
 
 #include <ftxui/component/component_base.hpp>
 
-#include <entry.hpp>
-#include <entry_component.hpp>
+#include <task.hpp>
+#include <task_component.hpp>
 
 #include <vector>
 
 namespace hbt::ui::tui {
-class EntryListComponent : public ftxui::ComponentBase {
+class TaskListComponent : public ftxui::ComponentBase {
   private:
     using index_t = int;
 
     static constexpr index_t noSelectionIndex{-1};
 
   private:
-    std::vector<std::shared_ptr<EntryComponent>> children_;
+    std::vector<std::shared_ptr<TaskComponent>> children_;
 
     index_t selectedIndex_{-1};
 
@@ -27,10 +27,10 @@ class EntryListComponent : public ftxui::ComponentBase {
     auto updateSelection(index_t newSelectedIndex) -> void;
 
   public:
-    static auto create() -> EntryListComponent;
+    static auto create() -> TaskListComponent;
 
   public:
-    auto setEntries(const std::vector<hbt::mods::Entry> &entries) -> void;
+    auto setTasks(const std::vector<hbt::mods::Task> &tasks) -> void;
 
   public:
     auto OnRender() -> ftxui::Element override;

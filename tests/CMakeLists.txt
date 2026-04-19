@@ -7,7 +7,7 @@ add_executable(models_test
 	unit/models/test_interval.cpp
 	unit/models/test_datetime.cpp
 	unit/models/test_occurrence.cpp
-	unit/models/test_entry.cpp
+	unit/models/test_task.cpp
 )
 
 target_link_libraries(models_test PRIVATE 
@@ -60,14 +60,14 @@ target_link_libraries(json_storage_engine_test PRIVATE
 	storage_lib
 )
 
-#test entry service
-add_executable(entry_service_test 
-	unit/test_entry_service.cpp
+#test task service
+add_executable(task_service_test 
+	unit/test_task_service.cpp
 	unit/util/src/fake_storage_engine.cpp
 	unit/util/src/fake_model.cpp
 )
 
-target_link_libraries(entry_service_test PRIVATE 
+target_link_libraries(task_service_test PRIVATE 
 	gtest 
 	gmock
 	gtest_main 
@@ -78,11 +78,11 @@ target_link_libraries(entry_service_test PRIVATE
 	storage_lib
 )
 
-target_include_directories(entry_service_test PRIVATE
+target_include_directories(task_service_test PRIVATE
 	unit/util/include	
 )
 
 gtest_discover_tests(models_test)
 gtest_discover_tests(json_repositories_test)
 gtest_discover_tests(json_storage_engine_test)
-gtest_discover_tests(entry_service_test)
+gtest_discover_tests(task_service_test)

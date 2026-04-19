@@ -1,15 +1,15 @@
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/event.hpp>
 
-#include <entry_form_component.hpp>
+#include <task_form_component.hpp>
 
 namespace hbt::ui::tui {
-auto EntryFormComponent::clear() -> void {
+auto TaskFormComponent::clear() -> void {
     title_.clear();
     error_.clear();
 }
 
-auto EntryFormComponent::submit() -> void {
+auto TaskFormComponent::submit() -> void {
     if (title_.empty()) {
         error_ = emptyTitleError;
     } else if (!intervalInput_->isValid()) {
@@ -20,13 +20,13 @@ auto EntryFormComponent::submit() -> void {
     }
 }
 
-auto EntryFormComponent::cancel() -> void {
+auto TaskFormComponent::cancel() -> void {
     clear();
     onCancel_();
 }
 
-EntryFormComponent::EntryFormComponent(UI::createEntryCallback_t onSubmit,
-                                       onCancelCallback_t onCancel)
+TaskFormComponent::TaskFormComponent(UI::createTaskCallback_t onSubmit,
+                                     onCancelCallback_t onCancel)
     : onSubmit_{std::move(onSubmit)}, onCancel_{std::move(onCancel)},
       titleInput_{ftxui::Input(&title_, titleInputPlaceholder)},
       intervalInput_{ftxui::Make<IntervalInputComponent>()},
@@ -34,7 +34,7 @@ EntryFormComponent::EntryFormComponent(UI::createEntryCallback_t onSubmit,
     Add(container_);
 }
 
-auto EntryFormComponent::OnRender() -> ftxui::Element {
+auto TaskFormComponent::OnRender() -> ftxui::Element {
     using namespace ftxui;
 
     std::vector<Element> elements{
@@ -50,7 +50,7 @@ auto EntryFormComponent::OnRender() -> ftxui::Element {
     return vbox(elements) | border;
 }
 
-auto EntryFormComponent::OnEvent(ftxui::Event event) -> bool {
+auto TaskFormComponent::OnEvent(ftxui::Event event) -> bool {
     using namespace ftxui;
 
     if (event == Event::Escape) {

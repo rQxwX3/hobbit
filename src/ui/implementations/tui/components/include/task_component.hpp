@@ -2,18 +2,18 @@
 
 #include <ftxui/component/component.hpp>
 
-#include <entry.hpp>
+#include <task.hpp>
 
 #include <string>
 
 namespace hbt::ui::tui {
-class EntryComponent : public ftxui::ComponentBase {
+class TaskComponent : public ftxui::ComponentBase {
   private:
     std::string title_;
     bool selected_;
 
   public:
-    explicit EntryComponent(const hbt::mods::Entry &entry);
+    explicit TaskComponent(const hbt::mods::Task &task);
 
   public:
     auto setSelected(bool selected) -> void;

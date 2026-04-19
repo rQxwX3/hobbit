@@ -1,5 +1,5 @@
 add_library(core_lib STATIC
-    src/entry_service.cpp
+    src/task_service.cpp
 	src/app.cpp
 )
 
