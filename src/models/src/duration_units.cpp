@@ -2,7 +2,6 @@
 #include <duration_units_parser.hpp>
 
 #include <algorithm>
-#include <regex>
 #include <string>
 
 namespace hbt::mods {
@@ -18,14 +17,11 @@ DurationUnits::DurationUnits(const Units &unitsStruct)
     std::vector<unitValuePair_t> result;
     result.reserve(unit_t::COUNT_);
 
-    for (size_t i{0}; i != unit_t::COUNT_; ++i) {
-        auto value{units_[i]};
-
-        if (value == 0) {
-            continue;
+    for (auto unit{static_cast<size_t>(unit_t::YEAR)}; unit != unit_t::COUNT_;
+         ++unit) {
+        if (auto value{units_[unit]}; value) {
+            result.emplace_back(static_cast<unit_t>(unit), value);
         }
-
-        result.emplace_back(static_cast<unit_t>(i), value);
     }
 
     return result;
@@ -44,13 +40,16 @@ auto DurationUnits::addUnit(unit_t unit, value_t value) -> void {
                                [](auto value) -> bool { return value == 0; });
 }
 
-[[nodiscard]] auto DurationUnits::onlyContainsUnit(unit_t unit) const -> bool {
-    for (size_t currUnit{0}; currUnit != unit_t::COUNT_; ++currUnit) {
-        if (currUnit == static_cast<size_t>(unit) && units_[currUnit] == 0) {
+[[nodiscard]] auto DurationUnits::onlyContainsUnit(unit_t onlyUnit) const
+    -> bool {
+    for (auto unit{static_cast<size_t>(unit_t::YEAR)}; unit != unit_t::COUNT_;
+         ++unit) {
+
+        if (unit == static_cast<size_t>(onlyUnit) && units_[unit] == 0) {
             return false;
         }
 
-        if (currUnit != static_cast<size_t>(unit) && units_[currUnit] != 0) {
+        if (unit != static_cast<size_t>(onlyUnit) && units_[unit] != 0) {
             return false;
         }
     }
@@ -66,9 +65,10 @@ auto DurationUnits::addUnit(unit_t unit, value_t value) -> void {
     -> DurationUnits {
     auto result{DurationUnits{*this}};
 
-    for (size_t unitInt{unit_t::YEAR}; unitInt != unit_t::COUNT_; ++unitInt) {
-        auto unit{static_cast<unit_t>(unitInt)};
+    for (auto unitInt{static_cast<size_t>(unit_t::YEAR)};
+         unitInt != unit_t::COUNT_; ++unitInt) {
 
+        auto unit{static_cast<unit_t>(unitInt)};
         result.addUnit(unit, other.getUnit(unit));
     }
 
@@ -77,152 +77,37 @@ auto DurationUnits::addUnit(unit_t unit, value_t value) -> void {
 
 [[nodiscard]] auto DurationUnits::operator<=>(const DurationUnits &other) const
     -> std::strong_ordering {
-    if (auto cmp = getUnit(unit_t::YEAR) <=> other.getUnit(unit_t::YEAR);
-        cmp != 0) {
-        return cmp;
-    }
 
-    if (auto cmp = getUnit(unit_t::MONTH) <=> other.getUnit(unit_t::MONTH);
-        cmp != 0) {
-        return cmp;
-    }
-
-    if (auto cmp = getUnit(unit_t::WEEK) <=> other.getUnit(unit_t::WEEK);
-        cmp != 0) {
-        return cmp;
-    }
-
-    if (auto cmp = getUnit(unit_t::DAY) <=> other.getUnit(unit_t::DAY);
-        cmp != 0) {
-        return cmp;
-    }
-
-    if (auto cmp = getUnit(unit_t::HOUR) <=> other.getUnit(unit_t::HOUR);
-        cmp != 0) {
-        return cmp;
-    }
-
-    if (auto cmp = getUnit(unit_t::MINUTE) <=> other.getUnit(unit_t::MINUTE);
-        cmp != 0) {
-        return cmp;
+    for (auto unit{static_cast<size_t>(unit_t::YEAR)}; unit != unit_t::COUNT_;
+         ++unit) {
+        if (auto cmp = getUnit(static_cast<unit_t>(unit)) <=>
+                       other.getUnit(static_cast<unit_t>(unit));
+            cmp != 0) {
+            return cmp;
+        }
     }
 
     return std::strong_ordering::equal;
 }
 
-[[nodiscard]] auto DurationUnits::toISO8601String() const -> std::string {
-    if (this->isZero()) {
-        return "PT0M";
-    }
-
-    std::string result{"P"};
-    bool timeSectionStarted{false};
-
-    if (const auto years{getUnit(unit_t::YEAR)}; years) {
-        result += std::to_string(years);
-        result += "Y";
-    }
-
-    if (const auto months{getUnit(unit_t::MONTH)}; months) {
-        result += std::to_string(months);
-        result += "M";
-    }
-
-    if (const auto weeks{getUnit(unit_t::WEEK)}; weeks) {
-        result += std::to_string(weeks);
-        result += "W";
-    }
-
-    if (const auto days{getUnit(unit_t::DAY)}; days) {
-        result += std::to_string(days);
-        result += "D";
-    }
-
-    if (const auto hours{getUnit(unit_t::HOUR)}; hours) {
-        if (!timeSectionStarted) {
-            result += "T";
-            timeSectionStarted = true;
-        }
-
-        result += std::to_string(hours);
-        result += "H";
-    }
-
-    if (const auto minutes{getUnit(unit_t::MINUTE)}; minutes) {
-        if (!timeSectionStarted) {
-            result += "T";
-            timeSectionStarted = true;
-        }
-
-        result += std::to_string(minutes);
-        result += "M";
-    }
-
-    return result;
-}
-
 [[nodiscard]] auto DurationUnits::fromISO8601String(const std::string &string)
     -> std::optional<DurationUnits> {
-    constexpr size_t yearsGroup{1};
-    constexpr size_t monthsGroup{2};
-    constexpr size_t weeksGroup{3};
-    constexpr size_t daysGroup{4};
-    constexpr size_t timeSectionGroup{5};
-    constexpr size_t hoursGroup{6};
-    constexpr size_t minutesGroup{7};
+    return util::DurationUnitsParser<util::ISO8601DurationParser>::parse(
+        string);
+}
 
-    std::smatch matches;
-    if (!std::regex_match(string, matches, ISO8601Durationpattern)) {
-        return std::nullopt;
-    }
-
-    DurationUnits result;
-
-    if (matches[yearsGroup].matched) {
-        auto str{matches[yearsGroup].str()};
-        str.pop_back(); // Remove trailing 'Y'
-        result.addUnit(unit_t::YEAR, static_cast<long long>(std::stod(str)));
-    }
-
-    if (matches[monthsGroup].matched) {
-        auto str{matches[monthsGroup].str()};
-        str.pop_back(); // Remove trailing 'M'
-        result.addUnit(unit_t::MONTH, static_cast<long long>(std::stod(str)));
-    }
-
-    if (matches[weeksGroup].matched) {
-        auto str{matches[weeksGroup].str()};
-        str.pop_back(); // Remove trailing 'W'
-        result.addUnit(unit_t::WEEK, static_cast<long long>(std::stod(str)));
-    }
-
-    if (matches[daysGroup].matched) {
-        auto str{matches[daysGroup].str()};
-        str.pop_back(); // Remove trailing 'D'
-        result.addUnit(unit_t::DAY, static_cast<long long>(std::stod(str)));
-    }
-
-    if (matches[hoursGroup].matched) {
-        auto str{matches[hoursGroup].str()};
-        str.pop_back(); // Remove trailing 'H'
-        result.addUnit(unit_t::HOUR, static_cast<long long>(std::stod(str)));
-    }
-
-    if (matches[minutesGroup].matched) {
-        auto str{matches[minutesGroup].str()};
-        str.pop_back(); // Remove trailing 'M'
-        result.addUnit(unit_t::MINUTE, static_cast<long long>(std::stod(str)));
-    }
-
-    return result;
+[[nodiscard]] auto DurationUnits::toISO8601String() const -> std::string {
+    return util::DurationUnitsParser<util::ISO8601DurationParser>::format(
+        *this);
 }
 
 [[nodiscard]] auto DurationUnits::fromNaturalLanguage(const std::string &input)
     -> std::optional<DurationUnits> {
-    return util::DurationUnitsParser::fromNaturalLanguage(input);
+    return util::DurationUnitsParser<util::NaturalLanguageParser>::parse(input);
 }
 
 [[nodiscard]] auto DurationUnits::toNaturalLanguage() const -> std::string {
-    return util::DurationUnitsParser::toNaturalLanguage(*this);
+    return util::DurationUnitsParser<util::NaturalLanguageParser>::format(
+        *this);
 }
 } // namespace hbt::mods

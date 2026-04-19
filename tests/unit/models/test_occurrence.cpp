@@ -7,6 +7,10 @@ namespace test::mods {
 using hbt::mods::Occurrence, hbt::mods::DateTime, hbt::mods::Interval,
     hbt::mods::Week;
 
+using NonRecurrent = hbt::mods::Occurrence::NonRecurrent;
+using IntervalRecurrent = hbt::mods::Occurrence::IntervalRecurrent;
+using WeekdayRecurrent = hbt::mods::Occurrence::WeekdayRecurrent;
+
 TEST(OccurrenceTest, WeekdayRecurrentEnforcesWeekInterval) {
     EXPECT_THROW(Occurrence(DateTime::today(),
                             Week{{DateTime::weekday_t::FRIDAY}},
@@ -42,7 +46,8 @@ TEST(OccurrenceTest, NonRecurrentGetterFunctions) {
     EXPECT_FALSE(occurrence.isRecurrent());
 
     EXPECT_EQ(occurrence.getDateTime(), now);
-    // EXPECT_EQ(occurrence.getRecurrenceModel(), Occurrence::NonRecurrent{});
+    EXPECT_TRUE(
+        std::holds_alternative<NonRecurrent>(occurrence.getRecurrenceModel()));
 
     EXPECT_EQ(occurrence.getWeekday(), now.getWeekday());
 }
@@ -56,8 +61,11 @@ TEST(OccurrenceTest, IntervalRecurrentGetterFunctions) {
     EXPECT_TRUE(occurrence.isRecurrent());
 
     EXPECT_EQ(occurrence.getDateTime(), now);
-    // EXPECT_EQ(occurrence.getRecurrenceModel(),
-    //           Occurrence::IntervalRecurrent{Interval::months(2)});
+
+    EXPECT_TRUE(std::holds_alternative<IntervalRecurrent>(
+        occurrence.getRecurrenceModel()));
+    EXPECT_EQ(std::get<IntervalRecurrent>(occurrence.getRecurrenceModel()),
+              IntervalRecurrent{Interval::months(2)});
 
     EXPECT_EQ(occurrence.getWeekday(), now.getWeekday());
 }
@@ -73,11 +81,13 @@ TEST(OccurrenceTest, WeekdayRecurrentGetterFunctions) {
     EXPECT_TRUE(occurrence.isRecurrent());
 
     EXPECT_EQ(occurrence.getDateTime(), now);
-    // EXPECT_EQ(
-    //     occurrence.getRecurrenceModel(),
-    //     Occurrence::WeekdayRecurrent(
-    //         DateTime::Week{{DateTime::weekday_t::SATURDAY,
-    //         DateTime::weekday_t::SUNDAY}}, Interval::weeks(2)));
+
+    auto recModel{occurrence.getRecurrenceModel()};
+    EXPECT_TRUE(std::holds_alternative<WeekdayRecurrent>(recModel));
+    EXPECT_EQ(std::get<WeekdayRecurrent>(recModel),
+              Occurrence::WeekdayRecurrent(
+                  Week{{now.getWeekday(), DateTime::weekday_t::SUNDAY}},
+                  Interval::weeks(2)));
 
     EXPECT_EQ(occurrence.getWeekday(), now.getWeekday());
 }
@@ -89,13 +99,13 @@ TEST(OccurrenceTest, NonRecurrentToFromJSON) {
     ASSERT_EQ(std::string(json.type_name()), "object");
 
     EXPECT_EQ(json["datetime"], original.getDateTime().toISO8601String());
+    auto recModel{json["recurrence_model"]};
     EXPECT_EQ(json["recurrence_model"],
               original.recurrenceModelToJSON(original.getRecurrenceModel()));
 
     auto restored{Occurrence::fromJSON(json)};
     ASSERT_TRUE(restored.has_value());
-    // TODO: json with time too
-    // EXPECT_EQ(restored.value().getDateTime(), original.getDateTime());
+    EXPECT_EQ(restored.value().getDateTime(), original.getDateTime());
     EXPECT_EQ(restored.value().getWeekday(), original.getWeekday());
 }
 
@@ -113,7 +123,7 @@ TEST(OccurrenceTest, IntervalRecurrentToFromJSON) {
     ASSERT_TRUE(restored.has_value());
     EXPECT_EQ(restored.value().getDateTime(), original.getDateTime());
     EXPECT_EQ(restored.value().getWeekday(), original.getWeekday());
-    // EXPECT_EQ(restored->getRecurrenceModel(), original.getRecurrenceModel());
+    EXPECT_EQ(restored->getRecurrenceModel(), original.getRecurrenceModel());
 
     ASSERT_TRUE(restored->getInterval().has_value());
     ASSERT_TRUE(original.getInterval().has_value());
@@ -134,7 +144,7 @@ TEST(OccurrenceTest, WeekdayRecurrentToFromJSON) {
     ASSERT_TRUE(restored.has_value());
     EXPECT_EQ(restored.value().getDateTime(), original.getDateTime());
     EXPECT_EQ(restored.value().getWeekday(), original.getWeekday());
-    // EXPECT_EQ(restored->getRecurrenceModel(), original.getRecurrenceModel());
+    EXPECT_EQ(restored->getRecurrenceModel(), original.getRecurrenceModel());
 
     ASSERT_TRUE(restored->getInterval().has_value());
     ASSERT_TRUE(original.getInterval().has_value());

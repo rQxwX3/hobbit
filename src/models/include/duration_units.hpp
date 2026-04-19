@@ -48,14 +48,6 @@ class DurationUnits {
 
     static constexpr value_t maxValue{999};
 
-    /*
-     * ISO8601 Duration regex pattern adapted from:
-     * https://stackoverflow.com/a/32045167
-     * (modified to exclude seconds group)
-     */
-    static inline const auto ISO8601Durationpattern{std::regex{
-        R"(^P(?!$)(\d+(?:\.\d+)?Y)?(\d+(?:\.\d+)?M)?(\d+(?:\.\d+)?W)?(\d+(?:\.\d+)?D)?(T(?=\d)(\d+(?:\.\d+)?H)?(\d+(?:\.\d+)?M)?)?$)"}};
-
   private:
     array_t units_;
 
@@ -78,7 +70,7 @@ class DurationUnits {
   public:
     [[nodiscard]] auto isZero() const -> bool;
 
-    [[nodiscard]] auto onlyContainsUnit(unit_t unit) const -> bool;
+    [[nodiscard]] auto onlyContainsUnit(unit_t onlyUnit) const -> bool;
 
     [[nodiscard]] static auto isValidValue(value_t value) -> bool;
 

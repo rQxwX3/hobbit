@@ -125,108 +125,108 @@ TEST(DurationUnitsTest, ComparisonOperators) {
 }
 
 TEST(DurationUnitsTest, ToFromValidISO8601String) {
-    auto first{DurationUnits{}};
-    auto firstISO{first.toISO8601String()};
-    EXPECT_EQ(firstISO, "PT0M");
-    auto restored{DurationUnits::fromISO8601String(firstISO)};
+    auto original{DurationUnits{}};
+    auto originalISO{original.toISO8601String()};
+    EXPECT_EQ(originalISO, "PT0M");
+    auto restored{DurationUnits::fromISO8601String(originalISO)};
     ASSERT_TRUE(restored.has_value());
-    EXPECT_EQ(restored.value(), first);
+    EXPECT_EQ(restored.value(), original);
 
-    first.addUnit(unit_t::MINUTE, 1);
-    firstISO = first.toISO8601String();
-    EXPECT_EQ(firstISO, "PT1M");
-    restored = DurationUnits::fromISO8601String(firstISO);
+    original.addUnit(unit_t::MINUTE, 1);
+    originalISO = original.toISO8601String();
+    EXPECT_EQ(originalISO, "PT1M");
+    restored = DurationUnits::fromISO8601String(originalISO);
     ASSERT_TRUE(restored.has_value());
-    EXPECT_EQ(restored.value(), first);
+    EXPECT_EQ(restored.value(), original);
 
-    first.addUnit(unit_t::HOUR, 1);
-    firstISO = first.toISO8601String();
-    EXPECT_EQ(firstISO, "PT1H1M");
-    restored = DurationUnits::fromISO8601String(firstISO);
+    original.addUnit(unit_t::HOUR, 1);
+    originalISO = original.toISO8601String();
+    EXPECT_EQ(originalISO, "PT1H1M");
+    restored = DurationUnits::fromISO8601String(originalISO);
     ASSERT_TRUE(restored.has_value());
-    EXPECT_EQ(restored.value(), first);
+    EXPECT_EQ(restored.value(), original);
 
-    first.addUnit(unit_t::DAY, 1);
-    firstISO = first.toISO8601String();
-    EXPECT_EQ(firstISO, "P1DT1H1M");
-    restored = DurationUnits::fromISO8601String(firstISO);
+    original.addUnit(unit_t::DAY, 1);
+    originalISO = original.toISO8601String();
+    EXPECT_EQ(originalISO, "P1DT1H1M");
+    restored = DurationUnits::fromISO8601String(originalISO);
     ASSERT_TRUE(restored.has_value());
-    EXPECT_EQ(restored.value(), first);
+    EXPECT_EQ(restored.value(), original);
 
-    first.addUnit(unit_t::WEEK, 1);
-    firstISO = first.toISO8601String();
-    EXPECT_EQ(firstISO, "P1W1DT1H1M");
-    restored = DurationUnits::fromISO8601String(firstISO);
+    original.addUnit(unit_t::WEEK, 1);
+    originalISO = original.toISO8601String();
+    EXPECT_EQ(originalISO, "P1W1DT1H1M");
+    restored = DurationUnits::fromISO8601String(originalISO);
     ASSERT_TRUE(restored.has_value());
-    EXPECT_EQ(restored.value(), first);
+    EXPECT_EQ(restored.value(), original);
 
-    first.addUnit(unit_t::MONTH, 1);
-    firstISO = first.toISO8601String();
-    EXPECT_EQ(firstISO, "P1M1W1DT1H1M");
-    restored = DurationUnits::fromISO8601String(firstISO);
+    original.addUnit(unit_t::MONTH, 1);
+    originalISO = original.toISO8601String();
+    EXPECT_EQ(originalISO, "P1M1W1DT1H1M");
+    restored = DurationUnits::fromISO8601String(originalISO);
     ASSERT_TRUE(restored.has_value());
-    EXPECT_EQ(restored.value(), first);
+    EXPECT_EQ(restored.value(), original);
 
-    first.addUnit(unit_t::YEAR, 1);
-    firstISO = first.toISO8601String();
-    EXPECT_EQ(firstISO, "P1Y1M1W1DT1H1M");
-    restored = DurationUnits::fromISO8601String(firstISO);
+    original.addUnit(unit_t::YEAR, 1);
+    originalISO = original.toISO8601String();
+    EXPECT_EQ(originalISO, "P1Y1M1W1DT1H1M");
+    restored = DurationUnits::fromISO8601String(originalISO);
     ASSERT_TRUE(restored.has_value());
-    EXPECT_EQ(restored.value(), first);
+    EXPECT_EQ(restored.value(), original);
 }
 
 TEST(DurationUnitsTest, ToFromInValidISO8601String) {
     // invalid empty duration
     auto invalidISO{DurationUnits::fromISO8601String("PT")};
-    ASSERT_TRUE(!invalidISO.has_value());
+    ASSERT_FALSE(invalidISO.has_value());
 
     invalidISO = DurationUnits::fromISO8601String("");
-    ASSERT_TRUE(!invalidISO.has_value());
+    ASSERT_FALSE(invalidISO.has_value());
 
     // no global prefix
     invalidISO = DurationUnits::fromISO8601String("1Y");
-    ASSERT_TRUE(!invalidISO.has_value());
+    ASSERT_FALSE(invalidISO.has_value());
 
     // no time section designator
     invalidISO = DurationUnits::fromISO8601String("P1Y1H");
-    ASSERT_TRUE(!invalidISO.has_value());
+    ASSERT_FALSE(invalidISO.has_value());
 
     // incorrect order in date section
     invalidISO = DurationUnits::fromISO8601String("P1M1Y");
-    ASSERT_TRUE(!invalidISO.has_value());
+    ASSERT_FALSE(invalidISO.has_value());
     // incorrect order in time section
     invalidISO = DurationUnits::fromISO8601String("P1YT1M1H");
-    ASSERT_TRUE(!invalidISO.has_value());
+    ASSERT_FALSE(invalidISO.has_value());
 
     // number without designator
     invalidISO = DurationUnits::fromISO8601String("P1");
-    ASSERT_TRUE(!invalidISO.has_value());
+    ASSERT_FALSE(invalidISO.has_value());
 
     invalidISO = DurationUnits::fromISO8601String("P1YT1");
-    ASSERT_TRUE(!invalidISO.has_value());
+    ASSERT_FALSE(invalidISO.has_value());
 
     // designator without number
     invalidISO = DurationUnits::fromISO8601String("PY");
-    ASSERT_TRUE(!invalidISO.has_value());
+    ASSERT_FALSE(invalidISO.has_value());
 
     invalidISO = DurationUnits::fromISO8601String("P1YTH");
-    ASSERT_TRUE(!invalidISO.has_value());
+    ASSERT_FALSE(invalidISO.has_value());
 
     // trailing number
     invalidISO = DurationUnits::fromISO8601String("P1Y1");
-    ASSERT_TRUE(!invalidISO.has_value());
+    ASSERT_FALSE(invalidISO.has_value());
 
     // trailing designator
     invalidISO = DurationUnits::fromISO8601String("P1YM");
-    ASSERT_TRUE(!invalidISO.has_value());
+    ASSERT_FALSE(invalidISO.has_value());
 
     // invalid designator in date section
     invalidISO = DurationUnits::fromISO8601String("P1Y1Z");
-    ASSERT_TRUE(!invalidISO.has_value());
+    ASSERT_FALSE(invalidISO.has_value());
 
     // invalid designator in time section
     invalidISO = DurationUnits::fromISO8601String("P1Y1T1H1Z");
-    ASSERT_TRUE(!invalidISO.has_value());
+    ASSERT_FALSE(invalidISO.has_value());
 }
 
 TEST(DurationUnitsTest, FromValidNaturalLanguage) {

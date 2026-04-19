@@ -11,7 +11,14 @@
 #include <duration_units.hpp>
 
 namespace hbt::mods::util {
-class DurationUnitsParser {
+template <typename T>
+concept DurationUnitsParserConcept =
+    requires(T parser, const std::string &s, const DurationUnits &u) {
+        { parser.parse(s) } -> std::same_as<std::optional<DurationUnits>>;
+        { parser.format(u) } -> std::convertible_to<std::string>;
+    };
+
+class NaturalLanguageParser {
   private:
     class UnitBucket {
       private:
@@ -108,22 +115,22 @@ class DurationUnitsParser {
     }
 
   private:
-    inline static const UnitBucket yearBucket{
+    inline static const auto yearBucket{
         createUnitBucket(DurationUnits::unit_t::YEAR)};
 
-    inline static const UnitBucket monthBucket{
+    inline static const auto monthBucket{
         createUnitBucket(DurationUnits::unit_t::MONTH)};
 
-    inline static const UnitBucket weekBucket{
+    inline static const auto weekBucket{
         createUnitBucket(DurationUnits::unit_t::WEEK)};
 
-    inline static const UnitBucket dayBucket{
+    inline static const auto dayBucket{
         createUnitBucket(DurationUnits::unit_t::DAY)};
 
-    inline static const UnitBucket hourBucket{
+    inline static const auto hourBucket{
         createUnitBucket(DurationUnits::unit_t::HOUR)};
 
-    inline static const UnitBucket minuteBucket{
+    inline static const auto minuteBucket{
         createUnitBucket(DurationUnits::unit_t::MINUTE)};
 
     inline static unitBuckets_t buckets{yearBucket, monthBucket, weekBucket,
@@ -143,7 +150,7 @@ class DurationUnitsParser {
         -> bool;
 
   public:
-    [[nodiscard]] static auto fromNaturalLanguage(const std::string &input)
+    [[nodiscard]] static auto parse(const std::string &input)
         -> std::optional<DurationUnits>;
 
   public:
@@ -152,7 +159,54 @@ class DurationUnitsParser {
         -> std::string;
 
   public:
-    [[nodiscard]] auto static toNaturalLanguage(
-        const DurationUnits &durationUnits) -> std::string;
+    [[nodiscard]] auto static format(const DurationUnits &durationUnits)
+        -> std::string;
+};
+
+class ISO8601DurationParser {
+  private:
+    using unit_t = DurationUnits::unit_t;
+
+  private:
+    /*
+     * ISO8601 Duration regex pattern adapted from:
+     * https://stackoverflow.com/a/32045167
+     * (modified to exclude seconds group)
+     */
+    static inline const auto pattern{std::regex{
+        R"(^P(?!$)(\d+(?:\.\d+)?Y)?(\d+(?:\.\d+)?M)?(\d+(?:\.\d+)?W)?(\d+(?:\.\d+)?D)?(?:T(?=[\d])(?:(\d+(?:\.\d+)?H)?(\d+(?:\.\d+)?M)?)?)?$)"}};
+
+    static constexpr std::array<size_t, unit_t::COUNT_> patternUnitGroups{
+        1, 2, 3, 4, 5, 6};
+
+  private:
+    static constexpr auto zeroValueFormat{"PT0M"};
+    static constexpr auto formatPrefix{'P'};
+    static constexpr auto timeSectionSeparator{'T'};
+
+    static constexpr std::array<char, unit_t::COUNT_> unitSeparators{
+        'Y', 'M', 'W', 'D', 'H', 'M'};
+
+  public:
+    [[nodiscard]] static auto parse(const std::string &input)
+        -> std::optional<DurationUnits>;
+
+    [[nodiscard]] auto static format(const DurationUnits &durationUnits)
+        -> std::string;
+};
+
+template <typename Parser>
+    requires DurationUnitsParserConcept<Parser>
+class DurationUnitsParser {
+  public:
+    [[nodiscard]] static auto parse(const std::string &input)
+        -> std::optional<DurationUnits> {
+        return Parser::parse(input);
+    }
+
+    [[nodiscard]] static auto format(const DurationUnits &durationUnits)
+        -> std::string {
+        return Parser::format(durationUnits);
+    }
 };
 } // namespace hbt::mods::util
