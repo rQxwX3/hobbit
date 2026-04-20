@@ -7,3 +7,6 @@
 [submodule "libs/ftxui"]
 	path = libs/ftxui
 	url = https://github.com/ArthurSonzogni/FTXUI.git
+[submodule "libs/uuid"]
+	path = libs/uuid
+	url = https://github.com/mariusbancila/stduuid
