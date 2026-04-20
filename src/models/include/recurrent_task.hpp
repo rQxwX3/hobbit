@@ -19,15 +19,30 @@ class RecurrentTask : public Task {
   private:
     recurrencePattern_t recurrencePattern_;
 
-    repeatUntil_t repeatUntil_{std::nullopt};
+    repeatUntil_t repeatUntil_;
 
   public:
     RecurrentTask(std::string title, hbt::mods::DateTime startFrom,
                   recurrencePattern_t recurrencePattern,
                   repeatUntil_t repeatUntil = std::nullopt,
-                  deadline_t deadline = std::nullopt, bool isCompleted = false);
+                  deadline_t deadline = std::monostate{},
+                  bool isCompleted = false);
+
+  private:
+    [[nodiscard]] auto validateDeadline(deadline_t deadline)
+        -> deadline_t override;
+
+    [[nodiscard]] auto validateStartFrom(hbt::mods::DateTime startFrom)
+        -> hbt::mods::DateTime override;
+
+    [[nodiscard]] auto validateRepeatUntil(repeatUntil_t repeatUntil)
+        -> repeatUntil_t;
 
   public:
+    auto setStartFrom(hbt::mods::DateTime startFrom) -> void override;
+
+    auto setDeadline(deadline_t deadline) -> void override;
+
     auto setRecurrencePattern(recurrencePattern_t recurrencePattern);
 
     auto setRepeatUntil(repeatUntil_t repeatUntil);
@@ -38,6 +53,7 @@ class RecurrentTask : public Task {
     [[nodiscard]] auto getRepeatUntil() const -> repeatUntil_t;
 
   public:
-    [[nodiscard]] auto isForDate(hbt::mods::DateTime datetime) const -> bool;
+    [[nodiscard]] auto isForDate(hbt::mods::DateTime datetime) const
+        -> bool override;
 };
 } // namespace hbt::mods

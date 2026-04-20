@@ -1,38 +1,41 @@
 #include <task.hpp>
 
 namespace hbt::mods {
-Task::Task(std::string title, hbt::mods::DateTime startFrom,
-           deadline_t deadline, bool isCompleted)
-    : title_{std::move(title)}, startFrom_{startFrom}, deadline_{deadline},
-      isCompleted_{isCompleted} {}
+[[nodiscard]] auto Task::validateDeadline(deadline_t deadline) -> deadline_t {
+    if (std::holds_alternative<hbt::mods::DateTime>(deadline)) {
+        if (auto dt{std::get<hbt::mods::DateTime>(deadline)}; dt < startFrom_) {
+            throw std::invalid_argument(
+                "Tasks's deadline can't be before its date");
+        }
+    }
+
+    return deadline;
+}
+
+[[nodiscard]] auto Task::validateStartFrom(hbt::mods::DateTime startFrom)
+    -> hbt::mods::DateTime {
+    if (std::holds_alternative<hbt::mods::DateTime>(deadline_) &&
+        startFrom > std::get<hbt::mods::DateTime>(deadline_)) {
+        throw std::invalid_argument("Task can't happen after its deadline");
+    }
+
+    return startFrom;
+}
+
+Task::Task(std::string title, hbt::mods::DateTime startFrom, bool isCompleted,
+           deadline_t deadline)
+    : title_{std::move(title)}, startFrom_{startFrom},
+      isCompleted_{isCompleted},
+      deadline_{validateDeadline(std::move(deadline))} {}
 
 auto Task::setTitle(std::string title) -> void { title_ = std::move(title); }
 
 auto Task::setStartFrom(hbt::mods::DateTime startFrom) -> void {
-    if (!deadline_.has_value()) {
-        startFrom_ = startFrom;
-        return;
-    }
-
-    if (startFrom > deadline_) {
-        // TODO: handle the error
-    }
-
-    startFrom_ = startFrom;
+    startFrom_ = validateStartFrom(startFrom);
 }
 
 auto Task::setDeadline(deadline_t deadline) -> void {
-    if (!deadline.has_value()) {
-        deadline_ = deadline;
-        return;
-    }
-
-    if (deadline < startFrom_) {
-        // TODO: handle the error
-        return;
-    }
-
-    deadline_ = deadline;
+    deadline_ = validateDeadline(std::move(deadline));
 }
 
 auto Task::setIsCompleted(bool isCompleted) -> void {
@@ -51,12 +54,19 @@ auto Task::setIsCompleted(bool isCompleted) -> void {
 
 [[nodiscard]] auto Task::isCompleted() const -> bool { return isCompleted_; }
 
+[[nodiscard]] auto Task::isForDate(hbt::mods::DateTime datetime) const -> bool {
+    return DateTime::equalDates(startFrom_, datetime);
+}
+
+[[nodiscard]] auto Task::hasDeadline() const -> bool {
+    return !std::holds_alternative<std::monostate>(deadline_);
+}
+
 [[nodiscard]] auto Task::toJSON() const & -> nlohmann::json {
     nlohmann::json json = {
         {"title", title_},
         {"datetime", startFrom_.toISO8601String()},
-        {"deadline", (deadline_.has_value() ? deadline_->toISO8601String()
-                                            : zeroDeadlineJSON)},
+        {"deadline", deadlineToJSON()},
         {"is_completed", isCompleted_},
     };
 
@@ -67,8 +77,7 @@ auto Task::setIsCompleted(bool isCompleted) -> void {
     nlohmann::json json = {
         {"title", std::move(title_)},
         {"datetime", startFrom_.toISO8601String()},
-        {"deadline", (deadline_.has_value() ? deadline_->toISO8601String()
-                                            : zeroDeadlineJSON)},
+        {"deadline", deadlineToJSON()},
         {"is_completed", isCompleted_},
     };
 
@@ -88,13 +97,58 @@ auto Task::setIsCompleted(bool isCompleted) -> void {
         return std::nullopt;
     }
 
-    auto deadlineFromISO8601{deadline_t{std::nullopt}};
-    if (auto dlISO8601{json["deadline"].get<std::string>()};
-        dlISO8601 != zeroDeadlineJSON) {
-        deadlineFromISO8601 = hbt::mods::DateTime::fromISO8601String(dlISO8601);
+    auto deadlineFromJSON{Task::deadlineFromJSON(json["deadline"])};
+    if (!deadlineFromJSON.has_value()) {
+        return std::nullopt;
     }
 
     return Task{json["title"].get<std::string>(), dateTimeFromISO8601.value(),
-                deadlineFromISO8601, json["is_completed"].get<bool>()};
+                json["is_completed"].get<bool>(), deadlineFromJSON.value()};
+}
+
+[[nodiscard]] auto Task::deadlineToJSON() const -> nlohmann::json {
+    if (std::holds_alternative<std::monostate>(deadline_)) {
+        return {{"type", "none"}};
+    }
+
+    if (std::holds_alternative<hbt::mods::Interval>(deadline_)) {
+        auto intervalJSON{std::get<hbt::mods::Interval>(deadline_).toJSON()};
+
+        return {{"type", "interval"}, {"interval", intervalJSON}};
+    }
+
+    auto datetimeISO8601{
+        std::get<hbt::mods::DateTime>(deadline_).toISO8601String()};
+
+    return {{"type", "datetime"}, {"datetime", datetimeISO8601}};
+}
+
+[[nodiscard]] auto Task::deadlineFromJSON(const nlohmann::json &json)
+    -> std::optional<deadline_t> {
+    if (!json.contains("type")) {
+        return std::nullopt;
+    }
+
+    if (json["type"] == "none") {
+        return std::monostate{};
+    }
+
+    if (json["type"] == "interval") {
+        if (!json.contains("interval")) {
+            return std::nullopt;
+        }
+
+        return hbt::mods::Interval::fromJSON(json["interval"]);
+    }
+
+    if (json["type"] == "datetime") {
+        if (!json.contains("datetime")) {
+            return std::nullopt;
+        }
+
+        return hbt::mods::DateTime::fromISO8601String(json["datetime"]);
+    }
+
+    return std::nullopt;
 }
 } // namespace hbt::mods

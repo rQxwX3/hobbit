@@ -1,26 +1,61 @@
 #include <recurrent_task.hpp>
 
 namespace hbt::mods {
+[[nodiscard]] auto RecurrentTask::validateDeadline(deadline_t deadline)
+    -> deadline_t {
+    if (!std::holds_alternative<hbt::mods::Interval>(deadline)) {
+        throw std::invalid_argument(
+            "Only interval-based deadlines are acceptable in recurrent tasks");
+    }
+
+    return deadline;
+}
+
+[[nodiscard]] auto
+RecurrentTask::validateStartFrom(hbt::mods::DateTime startFrom)
+    -> hbt::mods::DateTime {
+    if (repeatUntil_.has_value() && startFrom > repeatUntil_.value()) {
+        throw std::invalid_argument(
+            "Recurring tasks can't start after their repeat until date");
+    }
+
+    return startFrom;
+}
+
+[[nodiscard]] auto RecurrentTask::validateRepeatUntil(repeatUntil_t repeatUntil)
+    -> repeatUntil_t {
+    if (repeatUntil.has_value() && repeatUntil.value() < startFrom_) {
+        throw std::invalid_argument(
+            "Recurrent tasks can't repeat until before the start date");
+    }
+
+    return repeatUntil;
+}
+
 RecurrentTask::RecurrentTask(std::string title, hbt::mods::DateTime startFrom,
                              recurrencePattern_t recurrencePattern,
                              repeatUntil_t repeatUntil, deadline_t deadline,
                              bool isCompleted)
-    : Task(std::move(title), startFrom, deadline, isCompleted),
+    : Task(std::move(title), validateStartFrom(startFrom), isCompleted,
+           validateDeadline(std::move(deadline))),
       recurrencePattern_{std::move(recurrencePattern)},
-      repeatUntil_{repeatUntil} {}
+      repeatUntil_{validateRepeatUntil(repeatUntil)} {}
+
+auto RecurrentTask::setStartFrom(hbt::mods::DateTime startFrom) -> void {
+    startFrom_ = validateStartFrom(startFrom);
+}
+
+auto RecurrentTask::setDeadline(deadline_t deadline) -> void {
+    deadline_ = validateDeadline(deadline);
+}
 
 auto RecurrentTask::setRecurrencePattern(
     recurrencePattern_t recurrencePattern) {
-    recurrencePattern_ = recurrencePattern;
+    recurrencePattern_ = std::move(recurrencePattern);
 }
 
 auto RecurrentTask::setRepeatUntil(repeatUntil_t repeatUntil) {
-    if (repeatUntil < hbt::mods::DateTime::now()) {
-        // TODO: handle error
-        return;
-    }
-
-    repeatUntil_ = repeatUntil;
+    repeatUntil_ = validateRepeatUntil(repeatUntil);
 }
 
 [[nodiscard]] auto RecurrentTask::getRecurrencePattern() const
