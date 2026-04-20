@@ -2,11 +2,13 @@
 
 namespace hbt::mods {
 [[nodiscard]] auto Task::validateDeadline(deadline_t deadline) -> deadline_t {
-    if (std::holds_alternative<hbt::mods::DateTime>(deadline)) {
-        if (auto dt{std::get<hbt::mods::DateTime>(deadline)}; dt < startFrom_) {
-            throw std::invalid_argument(
-                "Tasks's deadline can't be before its date");
-        }
+    if (!std::holds_alternative<hbt::mods::DateTime>(deadline)) {
+        return deadline;
+    }
+
+    if (auto datetime{std::get<hbt::mods::DateTime>(deadline)};
+        datetime < startFrom_) {
+        throw std::invalid_argument(std::string{invalidDeadlineError});
     }
 
     return deadline;
@@ -16,7 +18,7 @@ namespace hbt::mods {
     -> hbt::mods::DateTime {
     if (std::holds_alternative<hbt::mods::DateTime>(deadline_) &&
         startFrom > std::get<hbt::mods::DateTime>(deadline_)) {
-        throw std::invalid_argument("Task can't happen after its deadline");
+        throw std::invalid_argument(std::string{invalidStartFromError});
     }
 
     return startFrom;

@@ -4,8 +4,7 @@ namespace hbt::mods {
 [[nodiscard]] auto RecurrentTask::validateDeadline(deadline_t deadline)
     -> deadline_t {
     if (!std::holds_alternative<hbt::mods::Interval>(deadline)) {
-        throw std::invalid_argument(
-            "Only interval-based deadlines are acceptable in recurrent tasks");
+        throw std::invalid_argument(std::string{invalidDeadlineError});
     }
 
     return deadline;
@@ -15,8 +14,7 @@ namespace hbt::mods {
 RecurrentTask::validateStartFrom(hbt::mods::DateTime startFrom)
     -> hbt::mods::DateTime {
     if (repeatUntil_.has_value() && startFrom > repeatUntil_.value()) {
-        throw std::invalid_argument(
-            "Recurring tasks can't start after their repeat until date");
+        throw std::invalid_argument(std::string{invalideStartFromError});
     }
 
     return startFrom;
@@ -25,8 +23,7 @@ RecurrentTask::validateStartFrom(hbt::mods::DateTime startFrom)
 [[nodiscard]] auto RecurrentTask::validateRepeatUntil(repeatUntil_t repeatUntil)
     -> repeatUntil_t {
     if (repeatUntil.has_value() && repeatUntil.value() < startFrom_) {
-        throw std::invalid_argument(
-            "Recurrent tasks can't repeat until before the start date");
+        throw std::invalid_argument(std::string{invalideRepeatUntilError});
     }
 
     return repeatUntil;

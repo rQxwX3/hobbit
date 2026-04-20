@@ -1,9 +1,9 @@
 #pragma once
 
-#include <nlohmann/json.hpp>
-
 #include <datetime.hpp>
 #include <recurrence_patterns.hpp>
+
+#include <nlohmann/json.hpp>
 
 #include <string>
 #include <variant>
@@ -15,7 +15,14 @@ class Task {
         std::variant<std::monostate, hbt::mods::Interval, hbt::mods::DateTime>;
 
   private:
-    static constexpr auto zeroDeadlineJSON{std::string{"none"}};
+    static constexpr auto zeroDeadlineJSON{std::string_view{"none"}};
+
+  private:
+    static constexpr auto invalidDeadlineError{
+        std::string_view{"Tasks can't have deadlines before their date"}};
+
+    static constexpr auto invalidStartFromError{
+        std::string_view{"Tasks can't happen after their deadline"}};
 
   protected:
     std::string title_;

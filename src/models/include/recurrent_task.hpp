@@ -8,13 +8,23 @@
 #include <variant>
 
 namespace hbt::mods {
-
 class RecurrentTask : public Task {
   public:
+    virtual ~RecurrentTask() = default;
     using repeatUntil_t = std::optional<hbt::mods::DateTime>;
     using recurrencePattern_t =
         std::variant<hbt::mods::util::IntervalRecurrence,
                      hbt::mods::util::WeekdayRecurrence>;
+
+  private:
+    static constexpr auto invalidDeadlineError{std::string_view{
+        "Recurrent tasks can only have interval-based deadlines"}};
+
+    static constexpr auto invalidStartFromError{std::string_view{
+        "Recurrent tasks can't start after they stop repeating"}};
+
+    static constexpr auto invalidRepeatUntilError{std::string_view{
+        "Recurrent tasks can't stop repeating before they start"}};
 
   private:
     recurrencePattern_t recurrencePattern_;
