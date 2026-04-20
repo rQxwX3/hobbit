@@ -10,9 +10,8 @@ auto main() -> int {
     auto storage{
         std::make_shared<hbt::store::json::StorageEngine>("tasks.json")};
 
-    auto tasksRepo{
-        std::make_unique<hbt::repo::json::MultiItemRepository<hbt::mods::Task>>(
-            storage)};
+    auto tasksRepo{std::make_unique<
+        hbt::repo::json::MultiItemRepository<hbt::mods::TaskData>>(storage)};
 
     auto app{hbt::core::App{
         std::make_unique<hbt::core::TaskService>(std::move(tasksRepo)),

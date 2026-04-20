@@ -17,7 +17,7 @@
 namespace hbt::ui::tui {
 class TUI : public UI {
   private:
-    std::vector<hbt::mods::Task> tasks_;
+    std::vector<hbt::mods::TaskData> tasks_;
 
     ftxui::App screen_;
 
@@ -45,9 +45,9 @@ class TUI : public UI {
     auto setCreateTaskCallback(const createTaskCallback_t &createTaskCallback)
         -> void override;
 
-    auto setTaskList(std::vector<hbt::mods::Task> tasks) -> void override;
+    auto setTaskList(std::vector<hbt::mods::TaskData> tasks) -> void override;
 
-    auto populateTaskList(hbt::mods::Task task) -> void override;
+    auto populateTaskList(hbt::mods::TaskData task) -> void override;
 
   public:
     auto start() -> void override;

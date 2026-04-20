@@ -12,19 +12,19 @@ class TaskService {
     using id_t = size_t;
 
   private:
-    std::unique_ptr<hbt::repo::MultiItemRepository<hbt::mods::Task>>
+    std::unique_ptr<hbt::repo::MultiItemRepository<hbt::mods::TaskData>>
         repository_;
 
   public:
     explicit TaskService(
-        std::unique_ptr<hbt::repo::MultiItemRepository<hbt::mods::Task>>
+        std::unique_ptr<hbt::repo::MultiItemRepository<hbt::mods::TaskData>>
             repository);
 
   public:
     auto createTask(std::string title,
                     std::vector<hbt::mods::Occurrence> occurrences) -> id_t;
 
-    auto createTask(const hbt::mods::Task &task) -> id_t;
+    auto createTask(const hbt::mods::TaskData &task) -> id_t;
 
     auto deleteTask(id_t id) -> void;
 
@@ -41,7 +41,7 @@ class TaskService {
 
   public:
     [[nodiscard]] auto getTasksForDate(const mods::DateTime &date) const
-        -> std::vector<hbt::mods::Task>;
+        -> std::vector<hbt::mods::TaskData>;
 
     [[nodiscard]] auto getCount() const -> size_t;
 };

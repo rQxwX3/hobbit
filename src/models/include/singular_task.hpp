@@ -1,0 +1,64 @@
+#pragma once
+
+#include <task_data.hpp>
+
+namespace hbt::mods {
+class SingularTask {
+  public:
+    using deadline_t = TaskData::deadline_t;
+    using startFrom_t = TaskData::startFrom_t;
+
+  private:
+    static constexpr auto zeroDeadlineJSON{std::string_view{"none"}};
+
+  private:
+    static constexpr auto invalidDeadlineError{
+        std::string_view{"Tasks can't have deadlines before their date"}};
+
+    static constexpr auto invalidStartFromError{
+        std::string_view{"Tasks can't happen after their deadline"}};
+
+  private:
+    TaskData task_;
+
+  public:
+    SingularTask(const TaskData &task);
+
+  private:
+    [[nodiscard]] auto validateTaskData(const TaskData &task) const -> TaskData;
+
+    auto validateDeadline(deadline_t deadline) const -> deadline_t;
+
+    auto validateStartFrom(hbt::mods::DateTime startFrom) const -> startFrom_t;
+
+  public:
+    auto setTitle(std::string title) -> void;
+
+    auto setStartFrom(startFrom_t startFrom) -> void;
+
+    auto setDeadline(deadline_t deadline) -> void;
+
+    auto setIsCompleted(bool isCompleted) -> void;
+
+  public:
+    [[nodiscard]] auto getTitle() const & -> const std::string &;
+
+    [[nodiscard]] auto getStartFrom() const -> hbt::mods::DateTime;
+
+    [[nodiscard]] auto getDeadline() const -> deadline_t;
+
+    [[nodiscard]] auto isCompleted() const -> bool;
+
+  public:
+    [[nodiscard]] virtual auto isForDate(hbt::mods::DateTime datetime) const
+        -> bool;
+
+    [[nodiscard]] auto hasDeadline() const -> bool;
+
+  public:
+    [[nodiscard]] auto toJSON() const & -> nlohmann::json;
+
+    [[nodiscard]] static auto fromJSON(const nlohmann::json &json)
+        -> std::optional<SingularTask>;
+};
+} // namespace hbt::mods

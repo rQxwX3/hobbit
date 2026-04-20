@@ -71,13 +71,13 @@ auto TUI::start() -> void {
 
 TUI::TUI() : screen_{ftxui::App::FullscreenAlternateScreen()} {}
 
-auto TUI::setTaskList(std::vector<hbt::mods::Task> tasks) -> void {
+auto TUI::setTaskList(std::vector<hbt::mods::TaskData> tasks) -> void {
     tasks_ = std::move(tasks);
 
     refresh();
 }
 
-auto TUI::populateTaskList(hbt::mods::Task task) -> void {
+auto TUI::populateTaskList(hbt::mods::TaskData task) -> void {
     tasks_.push_back(task);
 }
 

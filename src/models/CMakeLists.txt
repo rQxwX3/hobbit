@@ -1,11 +1,12 @@
 add_library(models_lib STATIC
-    src/task.cpp
     src/user.cpp
 	src/datetime.cpp
 	src/interval.cpp
 	src/duration_units.cpp
 	src/duration_units_parser.cpp
 	src/recurrent_task.cpp
+	src/singular_task.cpp
+	src/task_data.cpp
 	src/recurrence_patterns.cpp
 	src/weekdays.cpp
 )

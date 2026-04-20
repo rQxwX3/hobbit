@@ -1,8 +1,7 @@
 #include <recurrent_task.hpp>
 
 namespace hbt::mods {
-[[nodiscard]] auto RecurrentTask::validateDeadline(deadline_t deadline)
-    -> deadline_t {
+auto RecurrentTask::validateDeadline(deadline_t deadline) const -> deadline_t {
     if (!std::holds_alternative<hbt::mods::Interval>(deadline)) {
         throw std::invalid_argument(std::string{invalidDeadlineError});
     }
@@ -10,40 +9,45 @@ namespace hbt::mods {
     return deadline;
 }
 
-[[nodiscard]] auto
-RecurrentTask::validateStartFrom(hbt::mods::DateTime startFrom)
-    -> hbt::mods::DateTime {
+auto RecurrentTask::validateStartFrom(hbt::mods::DateTime startFrom) const
+    -> startFrom_t {
     if (repeatUntil_.has_value() && startFrom > repeatUntil_.value()) {
-        throw std::invalid_argument(std::string{invalideStartFromError});
+        throw std::invalid_argument(std::string{invalidStartFromError});
     }
 
     return startFrom;
 }
 
-[[nodiscard]] auto RecurrentTask::validateRepeatUntil(repeatUntil_t repeatUntil)
+auto RecurrentTask::validateRepeatUntil(repeatUntil_t repeatUntil) const
     -> repeatUntil_t {
-    if (repeatUntil.has_value() && repeatUntil.value() < startFrom_) {
-        throw std::invalid_argument(std::string{invalideRepeatUntilError});
+    if (repeatUntil.has_value() && repeatUntil.value() < task_.startFrom) {
+        throw std::invalid_argument(std::string{invalidRepeatUntilError});
     }
 
     return repeatUntil;
 }
 
-RecurrentTask::RecurrentTask(std::string title, hbt::mods::DateTime startFrom,
+[[nodiscard]] auto RecurrentTask::validateTaskData(const TaskData &task) const
+    -> TaskData {
+    validateDeadline(task.deadline);
+    validateStartFrom(task.startFrom);
+
+    return task;
+}
+
+RecurrentTask::RecurrentTask(const TaskData &task,
                              recurrencePattern_t recurrencePattern,
-                             repeatUntil_t repeatUntil, deadline_t deadline,
-                             bool isCompleted)
-    : Task(std::move(title), validateStartFrom(startFrom), isCompleted,
-           validateDeadline(std::move(deadline))),
+                             repeatUntil_t repeatUntil)
+    : task_(validateTaskData(task)),
       recurrencePattern_{std::move(recurrencePattern)},
       repeatUntil_{validateRepeatUntil(repeatUntil)} {}
 
-auto RecurrentTask::setStartFrom(hbt::mods::DateTime startFrom) -> void {
-    startFrom_ = validateStartFrom(startFrom);
+auto RecurrentTask::setStartFrom(startFrom_t startFrom) -> void {
+    task_.startFrom = validateStartFrom(startFrom);
 }
 
 auto RecurrentTask::setDeadline(deadline_t deadline) -> void {
-    deadline_ = validateDeadline(deadline);
+    task_.deadline = validateDeadline(std::move(deadline));
 }
 
 auto RecurrentTask::setRecurrencePattern(
@@ -65,14 +69,14 @@ auto RecurrentTask::setRepeatUntil(repeatUntil_t repeatUntil) {
 }
 
 [[nodiscard]] auto RecurrentTask::isForDate(DateTime datetime) const -> bool {
-    if (datetime < startFrom_ ||
+    if (datetime < task_.startFrom ||
         (repeatUntil_.has_value() && datetime > repeatUntil_.value())) {
         return false;
     }
 
     if (std::holds_alternative<util::IntervalRecurrence>(recurrencePattern_)) {
         return std::get<util::IntervalRecurrence>(recurrencePattern_)
-            .happensOnDate(startFrom_, datetime);
+            .happensOnDate(task_.startFrom, datetime);
     }
 
     if (std::holds_alternative<util::WeekdayRecurrence>(recurrencePattern_)) {

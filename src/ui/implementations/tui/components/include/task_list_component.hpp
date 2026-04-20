@@ -30,7 +30,7 @@ class TaskListComponent : public ftxui::ComponentBase {
     static auto create() -> TaskListComponent;
 
   public:
-    auto setTasks(const std::vector<hbt::mods::Task> &tasks) -> void;
+    auto setTasks(const std::vector<hbt::mods::TaskData> &tasks) -> void;
 
   public:
     auto OnRender() -> ftxui::Element override;

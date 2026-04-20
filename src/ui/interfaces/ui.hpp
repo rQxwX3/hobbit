@@ -39,8 +39,9 @@ class UI {
     setCreateTaskCallback(const createTaskCallback_t &createTaskCallback)
         -> void = 0;
 
-    virtual auto setTaskList(std::vector<hbt::mods::Task> tasks) -> void = 0;
+    virtual auto setTaskList(std::vector<hbt::mods::TaskData> tasks)
+        -> void = 0;
 
-    virtual auto populateTaskList(hbt::mods::Task task) -> void = 0;
+    virtual auto populateTaskList(hbt::mods::TaskData task) -> void = 0;
 };
 } // namespace hbt::ui

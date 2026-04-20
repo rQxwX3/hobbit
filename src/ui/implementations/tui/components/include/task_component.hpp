@@ -13,7 +13,7 @@ class TaskComponent : public ftxui::ComponentBase {
     bool selected_;
 
   public:
-    explicit TaskComponent(const hbt::mods::Task &task);
+    explicit TaskComponent(const hbt::mods::TaskData &task);
 
   public:
     auto setSelected(bool selected) -> void;
