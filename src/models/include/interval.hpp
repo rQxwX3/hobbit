@@ -48,7 +48,7 @@ class Interval {
     [[nodiscard]] static auto minutes(value_t value) -> Interval;
 
   public:
-    [[nodiscard]] auto getUnit(unit_t unit) const -> value_t;
+    [[nodiscard]] auto getUnitValue(unit_t unit) const -> value_t;
 
   public:
     [[nodiscard]] auto getMonthHandling() const -> MonthHandling;
@@ -67,6 +67,8 @@ class Interval {
 
   public:
     [[nodiscard]] auto isZero() const -> bool;
+
+    [[nodiscard]] auto isLessThanDay() const -> bool;
 
     [[nodiscard]] auto onlyContainsUnit(unit_t unit) const -> bool;
 

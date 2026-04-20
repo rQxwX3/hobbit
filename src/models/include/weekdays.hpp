@@ -10,8 +10,9 @@ class Weekdays {
     static constexpr size_t daysCount{
         static_cast<size_t>(DateTime::weekday_t::COUNT_)};
 
-  private:
+  public:
     using days_t = std::bitset<daysCount>;
+    using weekday_t = DateTime::weekday_t;
 
   private:
     days_t days_;
@@ -28,6 +29,8 @@ class Weekdays {
 
   public:
     [[nodiscard]] auto getDays() const -> days_t;
+
+    [[nodiscard]] auto containsWeekday(weekday_t weekday) const -> bool;
 
   public:
     [[nodiscard]] auto toJSON() const -> nlohmann::json;

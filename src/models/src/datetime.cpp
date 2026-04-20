@@ -74,6 +74,10 @@ DateTime::DateTime(year_t year, month_t month, day_t day, hour_t hour,
     return DateTime::today().getDate() == date_;
 }
 
+[[nodiscard]] auto DateTime::equalDates(DateTime dt1, DateTime dt2) -> bool {
+    return dt1.getDate() == dt2.getDate();
+}
+
 [[nodiscard]] auto DateTime::toISO8601String() const -> std::string {
     auto timepoint{std::chrono::sys_days{date_} + time_};
     return std::format("{:%Y-%m-%dT%H:%M}", timepoint);
@@ -133,9 +137,10 @@ DateTime::DateTime(year_t year, month_t month, day_t day, hour_t hour,
             ymd.year(), std::chrono::month_day_last{ymd.month()}};
     };
 
-    auto newYMD{date_ +
-                std::chrono::years{interval.getUnit(Interval::unit_t::YEAR)} +
-                std::chrono::months{interval.getUnit(Interval::unit_t::MONTH)}};
+    auto newYMD{
+        date_ +
+        std::chrono::years{interval.getUnitValue(Interval::unit_t::YEAR)} +
+        std::chrono::months{interval.getUnitValue(Interval::unit_t::MONTH)}};
 
     if (Interval::MonthHandling::CUT_OFF == interval.getMonthHandling() &&
         !newYMD.ok()) {
@@ -143,8 +148,9 @@ DateTime::DateTime(year_t year, month_t month, day_t day, hour_t hour,
     }
 
     auto newSysDays{std::chrono::sys_days{newYMD}};
-    newSysDays += std::chrono::weeks{interval.getUnit(Interval::unit_t::WEEK)} +
-                  std::chrono::days{interval.getUnit(Interval::unit_t::DAY)};
+    newSysDays +=
+        std::chrono::weeks{interval.getUnitValue(Interval::unit_t::WEEK)} +
+        std::chrono::days{interval.getUnitValue(Interval::unit_t::DAY)};
 
     return DateTime{newSysDays};
 }

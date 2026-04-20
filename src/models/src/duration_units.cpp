@@ -1,3 +1,4 @@
+#include <datetime.hpp>
 #include <duration_units.hpp>
 #include <duration_units_parser.hpp>
 
@@ -11,6 +12,18 @@ DurationUnits::DurationUnits(array_t unitsArray) : units_{unitsArray} {}
 
 DurationUnits::DurationUnits(const Units &unitsStruct)
     : units_{unitsStruct.toArray()} {};
+
+[[nodiscard]] auto DurationUnits::getMaxNonZeroUnit() const
+    -> std::optional<unit_t> {
+    for (auto unit{static_cast<size_t>(unit_t::YEAR)}; unit != unit_t::COUNT_;
+         ++unit) {
+        if (units_[unit] != 0) {
+            return static_cast<unit_t>(unit);
+        }
+    }
+
+    return std::nullopt;
+}
 
 [[nodiscard]] auto DurationUnits::getNonZeroUnitValuePairs() const
     -> std::vector<unitValuePair_t> {
@@ -31,8 +44,20 @@ auto DurationUnits::addUnit(unit_t unit, value_t value) -> void {
     units_[unit] += value;
 }
 
-[[nodiscard]] auto DurationUnits::getUnit(unit_t unit) const -> value_t {
+[[nodiscard]] auto DurationUnits::getUnitValue(unit_t unit) const -> value_t {
     return units_[unit];
+}
+
+[[nodiscard]] auto DurationUnits::isLessThanDay() const -> bool {
+    if (auto maxUnit{getMaxNonZeroUnit()};
+        maxUnit.has_value() && maxUnit > unit_t::HOUR) {
+        return false;
+    }
+
+    auto time{(getUnitValue(unit_t::HOUR) * DateTime::timeInHour) +
+              (getUnitValue(unit_t::MINUTE) * DateTime::timeInMinute)};
+
+    return time < DateTime::timeInDay;
 }
 
 [[nodiscard]] auto DurationUnits::isZero() const -> bool {
@@ -69,7 +94,7 @@ auto DurationUnits::addUnit(unit_t unit, value_t value) -> void {
          unitInt != unit_t::COUNT_; ++unitInt) {
 
         auto unit{static_cast<unit_t>(unitInt)};
-        result.addUnit(unit, other.getUnit(unit));
+        result.addUnit(unit, other.getUnitValue(unit));
     }
 
     return result;
@@ -80,8 +105,8 @@ auto DurationUnits::addUnit(unit_t unit, value_t value) -> void {
 
     for (auto unit{static_cast<size_t>(unit_t::YEAR)}; unit != unit_t::COUNT_;
          ++unit) {
-        if (auto cmp = getUnit(static_cast<unit_t>(unit)) <=>
-                       other.getUnit(static_cast<unit_t>(unit));
+        if (auto cmp = getUnitValue(static_cast<unit_t>(unit)) <=>
+                       other.getUnitValue(static_cast<unit_t>(unit));
             cmp != 0) {
             return cmp;
         }

@@ -3,7 +3,6 @@
 #include <array>
 #include <cstdint>
 #include <optional>
-#include <regex>
 #include <string>
 #include <utility>
 #include <vector>
@@ -40,16 +39,13 @@ class DurationUnits {
     };
 
   public:
-    static constexpr value_t monthsInYear{12};
-    static constexpr value_t weeksInMonth{4};
-    static constexpr value_t daysInWeek{7};
-    static constexpr value_t hoursInDay{24};
-    static constexpr value_t minutesInHour{60};
-
     static constexpr value_t maxValue{999};
 
   private:
     array_t units_;
+
+  private:
+    [[nodiscard]] auto getMaxNonZeroUnit() const -> std::optional<unit_t>;
 
   public:
     DurationUnits();
@@ -62,13 +58,15 @@ class DurationUnits {
     auto addUnit(unit_t unit, value_t value) -> void;
 
   public:
-    [[nodiscard]] auto getUnit(unit_t unit) const -> value_t;
+    [[nodiscard]] auto getUnitValue(unit_t unit) const -> value_t;
 
     [[nodiscard]] auto getNonZeroUnitValuePairs() const
         -> std::vector<unitValuePair_t>;
 
   public:
     [[nodiscard]] auto isZero() const -> bool;
+
+    [[nodiscard]] auto isLessThanDay() const -> bool;
 
     [[nodiscard]] auto onlyContainsUnit(unit_t onlyUnit) const -> bool;
 

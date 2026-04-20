@@ -36,5 +36,8 @@ class RecurrentTask : public Task {
     [[nodiscard]] auto getRecurrencePattern() const -> recurrencePattern_t;
 
     [[nodiscard]] auto getRepeatUntil() const -> repeatUntil_t;
+
+  public:
+    [[nodiscard]] auto isForDate(hbt::mods::DateTime datetime) const -> bool;
 };
 } // namespace hbt::mods

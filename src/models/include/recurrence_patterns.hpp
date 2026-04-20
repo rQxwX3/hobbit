@@ -29,6 +29,11 @@ class IntervalRecurrence {
 
   public:
     [[nodiscard]] auto getInterval() const -> hbt::mods::Interval;
+
+  public:
+    [[nodiscard]] auto happensOnDate(hbt::mods::DateTime startFrom,
+                                     hbt::mods::DateTime datetime) const
+        -> bool;
 };
 
 class WeekdayRecurrence {
@@ -56,5 +61,9 @@ class WeekdayRecurrence {
     [[nodiscard]] auto getInterval() const -> hbt::mods::Interval;
 
     [[nodiscard]] auto getWeekdays() const -> hbt::mods::Weekdays;
+
+  public:
+    [[nodiscard]] auto happensOnDate(hbt::mods::DateTime datetime) const
+        -> bool;
 };
 } // namespace hbt::mods::util

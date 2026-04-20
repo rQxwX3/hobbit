@@ -33,6 +33,27 @@ IntervalRecurrence::IntervalRecurrence(hbt::mods::Interval interval)
     return interval_;
 }
 
+[[nodiscard]] auto
+IntervalRecurrence::happensOnDate(hbt::mods::DateTime startFrom,
+                                  hbt::mods::DateTime datetime) const -> bool {
+    if (interval_.isZero() && !DateTime::equalDates(startFrom, datetime)) {
+        return false;
+    }
+
+    if (interval_.isLessThanDay()) {
+        return true;
+    }
+
+    for (auto currDate{startFrom}; currDate <= datetime;
+         currDate += interval_) {
+        if (currDate.getDate() == datetime.getDate()) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 WeekdayRecurrence::WeekdayRecurrence(const hbt::mods::Interval &interval,
                                      hbt::mods::Weekdays weekdays)
     : weekdays_{weekdays} {
@@ -84,5 +105,10 @@ WeekdayRecurrence::WeekdayRecurrence(const hbt::mods::Interval &interval,
 [[nodiscard]] auto WeekdayRecurrence::getWeekdays() const
     -> hbt::mods::Weekdays {
     return weekdays_;
+}
+
+[[nodiscard]] auto
+WeekdayRecurrence::happensOnDate(hbt::mods::DateTime datetime) const -> bool {
+    return weekdays_.containsWeekday(datetime.getWeekday());
 }
 } // namespace hbt::mods::util

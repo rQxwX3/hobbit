@@ -194,7 +194,7 @@ ISO8601DurationParser::format(const DurationUnits &durationUnits)
     auto timeSectionStarted{false};
 
     auto formatDateGroup{[&durationUnits, &result](unit_t unit) -> void {
-        if (const auto value{durationUnits.getUnit(unit)}; value) {
+        if (const auto value{durationUnits.getUnitValue(unit)}; value) {
             result += std::to_string(value);
             result += unitSeparators[unit];
         }
@@ -202,7 +202,7 @@ ISO8601DurationParser::format(const DurationUnits &durationUnits)
 
     auto formatTimeGroup{
         [&timeSectionStarted, &durationUnits, &result](unit_t unit) -> void {
-            if (const auto value{durationUnits.getUnit(unit)}; value) {
+            if (const auto value{durationUnits.getUnitValue(unit)}; value) {
                 if (!timeSectionStarted) {
                     result += timeSectionSeparator;
                     timeSectionStarted = true;

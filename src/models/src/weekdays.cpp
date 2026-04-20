@@ -1,4 +1,4 @@
-#include <week.hpp>
+#include <weekdays.hpp>
 
 namespace hbt::mods {
 Weekdays::Weekdays(const std::vector<DateTime::weekday_t> &weekdays) {
@@ -12,6 +12,10 @@ Weekdays::Weekdays(days_t days) : days_{days} {}
 Weekdays::Weekdays(const std::string &daysString) : days_{daysString} {}
 
 [[nodiscard]] auto Weekdays::getDays() const -> days_t { return days_; }
+
+[[nodiscard]] auto Weekdays::containsWeekday(weekday_t weekday) const -> bool {
+    return days_.test(static_cast<size_t>(weekday));
+}
 
 [[nodiscard]] auto Weekdays::toJSON() const -> nlohmann::json {
     return days_.to_string();

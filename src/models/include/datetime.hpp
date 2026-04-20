@@ -21,6 +21,11 @@ class DateTime {
     };
 
   public:
+    static constexpr time_t timeInDay{1440};
+    static constexpr time_t timeInHour{60};
+    static constexpr time_t timeInMinute{1};
+
+  public:
     using date_t = std::chrono::year_month_day;
     using time_t = std::chrono::minutes;
 
@@ -75,6 +80,8 @@ class DateTime {
 
   public:
     [[nodiscard]] auto isToday() const -> bool;
+
+    [[nodiscard]] static auto equalDates(DateTime dt1, DateTime dt2) -> bool;
 
   public:
     [[nodiscard]] auto toISO8601String() const -> std::string;

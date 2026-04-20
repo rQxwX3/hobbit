@@ -9,23 +9,23 @@ using unit_t = hbt::mods::DurationUnits::unit_t;
 TEST(DurationUnitsTest, EmptyOnConstruction) {
     auto durationUnits{DurationUnits{}};
 
-    ASSERT_EQ(durationUnits.getUnit(unit_t::YEAR), 0);
-    ASSERT_EQ(durationUnits.getUnit(unit_t::MONTH), 0);
-    ASSERT_EQ(durationUnits.getUnit(unit_t::WEEK), 0);
-    ASSERT_EQ(durationUnits.getUnit(unit_t::DAY), 0);
-    ASSERT_EQ(durationUnits.getUnit(unit_t::HOUR), 0);
-    ASSERT_EQ(durationUnits.getUnit(unit_t::MINUTE), 0);
+    ASSERT_EQ(durationUnits.getUnitValue(unit_t::YEAR), 0);
+    ASSERT_EQ(durationUnits.getUnitValue(unit_t::MONTH), 0);
+    ASSERT_EQ(durationUnits.getUnitValue(unit_t::WEEK), 0);
+    ASSERT_EQ(durationUnits.getUnitValue(unit_t::DAY), 0);
+    ASSERT_EQ(durationUnits.getUnitValue(unit_t::HOUR), 0);
+    ASSERT_EQ(durationUnits.getUnitValue(unit_t::MINUTE), 0);
 }
 
 TEST(DurationUnitsTest, ArrayConstructor) {
     auto durationUnits{DurationUnits{DurationUnits::array_t{1, 2, 3, 4, 5, 6}}};
 
-    ASSERT_EQ(durationUnits.getUnit(unit_t::YEAR), 1);
-    ASSERT_EQ(durationUnits.getUnit(unit_t::MONTH), 2);
-    ASSERT_EQ(durationUnits.getUnit(unit_t::WEEK), 3);
-    ASSERT_EQ(durationUnits.getUnit(unit_t::DAY), 4);
-    ASSERT_EQ(durationUnits.getUnit(unit_t::HOUR), 5);
-    ASSERT_EQ(durationUnits.getUnit(unit_t::MINUTE), 6);
+    ASSERT_EQ(durationUnits.getUnitValue(unit_t::YEAR), 1);
+    ASSERT_EQ(durationUnits.getUnitValue(unit_t::MONTH), 2);
+    ASSERT_EQ(durationUnits.getUnitValue(unit_t::WEEK), 3);
+    ASSERT_EQ(durationUnits.getUnitValue(unit_t::DAY), 4);
+    ASSERT_EQ(durationUnits.getUnitValue(unit_t::HOUR), 5);
+    ASSERT_EQ(durationUnits.getUnitValue(unit_t::MINUTE), 6);
 }
 
 TEST(DurationUnitsTest, PerUnitConstructor) {
@@ -36,12 +36,12 @@ TEST(DurationUnitsTest, PerUnitConstructor) {
                                       .hours = 5,
                                       .minutes = 6}}};
 
-    ASSERT_EQ(durationUnits.getUnit(unit_t::YEAR), 1);
-    ASSERT_EQ(durationUnits.getUnit(unit_t::MONTH), 2);
-    ASSERT_EQ(durationUnits.getUnit(unit_t::WEEK), 3);
-    ASSERT_EQ(durationUnits.getUnit(unit_t::DAY), 4);
-    ASSERT_EQ(durationUnits.getUnit(unit_t::HOUR), 5);
-    ASSERT_EQ(durationUnits.getUnit(unit_t::MINUTE), 6);
+    ASSERT_EQ(durationUnits.getUnitValue(unit_t::YEAR), 1);
+    ASSERT_EQ(durationUnits.getUnitValue(unit_t::MONTH), 2);
+    ASSERT_EQ(durationUnits.getUnitValue(unit_t::WEEK), 3);
+    ASSERT_EQ(durationUnits.getUnitValue(unit_t::DAY), 4);
+    ASSERT_EQ(durationUnits.getUnitValue(unit_t::HOUR), 5);
+    ASSERT_EQ(durationUnits.getUnitValue(unit_t::MINUTE), 6);
 }
 
 TEST(DurationUnitsTest, IsZero) {
@@ -56,22 +56,22 @@ TEST(DurationUnitsTest, AddGetUnits) {
     auto durationUnits{DurationUnits{}};
 
     durationUnits.addUnit(unit_t::YEAR, 1);
-    EXPECT_EQ(durationUnits.getUnit(unit_t::YEAR), 1);
+    EXPECT_EQ(durationUnits.getUnitValue(unit_t::YEAR), 1);
 
     durationUnits.addUnit(unit_t::MONTH, 1);
-    EXPECT_EQ(durationUnits.getUnit(unit_t::MONTH), 1);
+    EXPECT_EQ(durationUnits.getUnitValue(unit_t::MONTH), 1);
 
     durationUnits.addUnit(unit_t::WEEK, 1);
-    EXPECT_EQ(durationUnits.getUnit(unit_t::WEEK), 1);
+    EXPECT_EQ(durationUnits.getUnitValue(unit_t::WEEK), 1);
 
     durationUnits.addUnit(unit_t::DAY, 1);
-    EXPECT_EQ(durationUnits.getUnit(unit_t::DAY), 1);
+    EXPECT_EQ(durationUnits.getUnitValue(unit_t::DAY), 1);
 
     durationUnits.addUnit(unit_t::HOUR, 1);
-    EXPECT_EQ(durationUnits.getUnit(unit_t::HOUR), 1);
+    EXPECT_EQ(durationUnits.getUnitValue(unit_t::HOUR), 1);
 
     durationUnits.addUnit(unit_t::MINUTE, 1);
-    EXPECT_EQ(durationUnits.getUnit(unit_t::MINUTE), 1);
+    EXPECT_EQ(durationUnits.getUnitValue(unit_t::MINUTE), 1);
 }
 
 TEST(DurationUnitsTest, OperatorPlus) {
@@ -92,12 +92,12 @@ TEST(DurationUnitsTest, OperatorPlus) {
     second.addUnit(unit_t::MINUTE, 6);
 
     auto result{first + second};
-    EXPECT_EQ(result.getUnit(unit_t::YEAR), 2);
-    EXPECT_EQ(result.getUnit(unit_t::MONTH), 3);
-    EXPECT_EQ(result.getUnit(unit_t::WEEK), 4);
-    EXPECT_EQ(result.getUnit(unit_t::DAY), 5);
-    EXPECT_EQ(result.getUnit(unit_t::HOUR), 6);
-    EXPECT_EQ(result.getUnit(unit_t::MINUTE), 7);
+    EXPECT_EQ(result.getUnitValue(unit_t::YEAR), 2);
+    EXPECT_EQ(result.getUnitValue(unit_t::MONTH), 3);
+    EXPECT_EQ(result.getUnitValue(unit_t::WEEK), 4);
+    EXPECT_EQ(result.getUnitValue(unit_t::DAY), 5);
+    EXPECT_EQ(result.getUnitValue(unit_t::HOUR), 6);
+    EXPECT_EQ(result.getUnitValue(unit_t::MINUTE), 7);
 }
 
 TEST(DurationUnitsTest, ComparisonOperators) {

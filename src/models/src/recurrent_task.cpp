@@ -31,4 +31,23 @@ auto RecurrentTask::setRepeatUntil(repeatUntil_t repeatUntil) {
 [[nodiscard]] auto RecurrentTask::getRepeatUntil() const -> repeatUntil_t {
     return repeatUntil_;
 }
+
+[[nodiscard]] auto RecurrentTask::isForDate(DateTime datetime) const -> bool {
+    if (datetime < startFrom_ ||
+        (repeatUntil_.has_value() && datetime > repeatUntil_.value())) {
+        return false;
+    }
+
+    if (std::holds_alternative<util::IntervalRecurrence>(recurrencePattern_)) {
+        return std::get<util::IntervalRecurrence>(recurrencePattern_)
+            .happensOnDate(startFrom_, datetime);
+    }
+
+    if (std::holds_alternative<util::WeekdayRecurrence>(recurrencePattern_)) {
+        return std::get<util::WeekdayRecurrence>(recurrencePattern_)
+            .happensOnDate(datetime);
+    }
+
+    return false;
+}
 } // namespace hbt::mods
