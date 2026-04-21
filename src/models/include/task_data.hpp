@@ -11,18 +11,18 @@ struct TaskData {
   public:
     using deadline_t =
         std::variant<std::monostate, hbt::mods::Interval, hbt::mods::DateTime>;
-    using startFrom_t = hbt::mods::DateTime;
+    using start_t = hbt::mods::DateTime;
 
   public:
     std::string title;
 
-    startFrom_t startFrom;
+    start_t start;
     deadline_t deadline;
 
     bool isCompleted;
 
   public:
-    TaskData(std::string title, startFrom_t startFrom, bool isCompleted = false,
+    TaskData(std::string title, start_t start, bool isCompleted = false,
              deadline_t deadline = std::monostate{});
 
   public:

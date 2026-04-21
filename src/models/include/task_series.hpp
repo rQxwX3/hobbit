@@ -8,15 +8,16 @@
 #include <variant>
 
 namespace hbt::mods {
-class RecurrentTask {
+class TaskSeries {
   public:
-    virtual ~RecurrentTask() = default;
-    using repeatUntil_t = std::optional<hbt::mods::DateTime>;
     using recurrencePattern_t =
         std::variant<hbt::mods::util::IntervalRecurrence,
                      hbt::mods::util::WeekdayRecurrence>;
     using deadline_t = TaskData::deadline_t;
-    using startFrom_t = TaskData::startFrom_t;
+
+    using start_t = TaskData::start_t;
+    using stop_t = std::optional<hbt::mods::DateTime>;
+
     using uuid_t = std::string;
 
   private:
@@ -34,37 +35,36 @@ class RecurrentTask {
 
     recurrencePattern_t recurrencePattern_;
 
-    repeatUntil_t repeatUntil_;
+    stop_t stop_;
 
     uuid_t uuid_;
 
   public:
-    RecurrentTask(const TaskData &taskData,
-                  recurrencePattern_t recurrencePattern,
-                  repeatUntil_t repeatUntil = std::nullopt);
+    TaskSeries(const TaskData &taskData, recurrencePattern_t recurrencePattern,
+               stop_t stop = std::nullopt);
 
   private:
     [[nodiscard]] auto validateTaskData(const TaskData &task) const -> TaskData;
 
     auto validateDeadline(deadline_t deadline) const -> deadline_t;
 
-    auto validateStartFrom(hbt::mods::DateTime startFrom) const -> startFrom_t;
+    auto validateStart(start_t start) const -> start_t;
 
-    auto validateRepeatUntil(repeatUntil_t repeatUntil) const -> repeatUntil_t;
+    auto validateStop(stop_t stop) const -> stop_t;
 
   public:
-    auto setStartFrom(startFrom_t startFrom) -> void;
+    auto setStart(start_t start) -> void;
+
+    auto setStop(stop_t stop) -> void;
 
     auto setDeadline(deadline_t deadline) -> void;
 
     auto setRecurrencePattern(recurrencePattern_t recurrencePattern);
 
-    auto setRepeatUntil(repeatUntil_t repeatUntil);
-
   public:
     [[nodiscard]] auto getRecurrencePattern() const -> recurrencePattern_t;
 
-    [[nodiscard]] auto getRepeatUntil() const -> repeatUntil_t;
+    [[nodiscard]] auto getStop() const -> stop_t;
 
   public:
     [[nodiscard]] auto isForDate(hbt::mods::DateTime datetime) const -> bool;

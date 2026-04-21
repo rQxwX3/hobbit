@@ -8,27 +8,26 @@ auto SingularTask::validateDeadline(deadline_t deadline) const -> deadline_t {
     }
 
     if (auto datetime{std::get<hbt::mods::DateTime>(deadline)};
-        datetime < task_.startFrom) {
+        datetime < task_.start) {
         throw std::invalid_argument(std::string{invalidDeadlineError});
     }
 
     return deadline;
 }
 
-auto SingularTask::validateStartFrom(hbt::mods::DateTime startFrom) const
-    -> startFrom_t {
+auto SingularTask::validateStart(start_t start) const -> start_t {
     if (std::holds_alternative<hbt::mods::DateTime>(task_.deadline) &&
-        startFrom > std::get<hbt::mods::DateTime>(task_.deadline)) {
+        start > std::get<hbt::mods::DateTime>(task_.deadline)) {
         throw std::invalid_argument(std::string{invalidStartFromError});
     }
 
-    return startFrom;
+    return start;
 }
 
 [[nodiscard]] auto SingularTask::validateTaskData(const TaskData &task) const
     -> TaskData {
     validateDeadline(task.deadline);
-    validateStartFrom(task.startFrom);
+    validateStart(task.start);
 
     return task;
 }
@@ -43,8 +42,8 @@ auto SingularTask::setTitle(std::string title) -> void {
     task_.title = std::move(title);
 }
 
-auto SingularTask::setStartFrom(startFrom_t startFrom) -> void {
-    task_.startFrom = validateStartFrom(startFrom);
+auto SingularTask::setStart(start_t start) -> void {
+    task_.start = validateStart(start);
 }
 
 auto SingularTask::setDeadline(deadline_t deadline) -> void {
@@ -59,8 +58,8 @@ auto SingularTask::setIsCompleted(bool isCompleted) -> void {
     return task_.title;
 }
 
-[[nodiscard]] auto SingularTask::getStartFrom() const -> hbt::mods::DateTime {
-    return task_.startFrom;
+[[nodiscard]] auto SingularTask::getStart() const -> start_t {
+    return task_.start;
 }
 
 [[nodiscard]] auto SingularTask::getDeadline() const -> deadline_t {
@@ -73,7 +72,7 @@ auto SingularTask::setIsCompleted(bool isCompleted) -> void {
 
 [[nodiscard]] auto SingularTask::isForDate(hbt::mods::DateTime datetime) const
     -> bool {
-    return DateTime::equalDates(task_.startFrom, datetime);
+    return DateTime::equalDates(task_.start, datetime);
 }
 
 [[nodiscard]] auto SingularTask::hasDeadline() const -> bool {

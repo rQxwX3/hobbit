@@ -8,7 +8,7 @@ namespace hbt::mods {
 class SingularTask {
   public:
     using deadline_t = TaskData::deadline_t;
-    using startFrom_t = TaskData::startFrom_t;
+    using start_t = TaskData::start_t;
     using uuid_t = std::string;
 
   private:
@@ -35,12 +35,12 @@ class SingularTask {
 
     auto validateDeadline(deadline_t deadline) const -> deadline_t;
 
-    auto validateStartFrom(hbt::mods::DateTime startFrom) const -> startFrom_t;
+    auto validateStart(start_t start) const -> start_t;
 
   public:
     auto setTitle(std::string title) -> void;
 
-    auto setStartFrom(startFrom_t startFrom) -> void;
+    auto setStart(start_t start) -> void;
 
     auto setDeadline(deadline_t deadline) -> void;
 
@@ -49,7 +49,7 @@ class SingularTask {
   public:
     [[nodiscard]] auto getTitle() const & -> const std::string &;
 
-    [[nodiscard]] auto getStartFrom() const -> hbt::mods::DateTime;
+    [[nodiscard]] auto getStart() const -> start_t;
 
     [[nodiscard]] auto getDeadline() const -> deadline_t;
 

@@ -1,15 +1,15 @@
 #include <task_data.hpp>
 
 namespace hbt::mods {
-TaskData::TaskData(std::string title, startFrom_t startFrom, bool isCompleted,
+TaskData::TaskData(std::string title, start_t start, bool isCompleted,
                    deadline_t deadline)
-    : title{std::move(title)}, startFrom{startFrom},
-      deadline{std::move(deadline)}, isCompleted{isCompleted} {}
+    : title{std::move(title)}, start{start}, deadline{std::move(deadline)},
+      isCompleted{isCompleted} {}
 
 [[nodiscard]] auto TaskData::toJSON() const & -> nlohmann::json {
     nlohmann::json json = {
         {"title", title},
-        {"datetime", startFrom.toISO8601String()},
+        {"datetime", start.toISO8601String()},
         {"deadline", deadlineToJSON()},
         {"is_completed", isCompleted},
     };

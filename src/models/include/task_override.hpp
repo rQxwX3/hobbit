@@ -1,15 +1,15 @@
 #pragma once
 
 #include <datetime.hpp>
-#include <recurrent_task.hpp>
 #include <task_data.hpp>
+#include <task_series.hpp>
 
 #include <optional>
 
 namespace hbt::mods {
 class TaskOverride {
   public:
-    using uuid_t = RecurrentTask::uuid_t;
+    using uuid_t = TaskSeries::uuid_t;
 
     using appliesOn_t = hbt::mods::DateTime;
     using appliesUntil_t = std::optional<hbt::mods::DateTime>;
@@ -17,7 +17,7 @@ class TaskOverride {
     using title_t = std::optional<std::string>;
     using deadline_t = std::optional<TaskData::deadline_t>;
     using cancelled_t = std::optional<bool>;
-    using startFrom_t = std::optional<TaskData::startFrom_t>;
+    using startFrom_t = std::optional<TaskData::start_t>;
 
     struct OverrideData {
         title_t title_;
