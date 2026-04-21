@@ -13,6 +13,43 @@ DurationUnits::DurationUnits(array_t unitsArray) : units_{unitsArray} {}
 DurationUnits::DurationUnits(const Units &unitsStruct)
     : units_{unitsStruct.toArray()} {};
 
+auto DurationUnits::convertUnitsUpwards() -> DurationUnits {
+    auto minutesToHours{[this]() -> void {
+        units_[unit_t::HOUR] += units_[unit_t::MINUTE] / minutesInHour;
+        units_[unit_t::MINUTE] %= minutesInHour;
+    }};
+
+    auto hoursToDays{[this]() -> void {
+        units_[unit_t::DAY] += units_[unit_t::HOUR] / hoursInDay;
+        units_[unit_t::HOUR] %= hoursInDay;
+    }};
+
+    auto daysToWeeks{[this]() -> void {
+        units_[unit_t::WEEK] += units_[unit_t::DAY] / daysInWeek;
+        units_[unit_t::DAY] %= daysInWeek;
+    }};
+
+    auto monthsToYears{[this]() -> void {
+        units_[unit_t::YEAR] += units_[unit_t::MONTH] / monthsInYear;
+        units_[unit_t::MONTH] %= monthsInYear;
+    }};
+
+    minutesToHours();
+    hoursToDays();
+    daysToWeeks();
+    monthsToYears();
+
+    return *this;
+}
+
+[[nodiscard]] auto DurationUnits::fromUnit(unit_t unit, value_t value)
+    -> DurationUnits {
+    auto array{array_t{}};
+    array[unit] = value;
+
+    return DurationUnits{array}.convertUnitsUpwards();
+}
+
 [[nodiscard]] auto DurationUnits::getMaxNonZeroUnit() const
     -> std::optional<unit_t> {
     for (auto unit{static_cast<size_t>(unit_t::YEAR)}; unit != unit_t::COUNT_;
@@ -75,6 +112,36 @@ auto DurationUnits::addUnit(unit_t unit, value_t value) -> void {
         }
 
         if (unit != static_cast<size_t>(onlyUnit) && units_[unit] != 0) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+[[nodiscard]] auto DurationUnits::isMultipleOf(DurationUnits other) const
+    -> bool {
+    auto thisCopy{*this};
+
+    thisCopy.convertUnitsUpwards();
+    other.convertUnitsUpwards();
+
+    for (auto unitInt{static_cast<size_t>(unit_t::YEAR)};
+         unitInt != unit_t::COUNT_; ++unitInt) {
+        auto unit{static_cast<unit_t>(unitInt)};
+
+        auto thisValue{thisCopy.getUnitValue(unit)};
+        auto otherValue{other.getUnitValue(unit)};
+
+        if (otherValue == 0) {
+            if (thisValue == 0) {
+                continue;
+            }
+
+            return false;
+        }
+
+        if ((thisValue % otherValue) != 0) {
             return false;
         }
     }

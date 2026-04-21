@@ -41,6 +41,12 @@ class DurationUnits {
   public:
     static constexpr value_t maxValue{999};
 
+  public:
+    static constexpr value_t minutesInHour{60};
+    static constexpr value_t hoursInDay{24};
+    static constexpr value_t daysInWeek{7};
+    static constexpr value_t monthsInYear{12};
+
   private:
     array_t units_;
 
@@ -53,6 +59,13 @@ class DurationUnits {
     explicit DurationUnits(array_t unitsArray);
 
     explicit DurationUnits(const Units &unitsStruct);
+
+  private:
+    auto convertUnitsUpwards() -> DurationUnits;
+
+  public:
+    [[nodiscard]] static auto fromUnit(unit_t unit, value_t value)
+        -> DurationUnits;
 
   public:
     auto addUnit(unit_t unit, value_t value) -> void;
@@ -70,7 +83,10 @@ class DurationUnits {
 
     [[nodiscard]] auto onlyContainsUnit(unit_t onlyUnit) const -> bool;
 
+    [[nodiscard]] auto isMultipleOf(DurationUnits other) const -> bool;
+
     [[nodiscard]] static auto isValidValue(value_t value) -> bool;
+
 
   public:
     [[nodiscard]] auto operator+(const DurationUnits &other) const
