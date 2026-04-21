@@ -34,9 +34,9 @@ IntervalRecurrence::IntervalRecurrence(hbt::mods::Interval interval)
 }
 
 [[nodiscard]] auto
-IntervalRecurrence::happensOnDate(hbt::mods::DateTime startFrom,
+IntervalRecurrence::happensOnDate(hbt::mods::DateTime startDate,
                                   hbt::mods::DateTime datetime) const -> bool {
-    if (interval_.isZero() && !DateTime::equalDates(startFrom, datetime)) {
+    if (interval_.isZero() && !DateTime::equalDates(startDate, datetime)) {
         return false;
     }
 
@@ -44,7 +44,7 @@ IntervalRecurrence::happensOnDate(hbt::mods::DateTime startFrom,
         return true;
     }
 
-    for (auto currDate{startFrom}; currDate <= datetime;
+    for (auto currDate{startDate}; currDate <= datetime;
          currDate += interval_) {
         if (currDate.getDate() == datetime.getDate()) {
             return true;
@@ -108,7 +108,31 @@ WeekdayRecurrence::WeekdayRecurrence(const hbt::mods::Interval &interval,
 }
 
 [[nodiscard]] auto
-WeekdayRecurrence::happensOnDate(hbt::mods::DateTime datetime) const -> bool {
-    return weekdays_.containsWeekday(datetime.getWeekday());
+WeekdayRecurrence::getDateOfFirstOccurrence(mods::DateTime startDate) const
+    -> hbt::mods::DateTime {
+    for (auto days{0}; days != DurationUnits::daysInWeek; ++days) {
+        auto date{startDate + Interval::days(days)};
+
+        if (weekdays_.containsWeekday(date.getWeekday())) {
+            return date;
+        }
+    }
+
+    // TODO: assert this function always returns a value (through ctor or
+    // otherwise)
+}
+
+[[nodiscard]] auto
+WeekdayRecurrence::happensOnDate(hbt::mods::DateTime datetime,
+                                 hbt::mods::DateTime startDate) const -> bool {
+    if (weekdays_.containsWeekday(datetime.getWeekday())) {
+        return false;
+    }
+
+    auto intervalDurationUnits{interval_.getDurationUnits()};
+    auto dateOfFirstOccurrence{getDateOfFirstOccurrence(startDate)};
+
+    return (datetime - dateOfFirstOccurrence)
+        .isMultipleOf(intervalDurationUnits);
 }
 } // namespace hbt::mods::util

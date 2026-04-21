@@ -31,7 +31,7 @@ class IntervalRecurrence {
     [[nodiscard]] auto getInterval() const -> hbt::mods::Interval;
 
   public:
-    [[nodiscard]] auto happensOnDate(hbt::mods::DateTime startFrom,
+    [[nodiscard]] auto happensOnDate(hbt::mods::DateTime startDate,
                                      hbt::mods::DateTime datetime) const
         -> bool;
 };
@@ -46,6 +46,10 @@ class WeekdayRecurrence {
 
   private:
     [[nodiscard]] auto static isValidJSON(const nlohmann::json &json) -> bool;
+
+  private:
+    [[nodiscard]] auto getDateOfFirstOccurrence(mods::DateTime startDate) const
+        -> hbt::mods::DateTime;
 
   public:
     WeekdayRecurrence(const hbt::mods::Interval &interval,
@@ -63,7 +67,8 @@ class WeekdayRecurrence {
     [[nodiscard]] auto getWeekdays() const -> hbt::mods::Weekdays;
 
   public:
-    [[nodiscard]] auto happensOnDate(hbt::mods::DateTime datetime) const
+    [[nodiscard]] auto happensOnDate(hbt::mods::DateTime startDate,
+                                     hbt::mods::DateTime datetime) const
         -> bool;
 };
 } // namespace hbt::mods::util
