@@ -1,15 +1,17 @@
 #pragma once
 
 #include <datetime.hpp>
+#include <recurrent_task.hpp>
 #include <repository.hpp>
-#include <task.hpp>
+#include <singular_task.hpp>
 
 #include <memory>
+#include <unordered_map>
 
 namespace hbt::core {
 class TaskService {
   private:
-    using id_t = size_t;
+    using uuid_t = std::string;
 
   private:
     std::unique_ptr<hbt::repo::MultiItemRepository<hbt::mods::TaskData>>
@@ -21,8 +23,8 @@ class TaskService {
             repository);
 
   public:
-    auto createTask(std::string title,
-                    std::vector<hbt::mods::Occurrence> occurrences) -> id_t;
+    // auto createTask(std::string title,
+    //                 std::vector<hbt::mods::Occurrence> occurrences) -> id_t;
 
     auto createTask(const hbt::mods::TaskData &task) -> id_t;
 
@@ -31,9 +33,10 @@ class TaskService {
   public:
     auto changeTaskTitle(id_t id, std::string title) -> void;
 
-    auto changeTaskOccurrences(id_t id,
-                               std::vector<hbt::mods::Occurrence> occurrences)
-        -> void;
+    // auto changeTaskOccurrences(id_t id,
+    //                            std::vector<hbt::mods::Occurrence>
+    //                            occurrences)
+    //     -> void;
 
     auto completeTask(id_t id) -> void;
 

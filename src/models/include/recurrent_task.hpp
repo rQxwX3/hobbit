@@ -17,6 +17,7 @@ class RecurrentTask {
                      hbt::mods::util::WeekdayRecurrence>;
     using deadline_t = TaskData::deadline_t;
     using startFrom_t = TaskData::startFrom_t;
+    using uuid_t = std::string;
 
   private:
     static constexpr auto invalidDeadlineError{std::string_view{
@@ -34,6 +35,8 @@ class RecurrentTask {
     recurrencePattern_t recurrencePattern_;
 
     repeatUntil_t repeatUntil_;
+
+    uuid_t uuid_;
 
   public:
     RecurrentTask(const TaskData &taskData,

@@ -2,11 +2,14 @@
 
 #include <task_data.hpp>
 
+#include <string>
+
 namespace hbt::mods {
 class SingularTask {
   public:
     using deadline_t = TaskData::deadline_t;
     using startFrom_t = TaskData::startFrom_t;
+    using uuid_t = std::string;
 
   private:
     static constexpr auto zeroDeadlineJSON{std::string_view{"none"}};
@@ -20,9 +23,12 @@ class SingularTask {
 
   private:
     TaskData task_;
+    uuid_t uuid_;
 
   public:
     SingularTask(const TaskData &task);
+
+    SingularTask(uuid_t uuid, const TaskData &task);
 
   private:
     [[nodiscard]] auto validateTaskData(const TaskData &task) const -> TaskData;

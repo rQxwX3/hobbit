@@ -1,4 +1,5 @@
 #include <singular_task.hpp>
+#include <uuid.hpp>
 
 namespace hbt::mods {
 auto SingularTask::validateDeadline(deadline_t deadline) const -> deadline_t {
@@ -33,7 +34,10 @@ auto SingularTask::validateStartFrom(hbt::mods::DateTime startFrom) const
 }
 
 SingularTask::SingularTask(const TaskData &task)
-    : task_{validateTaskData(task)} {}
+    : task_{validateTaskData(task)}, uuid_{core::uuid::generateUUID()} {}
+
+SingularTask::SingularTask(uuid_t uuid, const TaskData &task)
+    : task_{validateTaskData(task)}, uuid_{std::move(uuid)} {}
 
 auto SingularTask::setTitle(std::string title) -> void {
     task_.title = std::move(title);
@@ -77,12 +81,12 @@ auto SingularTask::setIsCompleted(bool isCompleted) -> void {
 }
 
 [[nodiscard]] auto SingularTask::toJSON() const & -> nlohmann::json {
-    return {{"task", task_.toJSON()}};
+    return {{"uuid", uuid_}, {"task", task_.toJSON()}};
 }
 
 [[nodiscard]] auto SingularTask::fromJSON(const nlohmann::json &json)
     -> std::optional<SingularTask> {
-    if (!json.contains("task")) {
+    if (!json.contains("uuid") || !json.contains("task")) {
         return std::nullopt;
     }
 
@@ -91,6 +95,6 @@ auto SingularTask::setIsCompleted(bool isCompleted) -> void {
         return std::nullopt;
     }
 
-    return SingularTask{taskFromJSON.value()};
+    return SingularTask{json["uuid"].get<std::string>(), taskFromJSON.value()};
 }
 } // namespace hbt::mods

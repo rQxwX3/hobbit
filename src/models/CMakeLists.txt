@@ -13,4 +13,7 @@ add_library(models_lib STATIC
 
 target_include_directories(models_lib PUBLIC include)
 
-target_link_libraries(models_lib PUBLIC nlohmann_json::nlohmann_json)
+target_link_libraries(models_lib PUBLIC 
+	nlohmann_json::nlohmann_json 
+	core_lib
+)

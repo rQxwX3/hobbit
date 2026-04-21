@@ -1,4 +1,5 @@
 #include <recurrent_task.hpp>
+#include <uuid.hpp>
 
 namespace hbt::mods {
 auto RecurrentTask::validateDeadline(deadline_t deadline) const -> deadline_t {
@@ -40,7 +41,8 @@ RecurrentTask::RecurrentTask(const TaskData &task,
                              repeatUntil_t repeatUntil)
     : task_(validateTaskData(task)),
       recurrencePattern_{std::move(recurrencePattern)},
-      repeatUntil_{validateRepeatUntil(repeatUntil)} {}
+      repeatUntil_{validateRepeatUntil(repeatUntil)},
+      uuid_{core::uuid::generateUUID()} {}
 
 auto RecurrentTask::setStartFrom(startFrom_t startFrom) -> void {
     task_.startFrom = validateStartFrom(startFrom);
