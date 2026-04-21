@@ -27,4 +27,12 @@ TaskOverride::TaskOverride(const uuid_t &recurrentTaskUUID,
     : recurrentTaskUUID_{validateUUID(recurrentTaskUUID)},
       appliesOn_{appliesOn}, appliesUntil_{validateAppliesUntil(appliesUntil)},
       override_{std::move(override)} {}
+
+[[nodiscard]] auto TaskOverride::getPriority() const -> Priority {
+    if (appliesUntil_.has_value()) {
+        return Priority::SliceOverride;
+    }
+
+    return Priority::IndividualOverride;
+}
 } // namespace hbt::mods

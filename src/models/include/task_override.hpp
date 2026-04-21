@@ -47,5 +47,8 @@ class TaskOverride {
   public:
     TaskOverride(const uuid_t &recurrentTaskUUID, appliesOn_t appliesOn,
                  appliesUntil_t appliesUntil, OverrideData override);
+
+  public:
+    [[nodiscard]] auto getPriority() const -> Priority;
 };
 } // namespace hbt::mods

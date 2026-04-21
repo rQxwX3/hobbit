@@ -4,12 +4,13 @@
 #include <recurrent_task.hpp>
 #include <repository.hpp>
 #include <singular_task.hpp>
+#include <task_override.hpp>
 
 #include <memory>
 #include <unordered_map>
 
 namespace hbt::core {
-class TaskService {
+class TaskManager {
   private:
     using uuid_t = std::string;
 
@@ -17,8 +18,10 @@ class TaskService {
     std::unique_ptr<hbt::repo::MultiItemRepository<hbt::mods::TaskData>>
         repository_;
 
+    std::unordered_map<uuid_t, mods::TaskOverride> overrides_;
+
   public:
-    explicit TaskService(
+    explicit TaskManager(
         std::unique_ptr<hbt::repo::MultiItemRepository<hbt::mods::TaskData>>
             repository);
 

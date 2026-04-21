@@ -9,6 +9,7 @@ add_library(models_lib STATIC
 	src/task_data.cpp
 	src/recurrence_patterns.cpp
 	src/weekdays.cpp
+	src/task_override.cpp
 )
 
 target_include_directories(models_lib PUBLIC include)

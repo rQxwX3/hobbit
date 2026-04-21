@@ -1,5 +1,5 @@
 add_library(core_lib STATIC
-    src/task_service.cpp
+    src/task_manager.cpp
 	src/app.cpp
 )
 
