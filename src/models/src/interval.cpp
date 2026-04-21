@@ -70,6 +70,10 @@ Interval::Interval(hbt::mods::DurationUnits::Units units,
     return monthHandling_;
 }
 
+[[nodiscard]] auto Interval::getDurationUnits() const -> DurationUnits {
+    return durationUnits_;
+}
+
 auto Interval::setMonthHandling(MonthHandling monthHandling) -> void {
     monthHandling_ = monthHandling;
 }
@@ -81,10 +85,6 @@ auto Interval::setMonthHandling(MonthHandling monthHandling) -> void {
 
 [[nodiscard]] auto Interval::isZero() const -> bool {
     return durationUnits_.isZero();
-}
-
-[[nodiscard]] auto Interval::isLessThanDay() const -> bool {
-    return durationUnits_.isLessThanDay();
 }
 
 [[nodiscard]] auto Interval::onlyContainsUnit(unit_t unit) const -> bool {

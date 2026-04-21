@@ -53,6 +53,8 @@ class Interval {
   public:
     [[nodiscard]] auto getMonthHandling() const -> MonthHandling;
 
+    [[nodiscard]] auto getDurationUnits() const -> DurationUnits;
+
   public:
     auto setMonthHandling(MonthHandling monthHandling) -> void;
 
@@ -67,8 +69,6 @@ class Interval {
 
   public:
     [[nodiscard]] auto isZero() const -> bool;
-
-    [[nodiscard]] auto isLessThanDay() const -> bool;
 
     [[nodiscard]] auto onlyContainsUnit(unit_t unit) const -> bool;
 

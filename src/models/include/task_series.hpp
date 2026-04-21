@@ -2,7 +2,9 @@
 
 #include <datetime.hpp>
 #include <recurrence_patterns.hpp>
+#include <singular_task.hpp>
 #include <task_data.hpp>
+#include <task_override.hpp>
 
 #include <optional>
 #include <variant>
@@ -52,6 +54,17 @@ class TaskSeries {
 
     auto validateStop(stop_t stop) const -> stop_t;
 
+  private:
+    [[nodiscard]] auto
+    generateFirstSingularOfDate(mods::DateTime datetime) const
+        -> std::optional<hbt::mods::SingularTask>;
+
+  public:
+    [[nodiscard]] auto generateSingularsForDate(
+        mods::DateTime datetime,
+        const std::vector<mods::TaskOverride> &overrides) const
+        -> std::vector<hbt::mods::SingularTask>;
+
   public:
     auto setStart(start_t start) -> void;
 
@@ -65,6 +78,8 @@ class TaskSeries {
     [[nodiscard]] auto getRecurrencePattern() const -> recurrencePattern_t;
 
     [[nodiscard]] auto getStop() const -> stop_t;
+
+    [[nodiscard]] auto getUUID() const -> uuid_t;
 
   public:
     [[nodiscard]] auto isForDate(hbt::mods::DateTime datetime) const -> bool;

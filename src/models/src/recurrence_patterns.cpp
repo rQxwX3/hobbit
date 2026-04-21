@@ -1,7 +1,7 @@
 #include <recurrence_patterns.hpp>
 
 namespace hbt::mods::util {
-IntervalRecurrence::IntervalRecurrence(hbt::mods::Interval interval)
+IntervalRecurrence::IntervalRecurrence(const hbt::mods::Interval &interval)
     : interval_{interval} {}
 
 [[nodiscard]] auto IntervalRecurrence::isValidJSON(const nlohmann::json &json)
@@ -34,19 +34,20 @@ IntervalRecurrence::IntervalRecurrence(hbt::mods::Interval interval)
 }
 
 [[nodiscard]] auto
-IntervalRecurrence::happensOnDate(hbt::mods::DateTime startDate,
-                                  hbt::mods::DateTime datetime) const -> bool {
-    if (interval_.isZero() && !DateTime::equalDates(startDate, datetime)) {
+IntervalRecurrence::happensOnDate(mods::DateTime start,
+                                  mods::DateTime datetime) const -> bool {
+    if (interval_.isZero() && !DateTime::equalDates(start, datetime)) {
         return false;
     }
 
-    if (interval_.isLessThanDay()) {
+    if (interval_ < Interval::days(1)) {
         return true;
     }
 
-    for (auto currDate{startDate}; currDate <= datetime;
-         currDate += interval_) {
-        if (currDate.getDate() == datetime.getDate()) {
+    // TODO: for day-based intervals use math instead of loop
+
+    for (auto dt{start}; dt.getDate() <= datetime.getDate(); dt += interval_) {
+        if (mods::DateTime::equalDates(dt, datetime)) {
             return true;
         }
     }
@@ -54,10 +55,42 @@ IntervalRecurrence::happensOnDate(hbt::mods::DateTime startDate,
     return false;
 }
 
-WeekdayRecurrence::WeekdayRecurrence(const hbt::mods::Interval &interval,
-                                     hbt::mods::Weekdays weekdays)
+[[nodiscard]] auto
+IntervalRecurrence::getFirstOccurrencesOnDate(mods::DateTime start,
+                                              mods::DateTime datetime) const
+    -> std::optional<occurrence_t> {
+    for (auto dt{start}; dt.getDate() <= datetime.getDate(); dt += interval_) {
+        if (mods::DateTime::equalDates(dt, datetime)) {
+            return dt;
+        }
+    }
+
+    return std::nullopt;
+}
+
+[[nodiscard]] auto IntervalRecurrence::getOccurrencesOnDate(
+    mods::DateTime start, mods::DateTime datetime) const -> occurrences_t {
+    auto result{occurrences_t{}};
+
+    auto firstOccurrence{getFirstOccurrencesOnDate(start, datetime)};
+    if (!firstOccurrence.has_value()) {
+        return result;
+    }
+
+    auto nextDay{datetime + mods::Interval::days(1)};
+
+    for (auto dt{firstOccurrence}; !mods::DateTime::equalDates(*dt, nextDay);
+         *dt += interval_) {
+        result.push_back(*dt);
+    }
+
+    return result;
+}
+
+WeekdayRecurrence::WeekdayRecurrence(const mods::Interval &interval,
+                                     mods::Weekdays weekdays)
     : weekdays_{weekdays} {
-    if (!interval.onlyContainsUnit(hbt::mods::Interval::unit_t::WEEK)) {
+    if (!interval.onlyContainsUnit(mods::Interval::unit_t::WEEK)) {
         throw std::invalid_argument(
             "Only weekly intervals are accepted by weekday recurrence");
     }
@@ -108,10 +141,10 @@ WeekdayRecurrence::WeekdayRecurrence(const hbt::mods::Interval &interval,
 }
 
 [[nodiscard]] auto
-WeekdayRecurrence::getDateOfFirstOccurrence(mods::DateTime startDate) const
-    -> hbt::mods::DateTime {
+WeekdayRecurrence::getDateOfFirstOccurrence(mods::DateTime start) const
+    -> occurrence_t {
     for (auto days{0}; days != DurationUnits::daysInWeek; ++days) {
-        auto date{startDate + Interval::days(days)};
+        auto date{start + Interval::days(days)};
 
         if (weekdays_.containsWeekday(date.getWeekday())) {
             return date;
@@ -123,16 +156,25 @@ WeekdayRecurrence::getDateOfFirstOccurrence(mods::DateTime startDate) const
 }
 
 [[nodiscard]] auto
-WeekdayRecurrence::happensOnDate(hbt::mods::DateTime datetime,
-                                 hbt::mods::DateTime startDate) const -> bool {
+WeekdayRecurrence::happensOnDate(hbt::mods::DateTime start,
+                                 hbt::mods::DateTime datetime) const -> bool {
     if (weekdays_.containsWeekday(datetime.getWeekday())) {
         return false;
     }
 
     auto intervalDurationUnits{interval_.getDurationUnits()};
-    auto dateOfFirstOccurrence{getDateOfFirstOccurrence(startDate)};
+    auto dateOfFirstOccurrence{getDateOfFirstOccurrence(start)};
 
     return (datetime - dateOfFirstOccurrence)
         .isMultipleOf(intervalDurationUnits);
+}
+
+[[nodiscard]] auto WeekdayRecurrence::getOccurrencesOnDate(
+    mods::DateTime start, mods::DateTime datetime) const -> occurrences_t {
+    if (happensOnDate(start, datetime)) {
+        return {datetime};
+    }
+
+    return {};
 }
 } // namespace hbt::mods::util

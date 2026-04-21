@@ -79,14 +79,11 @@ class DurationUnits {
   public:
     [[nodiscard]] auto isZero() const -> bool;
 
-    [[nodiscard]] auto isLessThanDay() const -> bool;
-
     [[nodiscard]] auto onlyContainsUnit(unit_t onlyUnit) const -> bool;
 
     [[nodiscard]] auto isMultipleOf(DurationUnits other) const -> bool;
 
     [[nodiscard]] static auto isValidValue(value_t value) -> bool;
-
 
   public:
     [[nodiscard]] auto operator+(const DurationUnits &other) const

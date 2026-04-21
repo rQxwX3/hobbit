@@ -21,9 +21,10 @@ class DateTime {
     };
 
   public:
-    static constexpr time_t timeInDay{1440};
-    static constexpr time_t timeInHour{60};
     static constexpr time_t timeInMinute{1};
+    static constexpr time_t timeInHour{timeInMinute *
+                                       DurationUnits::minutesInHour};
+    static constexpr time_t timeInDay{timeInHour * DurationUnits::hoursInDay};
 
   public:
     using date_t = std::chrono::year_month_day;
@@ -93,5 +94,7 @@ class DateTime {
     [[nodiscard]] auto operator+(const Interval &interval) const -> DateTime;
 
     auto operator+=(const Interval &interval) -> DateTime &;
+
+    [[nodiscard]] auto operator-(const DateTime &other) const -> DurationUnits;
 };
 } // namespace hbt::mods

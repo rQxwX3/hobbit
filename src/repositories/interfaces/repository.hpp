@@ -3,6 +3,8 @@
 #include <optional>
 #include <vector>
 
+#include <uuid.hpp>
+
 namespace hbt::repo {
 template <typename T> class Repository {
   public:
@@ -53,7 +55,7 @@ template <typename T> class SingleItemRepository : public Repository<T> {
     [[nodiscard]] virtual auto exists() const -> bool = 0;
 };
 
-template <typename T, typename TID = size_t>
+template <typename T, typename IDT = hbt::core::uuid::uuid_t>
 class MultiItemRepository : public Repository<T> {
   public:
     MultiItemRepository() = default;
@@ -69,17 +71,20 @@ class MultiItemRepository : public Repository<T> {
     auto operator=(MultiItemRepository &&) -> MultiItemRepository & = delete;
 
   public:
-    virtual auto save(const T &data) -> TID = 0;
+    virtual auto save(const T &data) -> IDT = 0;
 
-    virtual auto save(T &&data) -> TID = 0;
+    virtual auto save(T &&data) -> IDT = 0;
 
-    virtual auto update(const TID &id, const T &data) -> void = 0;
+    virtual auto update(const IDT &id, const T &data) -> void = 0;
 
-    [[nodiscard]] virtual auto load(const TID &id) const
+    [[nodiscard]] virtual auto load(const IDT &id) const
         -> std::optional<T> = 0;
 
-    virtual auto remove(const TID &id) -> void = 0;
+    virtual auto remove(const IDT &id) -> void = 0;
 
-    [[nodiscard]] virtual auto exists(const TID &id) const -> bool = 0;
+    [[nodiscard]] virtual auto exists(const IDT &id) const -> bool = 0;
+
+  public:
+    virtual auto getByID(const IDT &id) const -> std::optional<T> = 0;
 };
 } // namespace hbt::repo

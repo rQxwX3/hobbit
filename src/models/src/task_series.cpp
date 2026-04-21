@@ -40,6 +40,58 @@ TaskSeries::TaskSeries(const TaskData &task,
       recurrencePattern_{std::move(recurrencePattern)},
       stop_{validateStop(stop)}, uuid_{core::uuid::generateUUID()} {}
 
+// [[nodiscard]] auto
+// TaskSeries::generateFirstSingularOfDate(mods::DateTime datetime)
+//     -> std::optional<hbt::mods::SingularTask> {
+//     if (std::holds_alternative<mods::util::WeekdayRecurrence>(
+//             recurrencePattern_)) {
+//     }
+//
+//     for (auto dt{task_.start}; !mods::DateTime::equalDates(dt, datetime);)
+// }
+
+[[nodiscard]] auto TaskSeries::generateSingularsForDate(
+    mods::DateTime datetime,
+    const std::vector<mods::TaskOverride> &override) const
+    -> std::vector<hbt::mods::SingularTask> {
+    auto results{std::vector<mods::SingularTask>{}};
+
+    auto addGeneratedSingulars{
+        [this, &results](
+            const std::vector<mods::DateTime> &occurrencesOnDate) -> void {
+            for (const auto dt : occurrencesOnDate) {
+                // TODO: assert dt.getData() = datetime.getData()
+
+                auto taskData{task_};
+                taskData.start = dt;
+
+                results.emplace_back(taskData);
+            }
+        }};
+
+    // TODO use the overrides
+
+    if (std::holds_alternative<mods::util::IntervalRecurrence>(
+            recurrencePattern_)) {
+        auto pattern{
+            std::get<mods::util::IntervalRecurrence>(recurrencePattern_)};
+
+        addGeneratedSingulars(
+            pattern.getOccurrencesOnDate(task_.start, datetime));
+    }
+
+    if (std::holds_alternative<mods::util::WeekdayRecurrence>(
+            recurrencePattern_)) {
+        auto pattern{
+            std::get<mods::util::WeekdayRecurrence>(recurrencePattern_)};
+
+        addGeneratedSingulars(
+            pattern.getOccurrencesOnDate(task_.start, datetime));
+    }
+
+    return results;
+}
+
 auto TaskSeries::setStart(start_t start) -> void {
     task_.start = validateStart(start);
 }
@@ -61,6 +113,8 @@ auto TaskSeries::setStop(stop_t stop) -> void { stop_ = validateStop(stop); }
 
 [[nodiscard]] auto TaskSeries::getStop() const -> stop_t { return stop_; }
 
+[[nodiscard]] auto TaskSeries::getUUID() const -> uuid_t { return uuid_; }
+
 [[nodiscard]] auto TaskSeries::isForDate(DateTime datetime) const -> bool {
     if (datetime < task_.start ||
         (stop_.has_value() && datetime > stop_.value())) {
@@ -74,7 +128,7 @@ auto TaskSeries::setStop(stop_t stop) -> void { stop_ = validateStop(stop); }
 
     if (std::holds_alternative<util::WeekdayRecurrence>(recurrencePattern_)) {
         return std::get<util::WeekdayRecurrence>(recurrencePattern_)
-            .happensOnDate(datetime);
+            .happensOnDate(task_.start, datetime);
     }
 
     return false;

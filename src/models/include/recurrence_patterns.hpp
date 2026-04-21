@@ -8,7 +8,12 @@
 #include <optional>
 
 namespace hbt::mods::util {
+
 class IntervalRecurrence {
+  public:
+    using occurrence_t = hbt::mods::DateTime;
+    using occurrences_t = std::vector<occurrence_t>;
+
   private:
     static constexpr auto typeJSON{std::string{"interval"}};
 
@@ -19,7 +24,7 @@ class IntervalRecurrence {
     [[nodiscard]] auto static isValidJSON(const nlohmann::json &json) -> bool;
 
   public:
-    IntervalRecurrence(hbt::mods::Interval interval);
+    IntervalRecurrence(const hbt::mods::Interval &interval);
 
   public:
     [[nodiscard]] auto toJSON() const -> nlohmann::json;
@@ -34,9 +39,23 @@ class IntervalRecurrence {
     [[nodiscard]] auto happensOnDate(hbt::mods::DateTime startDate,
                                      hbt::mods::DateTime datetime) const
         -> bool;
+
+  private:
+    [[nodiscard]] auto getFirstOccurrencesOnDate(mods::DateTime start,
+                                                 mods::DateTime datetime) const
+        -> std::optional<occurrence_t>;
+
+  public:
+    [[nodiscard]] auto getOccurrencesOnDate(mods::DateTime start,
+                                            mods::DateTime datetime) const
+        -> occurrences_t;
 };
 
 class WeekdayRecurrence {
+  public:
+    using occurrence_t = hbt::mods::DateTime;
+    using occurrences_t = std::vector<occurrence_t>;
+
   private:
     static constexpr auto typeJSON{std::string{"weekday"}};
 
@@ -48,8 +67,8 @@ class WeekdayRecurrence {
     [[nodiscard]] auto static isValidJSON(const nlohmann::json &json) -> bool;
 
   private:
-    [[nodiscard]] auto getDateOfFirstOccurrence(mods::DateTime startDate) const
-        -> hbt::mods::DateTime;
+    [[nodiscard]] auto getDateOfFirstOccurrence(mods::DateTime start) const
+        -> occurrence_t;
 
   public:
     WeekdayRecurrence(const hbt::mods::Interval &interval,
@@ -67,8 +86,13 @@ class WeekdayRecurrence {
     [[nodiscard]] auto getWeekdays() const -> hbt::mods::Weekdays;
 
   public:
-    [[nodiscard]] auto happensOnDate(hbt::mods::DateTime startDate,
+    [[nodiscard]] auto happensOnDate(hbt::mods::DateTime start,
                                      hbt::mods::DateTime datetime) const
         -> bool;
+
+  public:
+    [[nodiscard]] auto getOccurrencesOnDate(mods::DateTime start,
+                                            mods::DateTime datetime) const
+        -> occurrences_t;
 };
 } // namespace hbt::mods::util

@@ -159,4 +159,14 @@ auto DateTime::operator+=(const Interval &interval) -> DateTime & {
     *this = *this + interval;
     return *this;
 }
+
+[[nodiscard]] auto DateTime::operator-(const DateTime &other) const
+    -> DurationUnits {
+
+    auto thisTP{std::chrono::sys_days{getDate()} + getTime()};
+    auto otherTP{std::chrono::sys_days{other.getDate()} + other.getTime()};
+
+    return DurationUnits::fromUnit(DurationUnits::unit_t::MINUTE,
+                                   (thisTP - otherTP).count());
+}
 }; // namespace hbt::mods

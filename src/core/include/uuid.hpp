@@ -6,7 +6,9 @@
 #include <string>
 
 namespace hbt::core::uuid {
-[[nodiscard]] inline auto generateUUID() -> std::string {
+using uuid_t = std::string;
+
+[[nodiscard]] inline auto generateUUID() -> uuid_t {
     static std::random_device rd;
     static std::mt19937 gen{rd()};
     static uuids::uuid_random_generator uuidGen{gen};

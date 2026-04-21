@@ -2,14 +2,14 @@
 
 #include <datetime.hpp>
 #include <task_data.hpp>
-#include <task_series.hpp>
+#include <uuid.hpp>
 
 #include <optional>
 
 namespace hbt::mods {
 class TaskOverride {
   public:
-    using uuid_t = TaskSeries::uuid_t;
+    using uuid_t = core::uuid::uuid_t;
 
     using appliesOn_t = hbt::mods::DateTime;
     using appliesUntil_t = std::optional<hbt::mods::DateTime>;

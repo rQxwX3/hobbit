@@ -85,18 +85,6 @@ auto DurationUnits::addUnit(unit_t unit, value_t value) -> void {
     return units_[unit];
 }
 
-[[nodiscard]] auto DurationUnits::isLessThanDay() const -> bool {
-    if (auto maxUnit{getMaxNonZeroUnit()};
-        maxUnit.has_value() && maxUnit > unit_t::HOUR) {
-        return false;
-    }
-
-    auto time{(getUnitValue(unit_t::HOUR) * DateTime::timeInHour) +
-              (getUnitValue(unit_t::MINUTE) * DateTime::timeInMinute)};
-
-    return time < DateTime::timeInDay;
-}
-
 [[nodiscard]] auto DurationUnits::isZero() const -> bool {
     return std::ranges::all_of(units_.begin(), units_.end(),
                                [](auto value) -> bool { return value == 0; });
