@@ -46,7 +46,15 @@ TaskManager::TaskManager(series_repo_t seriesRepo,
 
 [[nodiscard]] auto TaskManager::getTasksForDateRange(mods::Date from,
                                                      mods::Date to) const
-    -> calendar_t {}
+    -> calendar_t {
+    auto calendar{calendar_t{}};
+
+    for (auto date{from}; date != to; date += mods::Interval::days(1)) {
+        calendar[date] = getTasksForDate(date);
+    }
+
+    return calendar;
+}
 
 // auto TaskManager::createTask(const hbt::mods::Task &task) -> id_t {
 //     return repository_->save(task);

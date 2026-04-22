@@ -22,7 +22,7 @@ class TaskManager {
   private:
     using singulars_t = std::vector<mods::SingularTask>;
 
-    using calendar_t = std::unordered_map<hbt::mods::DateTime, singulars_t>;
+    using calendar_t = std::unordered_map<hbt::mods::Date, singulars_t>;
 
   private:
     static const inline auto lookaheadInterval{hbt::mods::Interval::days(90)};
