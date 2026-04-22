@@ -5,3 +5,5 @@ build/
 Testing/
 entries.json
 coverage*
+**/task_override.hpp
+**/task_override.cpp

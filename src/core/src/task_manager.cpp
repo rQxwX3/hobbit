@@ -5,16 +5,14 @@
 
 namespace hbt::core {
 [[nodiscard]] auto
-TaskManager::singularsFromSeriesForDate(mods::DateTime datetime) const
+TaskManager::instantiateSeriesForDate(mods::DateTime datetime) const
     -> singulars_t {
     auto result{singulars_t{}};
 
     auto series{seriesRepo_->getAll()};
 
     for (const auto &s : series) {
-        auto overrides{overridesRepo_->getByID(s.getUUID())};
-        auto singulars{s.generateSingularsForDate(
-            datetime, overrides.value_or(overrides_t{}))};
+        auto singulars{s.generateSingularsForDate(datetime)};
 
         result.insert(result.end(), std::make_move_iterator(singulars.begin()),
                       std::make_move_iterator(singulars.end()));
@@ -24,11 +22,9 @@ TaskManager::singularsFromSeriesForDate(mods::DateTime datetime) const
 }
 
 TaskManager::TaskManager(series_repo_t seriesRepo,
-                         singulars_repo_t singularsRepo,
-                         overrides_repo_t overridesRepo)
+                         singulars_repo_t singularsRepo)
     : seriesRepo_{std::move(seriesRepo)},
-      singularsRepo_{std::move(singularsRepo)},
-      overridesRepo_{std::move(overridesRepo)} {}
+      singularsRepo_{std::move(singularsRepo)} {}
 
 [[nodiscard]] auto TaskManager::getTasksForDate(mods::DateTime datetime) const
     -> singulars_t {
@@ -37,14 +33,14 @@ TaskManager::TaskManager(series_repo_t seriesRepo,
 
     for (const auto &singular : singulars) {
         if (singular.isForDate(datetime)) {
-            singulars.push_back(singular);
+            result.push_back(singular);
         }
     }
 
-    auto singularsFromSeries{singularsFromSeriesForDate(datetime)};
+    auto instantiatedSeries{instantiateSeriesForDate(datetime)};
     result.insert(result.end(),
-                  std::make_move_iterator(singularsFromSeries.begin()),
-                  std::make_move_iterator(singularsFromSeries.end()));
+                  std::make_move_iterator(instantiatedSeries.begin()),
+                  std::make_move_iterator(instantiatedSeries.end()));
 
     return result;
 }

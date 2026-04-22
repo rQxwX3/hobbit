@@ -60,9 +60,7 @@ class TaskSeries {
         -> std::optional<hbt::mods::SingularTask>;
 
   public:
-    [[nodiscard]] auto generateSingularsForDate(
-        mods::DateTime datetime,
-        const std::vector<mods::TaskOverride> &overrides) const
+    [[nodiscard]] auto generateSingularsForDate(mods::DateTime datetime) const
         -> std::vector<hbt::mods::SingularTask>;
 
   public:

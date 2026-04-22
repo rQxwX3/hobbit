@@ -50,9 +50,8 @@ TaskSeries::TaskSeries(const TaskData &task,
 //     for (auto dt{task_.start}; !mods::DateTime::equalDates(dt, datetime);)
 // }
 
-[[nodiscard]] auto TaskSeries::generateSingularsForDate(
-    mods::DateTime datetime,
-    const std::vector<mods::TaskOverride> &override) const
+[[nodiscard]] auto
+TaskSeries::generateSingularsForDate(mods::DateTime datetime) const
     -> std::vector<hbt::mods::SingularTask> {
     auto results{std::vector<mods::SingularTask>{}};
 
@@ -68,8 +67,6 @@ TaskSeries::TaskSeries(const TaskData &task,
                 results.emplace_back(taskData);
             }
         }};
-
-    // TODO use the overrides
 
     if (std::holds_alternative<mods::util::IntervalRecurrence>(
             recurrencePattern_)) {
