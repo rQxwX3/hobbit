@@ -1,4 +1,3 @@
-#include <date.hpp>
 #include <datetime.hpp>
 
 #include <format>
@@ -11,50 +10,37 @@ using std::chrono::system_clock;
 DateTime::DateTime()
     : date_{floor<std::chrono::days>(system_clock::now())},
 
-      time_{[]() -> time_t {
+      time_{[]() -> time_value_t {
           auto now{system_clock::now()};
           auto today{floor<std::chrono::days>(now)};
-          return duration_cast<time_t>(now - today);
+          return duration_cast<time_value_t>(now - today);
       }()} {}
 
-DateTime::DateTime(mods::Date date, time_t time) : date_{date}, time_{time} {}
+DateTime::DateTime(mods::Date date, time_value_t time)
+    : date_{date}, time_{time} {}
 
-DateTime::DateTime(year_t year, month_t month, day_t day, hour_t hour,
-                   minute_t minute)
-    : date_{year, month, day},
-      time_{duration_cast<minute_t>(hour).count() + minute.count()} {}
+DateTime::DateTime(year_t year, month_t month, day_t day, hours_t hours,
+                   minutes_t minutes)
+    : date_{year, month, day}, time_{hours, minutes} {}
 
 [[nodiscard]] auto DateTime::getDate() const -> mods::Date { return date_; }
 
 [[nodiscard]] auto DateTime::now() -> DateTime {
-    using namespace std::chrono;
-
-    auto now{system_clock::now()};
-    auto today{floor<days>(now)};
-
-    return DateTime(mods::Date::today(), duration_cast<time_t>(now - today));
+    return DateTime(Date::today(), Time::now());
 }
 
-[[nodiscard]] auto DateTime::getTime() const -> time_t { return time_; }
+[[nodiscard]] auto DateTime::getTime() const -> mods::Time { return time_; }
 
-[[nodiscard]] auto DateTime::getHour() const -> hour_t {
-    auto hms{std::chrono::hh_mm_ss<time_t>(time_)};
-
-    return hms.hours();
-}
-
-[[nodiscard]] auto DateTime::getMinute() const -> minute_t {
-    auto hms{std::chrono::hh_mm_ss<time_t>(time_)};
-
-    return hms.minutes();
-}
-
-[[nodiscard]] auto DateTime::equalDates(DateTime dt1, DateTime dt2) -> bool {
+[[nodiscard]] auto DateTime::equalDate(DateTime dt1, DateTime dt2) -> bool {
     return dt1.getDate() == dt2.getDate();
 }
 
+[[nodiscard]] auto DateTime::equalTime(DateTime dt1, DateTime dt2) -> bool {
+    return dt1.getTime() == dt2.getTime();
+}
+
 [[nodiscard]] auto DateTime::toISO8601String() const -> std::string {
-    auto timepoint{std::chrono::sys_days{date_.getYMD()} + time_};
+    auto timepoint{std::chrono::sys_days{date_.getYMD()} + time_.getValue()};
     return std::format("{:%Y-%m-%dT%H:%M}", timepoint);
 }
 
@@ -96,7 +82,7 @@ DateTime::DateTime(year_t year, month_t month, day_t day, hour_t hour,
         return std::nullopt;
     }
 
-    auto time{duration_cast<time_t>(hour_t{hour}) + minute_t{minute}};
+    auto time{duration_cast<time_value_t>(hours_t{hour}) + minutes_t{minute}};
 
     return DateTime{date, time};
 }
@@ -109,11 +95,11 @@ DateTime::DateTime(year_t year, month_t month, day_t day, hour_t hour,
 
 [[nodiscard]] auto DateTime::operator+(const Interval &interval) const
     -> DateTime {
-    // auto newTime{getTime() + interval}; TODO: add time too, check for
-    // overflow, add another day to the interval if it happens
-    auto newDate{getDate() + interval};
+    auto [newTime, overflow]{getTime() + interval};
+    auto newDate{getDate() +
+                 ((overflow) ? interval + Interval::days(1) : interval)};
 
-    return DateTime{};
+    return DateTime{newDate, newTime};
 }
 
 auto DateTime::operator+=(const Interval &interval) -> DateTime & {
@@ -126,7 +112,6 @@ auto DateTime::operator+=(const Interval &interval) -> DateTime & {
     auto dateDiff{getDate() - other.getDate()};
     auto timeDiff{getTime() - other.getTime()};
 
-    return dateDiff + DurationUnits::fromUnit(DurationUnits::unit_t::MINUTE,
-                                              timeDiff.count());
+    return dateDiff + timeDiff;
 }
 }; // namespace hbt::mods

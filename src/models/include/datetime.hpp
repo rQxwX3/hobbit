@@ -2,42 +2,39 @@
 
 #include <date.hpp>
 #include <interval.hpp>
+#include <time.hpp>
 
 #include <nlohmann/json.hpp>
 
-#include <chrono>
+#include <optional>
 
 namespace hbt::mods {
-
 class DateTime {
   public:
-    using time_t = std::chrono::minutes;
-
     using year_t = Date::year_t;
     using month_t = Date::month_t;
     using day_t = Date::day_t;
     using weekday_t = Date::weekday_t;
 
-    using hour_t = std::chrono::hours;
-    using minute_t = std::chrono::minutes;
-
-  public:
-    static constexpr time_t timeInMinute{1};
-    static constexpr time_t timeInHour{timeInMinute *
-                                       DurationUnits::minutesInHour};
-    static constexpr time_t timeInDay{timeInHour * DurationUnits::hoursInDay};
+    using time_value_t = Time::value_t;
+    using hours_t = Time::hours_t;
+    using minutes_t = Time::minutes_t;
 
   private:
     mods::Date date_;
-    time_t time_;
+    mods::Time time_;
 
   public:
     DateTime();
 
-    explicit DateTime(mods::Date date, time_t time = time_t{0});
+    explicit DateTime(mods::Date date, mods::Time time = time_value_t{0});
+
+    explicit DateTime(mods::Date date,
+                      time_value_t timeValue = time_value_t{0});
 
     explicit DateTime(year_t year, month_t month, day_t day,
-                      hour_t hour = hour_t{0}, minute_t minute = minute_t{0});
+                      hours_t hours = hours_t{0},
+                      minutes_t minutes = minutes_t{0});
 
   public:
     [[nodiscard]] static auto now() -> DateTime;
@@ -45,15 +42,12 @@ class DateTime {
   public:
     [[nodiscard]] auto getDate() const -> mods::Date;
 
-  public:
-    [[nodiscard]] auto getTime() const -> time_t;
-
-    [[nodiscard]] auto getHour() const -> hour_t;
-
-    [[nodiscard]] auto getMinute() const -> minute_t;
+    [[nodiscard]] auto getTime() const -> mods::Time;
 
   public:
-    [[nodiscard]] static auto equalDates(DateTime dt1, DateTime dt2) -> bool;
+    [[nodiscard]] static auto equalDate(DateTime dt1, DateTime dt2) -> bool;
+
+    [[nodiscard]] static auto equalTime(DateTime dt1, DateTime dt2) -> bool;
 
   public:
     [[nodiscard]] auto toISO8601String() const -> std::string;
