@@ -47,6 +47,8 @@ class TaskManager {
     [[nodiscard]] auto getTasksForDateRange(mods::Date from,
                                             mods::Date to) const -> calendar_t;
 
+    [[nodiscard]] auto getCalendarForToday() const -> calendar_t;
+
   public:
     // auto createTask(std::string title,
     //                 std::vector<hbt::mods::Occurrence> occurrences) ->

@@ -56,6 +56,13 @@ TaskManager::TaskManager(series_repo_t seriesRepo,
     return calendar;
 }
 
+[[nodiscard]] auto TaskManager::getCalendarForToday() const -> calendar_t {
+    auto today{mods::Date::today()};
+
+    return getTasksForDateRange(today - retentionInterval,
+                                today + lookaheadInterval);
+}
+
 // auto TaskManager::createTask(const hbt::mods::Task &task) -> id_t {
 //     return repository_->save(task);
 // }
