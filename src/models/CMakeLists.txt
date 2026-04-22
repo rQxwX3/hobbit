@@ -1,6 +1,8 @@
 add_library(models_lib STATIC
     src/user.cpp
 	src/datetime.cpp
+	src/date.cpp
+	src/time.cpp
 	src/interval.cpp
 	src/duration_units.cpp
 	src/duration_units_parser.cpp

@@ -70,9 +70,8 @@ auto SingularTask::setIsCompleted(bool isCompleted) -> void {
     return task_.isCompleted;
 }
 
-[[nodiscard]] auto SingularTask::isForDate(hbt::mods::DateTime datetime) const
-    -> bool {
-    return DateTime::equalDates(task_.start, datetime);
+[[nodiscard]] auto SingularTask::isForDate(hbt::mods::Date date) const -> bool {
+    return task_.start.getDate() == date;
 }
 
 [[nodiscard]] auto SingularTask::hasDeadline() const -> bool {

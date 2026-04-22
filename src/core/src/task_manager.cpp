@@ -4,15 +4,14 @@
 #include <task_manager.hpp>
 
 namespace hbt::core {
-[[nodiscard]] auto
-TaskManager::instantiateSeriesForDate(mods::DateTime datetime) const
+[[nodiscard]] auto TaskManager::instantiateSeriesForDate(mods::Date date) const
     -> singulars_t {
     auto result{singulars_t{}};
 
     auto series{seriesRepo_->getAll()};
 
     for (const auto &s : series) {
-        auto singulars{s.generateSingularsForDate(datetime)};
+        auto singulars{s.generateSingularsForDate(date)};
 
         result.insert(result.end(), std::make_move_iterator(singulars.begin()),
                       std::make_move_iterator(singulars.end()));
@@ -26,24 +25,28 @@ TaskManager::TaskManager(series_repo_t seriesRepo,
     : seriesRepo_{std::move(seriesRepo)},
       singularsRepo_{std::move(singularsRepo)} {}
 
-[[nodiscard]] auto TaskManager::getTasksForDate(mods::DateTime datetime) const
+[[nodiscard]] auto TaskManager::getTasksForDate(mods::Date date) const
     -> singulars_t {
     auto result{singulars_t{}};
     auto singulars{singularsRepo_->getAll()};
 
     for (const auto &singular : singulars) {
-        if (singular.isForDate(datetime)) {
+        if (singular.isForDate(date)) {
             result.push_back(singular);
         }
     }
 
-    auto instantiatedSeries{instantiateSeriesForDate(datetime)};
+    auto instantiatedSeries{instantiateSeriesForDate(date)};
     result.insert(result.end(),
                   std::make_move_iterator(instantiatedSeries.begin()),
                   std::make_move_iterator(instantiatedSeries.end()));
 
     return result;
 }
+
+[[nodiscard]] auto TaskManager::getTasksForDateRange(mods::Date from,
+                                                     mods::Date to) const
+    -> calendar_t {}
 
 // auto TaskManager::createTask(const hbt::mods::Task &task) -> id_t {
 //     return repository_->save(task);

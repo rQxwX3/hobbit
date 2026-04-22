@@ -27,7 +27,7 @@ class DateTime {
   public:
     DateTime();
 
-    explicit DateTime(mods::Date date, mods::Time time = time_value_t{0});
+    explicit DateTime(mods::Date date, mods::Time time);
 
     explicit DateTime(mods::Date date,
                       time_value_t timeValue = time_value_t{0});

@@ -56,8 +56,7 @@ class SingularTask {
     [[nodiscard]] auto isCompleted() const -> bool;
 
   public:
-    [[nodiscard]] virtual auto isForDate(hbt::mods::DateTime datetime) const
-        -> bool;
+    [[nodiscard]] virtual auto isForDate(hbt::mods::Date date) const -> bool;
 
     [[nodiscard]] auto hasDeadline() const -> bool;
 

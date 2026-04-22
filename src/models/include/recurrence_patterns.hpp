@@ -8,7 +8,6 @@
 #include <optional>
 
 namespace hbt::mods::util {
-
 class IntervalRecurrence {
   public:
     using occurrence_t = hbt::mods::DateTime;
@@ -36,18 +35,17 @@ class IntervalRecurrence {
     [[nodiscard]] auto getInterval() const -> hbt::mods::Interval;
 
   public:
-    [[nodiscard]] auto happensOnDate(hbt::mods::DateTime startDate,
-                                     hbt::mods::DateTime datetime) const
-        -> bool;
+    [[nodiscard]] auto happensOnDate(hbt::mods::DateTime start,
+                                     hbt::mods::Date date) const -> bool;
 
   private:
     [[nodiscard]] auto getFirstOccurrencesOnDate(mods::DateTime start,
-                                                 mods::DateTime datetime) const
+                                                 mods::Date date) const
         -> std::optional<occurrence_t>;
 
   public:
     [[nodiscard]] auto getOccurrencesOnDate(mods::DateTime start,
-                                            mods::DateTime datetime) const
+                                            mods::Date date) const
         -> occurrences_t;
 };
 
@@ -87,12 +85,11 @@ class WeekdayRecurrence {
 
   public:
     [[nodiscard]] auto happensOnDate(hbt::mods::DateTime start,
-                                     hbt::mods::DateTime datetime) const
-        -> bool;
+                                     hbt::mods::Date date) const -> bool;
 
   public:
     [[nodiscard]] auto getOccurrencesOnDate(mods::DateTime start,
-                                            mods::DateTime datetime) const
+                                            mods::Date date) const
         -> occurrences_t;
 };
 } // namespace hbt::mods::util

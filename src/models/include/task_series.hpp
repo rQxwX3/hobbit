@@ -55,12 +55,11 @@ class TaskSeries {
     auto validateStop(stop_t stop) const -> stop_t;
 
   private:
-    [[nodiscard]] auto
-    generateFirstSingularOfDate(mods::DateTime datetime) const
+    [[nodiscard]] auto generateFirstSingularOfDate(mods::Date date) const
         -> std::optional<hbt::mods::SingularTask>;
 
   public:
-    [[nodiscard]] auto generateSingularsForDate(mods::DateTime datetime) const
+    [[nodiscard]] auto generateSingularsForDate(mods::Date date) const
         -> std::vector<hbt::mods::SingularTask>;
 
   public:
@@ -80,6 +79,6 @@ class TaskSeries {
     [[nodiscard]] auto getUUID() const -> uuid_t;
 
   public:
-    [[nodiscard]] auto isForDate(hbt::mods::DateTime datetime) const -> bool;
+    [[nodiscard]] auto isForDate(hbt::mods::Date date) const -> bool;
 };
 } // namespace hbt::mods

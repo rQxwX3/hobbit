@@ -33,10 +33,10 @@ IntervalRecurrence::IntervalRecurrence(const hbt::mods::Interval &interval)
     return interval_;
 }
 
-[[nodiscard]] auto
-IntervalRecurrence::happensOnDate(mods::DateTime start,
-                                  mods::DateTime datetime) const -> bool {
-    if (interval_.isZero() && !DateTime::equalDates(start, datetime)) {
+[[nodiscard]] auto IntervalRecurrence::happensOnDate(mods::DateTime start,
+                                                     mods::Date date) const
+    -> bool {
+    if (interval_.isZero() && start.getDate() != date) {
         return false;
     }
 
@@ -46,8 +46,8 @@ IntervalRecurrence::happensOnDate(mods::DateTime start,
 
     // TODO: for day-based intervals use math instead of loop
 
-    for (auto dt{start}; dt.getDate() <= datetime.getDate(); dt += interval_) {
-        if (mods::DateTime::equalDates(dt, datetime)) {
+    for (auto dt{start}; dt.getDate() <= date; dt += interval_) {
+        if (dt.getDate() == date) {
             return true;
         }
     }
@@ -57,10 +57,10 @@ IntervalRecurrence::happensOnDate(mods::DateTime start,
 
 [[nodiscard]] auto
 IntervalRecurrence::getFirstOccurrencesOnDate(mods::DateTime start,
-                                              mods::DateTime datetime) const
+                                              mods::Date date) const
     -> std::optional<occurrence_t> {
-    for (auto dt{start}; dt.getDate() <= datetime.getDate(); dt += interval_) {
-        if (mods::DateTime::equalDates(dt, datetime)) {
+    for (auto dt{start}; dt.getDate() <= date; dt += interval_) {
+        if (dt.getDate() == date) {
             return dt;
         }
     }
@@ -69,18 +69,17 @@ IntervalRecurrence::getFirstOccurrencesOnDate(mods::DateTime start,
 }
 
 [[nodiscard]] auto IntervalRecurrence::getOccurrencesOnDate(
-    mods::DateTime start, mods::DateTime datetime) const -> occurrences_t {
+    mods::DateTime start, mods::Date date) const -> occurrences_t {
     auto result{occurrences_t{}};
 
-    auto firstOccurrence{getFirstOccurrencesOnDate(start, datetime)};
+    auto firstOccurrence{getFirstOccurrencesOnDate(start, date)};
     if (!firstOccurrence.has_value()) {
         return result;
     }
 
-    auto nextDay{datetime + mods::Interval::days(1)};
+    auto nextDay{date + mods::Interval::days(1)};
 
-    for (auto dt{firstOccurrence}; !mods::DateTime::equalDates(*dt, nextDay);
-         *dt += interval_) {
+    for (auto dt{firstOccurrence}; dt->getDate() != nextDay; *dt += interval_) {
         result.push_back(*dt);
     }
 
@@ -146,7 +145,7 @@ WeekdayRecurrence::getDateOfFirstOccurrence(mods::DateTime start) const
     for (auto days{0}; days != DurationUnits::daysInWeek; ++days) {
         auto date{start + Interval::days(days)};
 
-        if (weekdays_.containsWeekday(date.getWeekday())) {
+        if (weekdays_.containsWeekday(date.getDate().getWeekday())) {
             return date;
         }
     }
@@ -155,24 +154,24 @@ WeekdayRecurrence::getDateOfFirstOccurrence(mods::DateTime start) const
     // otherwise)
 }
 
-[[nodiscard]] auto
-WeekdayRecurrence::happensOnDate(hbt::mods::DateTime start,
-                                 hbt::mods::DateTime datetime) const -> bool {
-    if (weekdays_.containsWeekday(datetime.getWeekday())) {
+[[nodiscard]] auto WeekdayRecurrence::happensOnDate(hbt::mods::DateTime start,
+                                                    hbt::mods::Date date) const
+    -> bool {
+    if (weekdays_.containsWeekday(date.getWeekday())) {
         return false;
     }
 
     auto intervalDurationUnits{interval_.getDurationUnits()};
     auto dateOfFirstOccurrence{getDateOfFirstOccurrence(start)};
 
-    return (datetime - dateOfFirstOccurrence)
+    return (date - dateOfFirstOccurrence.getDate())
         .isMultipleOf(intervalDurationUnits);
 }
 
 [[nodiscard]] auto WeekdayRecurrence::getOccurrencesOnDate(
-    mods::DateTime start, mods::DateTime datetime) const -> occurrences_t {
-    if (happensOnDate(start, datetime)) {
-        return {datetime};
+    mods::DateTime start, mods::Date date) const -> occurrences_t {
+    if (happensOnDate(start, date)) {
+        return {mods::DateTime(date)};
     }
 
     return {};

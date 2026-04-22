@@ -50,8 +50,7 @@ TaskSeries::TaskSeries(const TaskData &task,
 //     for (auto dt{task_.start}; !mods::DateTime::equalDates(dt, datetime);)
 // }
 
-[[nodiscard]] auto
-TaskSeries::generateSingularsForDate(mods::DateTime datetime) const
+[[nodiscard]] auto TaskSeries::generateSingularsForDate(mods::Date date) const
     -> std::vector<hbt::mods::SingularTask> {
     auto results{std::vector<mods::SingularTask>{}};
 
@@ -73,8 +72,7 @@ TaskSeries::generateSingularsForDate(mods::DateTime datetime) const
         auto pattern{
             std::get<mods::util::IntervalRecurrence>(recurrencePattern_)};
 
-        addGeneratedSingulars(
-            pattern.getOccurrencesOnDate(task_.start, datetime));
+        addGeneratedSingulars(pattern.getOccurrencesOnDate(task_.start, date));
     }
 
     if (std::holds_alternative<mods::util::WeekdayRecurrence>(
@@ -82,8 +80,7 @@ TaskSeries::generateSingularsForDate(mods::DateTime datetime) const
         auto pattern{
             std::get<mods::util::WeekdayRecurrence>(recurrencePattern_)};
 
-        addGeneratedSingulars(
-            pattern.getOccurrencesOnDate(task_.start, datetime));
+        addGeneratedSingulars(pattern.getOccurrencesOnDate(task_.start, date));
     }
 
     return results;
@@ -112,20 +109,20 @@ auto TaskSeries::setStop(stop_t stop) -> void { stop_ = validateStop(stop); }
 
 [[nodiscard]] auto TaskSeries::getUUID() const -> uuid_t { return uuid_; }
 
-[[nodiscard]] auto TaskSeries::isForDate(DateTime datetime) const -> bool {
-    if (datetime < task_.start ||
-        (stop_.has_value() && datetime > stop_.value())) {
+[[nodiscard]] auto TaskSeries::isForDate(Date date) const -> bool {
+    if (date < task_.start.getDate() ||
+        (stop_.has_value() && date > stop_->getDate())) {
         return false;
     }
 
     if (std::holds_alternative<util::IntervalRecurrence>(recurrencePattern_)) {
         return std::get<util::IntervalRecurrence>(recurrencePattern_)
-            .happensOnDate(task_.start, datetime);
+            .happensOnDate(task_.start, date);
     }
 
     if (std::holds_alternative<util::WeekdayRecurrence>(recurrencePattern_)) {
         return std::get<util::WeekdayRecurrence>(recurrencePattern_)
-            .happensOnDate(task_.start, datetime);
+            .happensOnDate(task_.start, date);
     }
 
     return false;
