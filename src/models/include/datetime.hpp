@@ -1,24 +1,25 @@
 #pragma once
 
-#include <nlohmann/json.hpp>
-
+#include <date.hpp>
 #include <interval.hpp>
+
+#include <nlohmann/json.hpp>
 
 #include <chrono>
 
 namespace hbt::mods {
+
 class DateTime {
   public:
-    enum class weekday_t : char {
-        MONDAY = 0,
-        TUESDAY,
-        WEDNESDAY,
-        THURSDAY,
-        FRIDAY,
-        SATURDAY,
-        SUNDAY,
-        COUNT_,
-    };
+    using time_t = std::chrono::minutes;
+
+    using year_t = Date::year_t;
+    using month_t = Date::month_t;
+    using day_t = Date::day_t;
+    using weekday_t = Date::weekday_t;
+
+    using hour_t = std::chrono::hours;
+    using minute_t = std::chrono::minutes;
 
   public:
     static constexpr time_t timeInMinute{1};
@@ -26,44 +27,23 @@ class DateTime {
                                        DurationUnits::minutesInHour};
     static constexpr time_t timeInDay{timeInHour * DurationUnits::hoursInDay};
 
-  public:
-    using date_t = std::chrono::year_month_day;
-    using time_t = std::chrono::minutes;
-
-    using year_t = std::chrono::year;
-    using month_t = std::chrono::month;
-    using day_t = std::chrono::day;
-
-    using hour_t = std::chrono::hours;
-    using minute_t = std::chrono::minutes;
-
   private:
-    date_t date_;
+    mods::Date date_;
     time_t time_;
 
   public:
     DateTime();
 
-    explicit DateTime(date_t date, time_t time = time_t{0});
+    explicit DateTime(mods::Date date, time_t time = time_t{0});
 
-    explicit DateTime(year_t year, month_t month, day_t day = day_t{0},
+    explicit DateTime(year_t year, month_t month, day_t day,
                       hour_t hour = hour_t{0}, minute_t minute = minute_t{0});
 
   public:
-    [[nodiscard]] static auto today() -> DateTime;
-
     [[nodiscard]] static auto now() -> DateTime;
 
   public:
-    [[nodiscard]] auto getDate() const -> date_t;
-
-    [[nodiscard]] auto getYear() const -> year_t;
-
-    [[nodiscard]] auto getMonth() const -> month_t;
-
-    [[nodiscard]] auto getDay() const -> day_t;
-
-    [[nodiscard]] auto getWeekday() const -> weekday_t;
+    [[nodiscard]] auto getDate() const -> mods::Date;
 
   public:
     [[nodiscard]] auto getTime() const -> time_t;
@@ -73,15 +53,6 @@ class DateTime {
     [[nodiscard]] auto getMinute() const -> minute_t;
 
   public:
-    [[nodiscard]] auto operator<=>(const DateTime &other) const
-        -> std::strong_ordering = default;
-
-    [[nodiscard]] auto operator==(const DateTime &other) const
-        -> bool = default;
-
-  public:
-    [[nodiscard]] auto isToday() const -> bool;
-
     [[nodiscard]] static auto equalDates(DateTime dt1, DateTime dt2) -> bool;
 
   public:
@@ -91,6 +62,11 @@ class DateTime {
         -> std::optional<DateTime>;
 
   public:
+    [[nodiscard]] auto operator<=>(const DateTime &other) const
+        -> std::strong_ordering;
+
+    [[nodiscard]] auto operator==(const DateTime &other) const -> bool;
+
     [[nodiscard]] auto operator+(const Interval &interval) const -> DateTime;
 
     auto operator+=(const Interval &interval) -> DateTime &;

@@ -1,12 +1,12 @@
+#include <date.hpp>
 #include <datetime.hpp>
 
-#include <chrono>
 #include <format>
 #include <optional>
 #include <regex>
 
 namespace hbt::mods {
-using std::chrono::floor, std::chrono::system_clock, std::chrono::duration_cast;
+using std::chrono::system_clock;
 
 DateTime::DateTime()
     : date_{floor<std::chrono::days>(system_clock::now())},
@@ -17,23 +17,14 @@ DateTime::DateTime()
           return duration_cast<time_t>(now - today);
       }()} {}
 
-DateTime::DateTime(date_t date, time_t time) : date_{date}, time_{time} {}
+DateTime::DateTime(mods::Date date, time_t time) : date_{date}, time_{time} {}
 
 DateTime::DateTime(year_t year, month_t month, day_t day, hour_t hour,
                    minute_t minute)
-    : date_{std::chrono::year_month_day{year, month, day}},
+    : date_{year, month, day},
       time_{duration_cast<minute_t>(hour).count() + minute.count()} {}
 
-[[nodiscard]] auto DateTime::getDate() const -> date_t { return date_; }
-
-[[nodiscard]] auto DateTime::today() -> DateTime {
-    using namespace std::chrono;
-
-    auto now{system_clock::now()};
-    auto today{floor<days>(now)};
-
-    return DateTime(year_month_day(today));
-}
+[[nodiscard]] auto DateTime::getDate() const -> mods::Date { return date_; }
 
 [[nodiscard]] auto DateTime::now() -> DateTime {
     using namespace std::chrono;
@@ -41,19 +32,7 @@ DateTime::DateTime(year_t year, month_t month, day_t day, hour_t hour,
     auto now{system_clock::now()};
     auto today{floor<days>(now)};
 
-    return DateTime(year_month_day(today), duration_cast<time_t>(now - today));
-}
-
-[[nodiscard]] auto DateTime::getYear() const -> year_t { return date_.year(); }
-
-[[nodiscard]] auto DateTime::getMonth() const -> month_t {
-    return date_.month();
-}
-
-[[nodiscard]] auto DateTime::getDay() const -> day_t { return date_.day(); }
-
-[[nodiscard]] auto DateTime::getWeekday() const -> weekday_t {
-    return static_cast<weekday_t>(std::chrono::weekday{date_}.c_encoding());
+    return DateTime(mods::Date::today(), duration_cast<time_t>(now - today));
 }
 
 [[nodiscard]] auto DateTime::getTime() const -> time_t { return time_; }
@@ -70,16 +49,12 @@ DateTime::DateTime(year_t year, month_t month, day_t day, hour_t hour,
     return hms.minutes();
 }
 
-[[nodiscard]] auto DateTime::isToday() const -> bool {
-    return DateTime::today().getDate() == date_;
-}
-
 [[nodiscard]] auto DateTime::equalDates(DateTime dt1, DateTime dt2) -> bool {
     return dt1.getDate() == dt2.getDate();
 }
 
 [[nodiscard]] auto DateTime::toISO8601String() const -> std::string {
-    auto timepoint{std::chrono::sys_days{date_} + time_};
+    auto timepoint{std::chrono::sys_days{date_.getYMD()} + time_};
     return std::format("{:%Y-%m-%dT%H:%M}", timepoint);
 }
 
@@ -111,11 +86,7 @@ DateTime::DateTime(year_t year, month_t month, day_t day, hour_t hour,
         static_cast<unsigned>(std::stoi(matches[monthGroup].str()))};
     const auto day{static_cast<unsigned>(std::stoi(matches[dayGroup].str()))};
 
-    const auto date{date_t(year_t{year}, month_t{month}, day_t{day})};
-
-    if (!date.ok()) {
-        return std::nullopt;
-    }
+    const auto date{mods::Date(year_t{year}, month_t{month}, day_t{day})};
 
     const auto hour{std::stoi(matches[hourGroup].str())};
     const auto minute{std::stoi(matches[minuteGroup].str())};
@@ -130,29 +101,19 @@ DateTime::DateTime(year_t year, month_t month, day_t day, hour_t hour,
     return DateTime{date, time};
 }
 
+[[nodiscard]] auto DateTime::operator<=>(const DateTime &other) const
+    -> std::strong_ordering = default;
+
+[[nodiscard]] auto DateTime::operator==(const DateTime &other) const
+    -> bool = default;
+
 [[nodiscard]] auto DateTime::operator+(const Interval &interval) const
     -> DateTime {
-    auto clampToMonthEnd = [](auto ymd) -> auto {
-        return std::chrono::year_month_day_last{
-            ymd.year(), std::chrono::month_day_last{ymd.month()}};
-    };
+    // auto newTime{getTime() + interval}; TODO: add time too, check for
+    // overflow, add another day to the interval if it happens
+    auto newDate{getDate() + interval};
 
-    auto newYMD{
-        date_ +
-        std::chrono::years{interval.getUnitValue(Interval::unit_t::YEAR)} +
-        std::chrono::months{interval.getUnitValue(Interval::unit_t::MONTH)}};
-
-    if (Interval::MonthHandling::CUT_OFF == interval.getMonthHandling() &&
-        !newYMD.ok()) {
-        newYMD = clampToMonthEnd(newYMD);
-    }
-
-    auto newSysDays{std::chrono::sys_days{newYMD}};
-    newSysDays +=
-        std::chrono::weeks{interval.getUnitValue(Interval::unit_t::WEEK)} +
-        std::chrono::days{interval.getUnitValue(Interval::unit_t::DAY)};
-
-    return DateTime{newSysDays};
+    return DateTime{};
 }
 
 auto DateTime::operator+=(const Interval &interval) -> DateTime & {
@@ -162,11 +123,10 @@ auto DateTime::operator+=(const Interval &interval) -> DateTime & {
 
 [[nodiscard]] auto DateTime::operator-(const DateTime &other) const
     -> DurationUnits {
+    auto dateDiff{getDate() - other.getDate()};
+    auto timeDiff{getTime() - other.getTime()};
 
-    auto thisTP{std::chrono::sys_days{getDate()} + getTime()};
-    auto otherTP{std::chrono::sys_days{other.getDate()} + other.getTime()};
-
-    return DurationUnits::fromUnit(DurationUnits::unit_t::MINUTE,
-                                   (thisTP - otherTP).count());
+    return dateDiff + DurationUnits::fromUnit(DurationUnits::unit_t::MINUTE,
+                                              timeDiff.count());
 }
 }; // namespace hbt::mods
