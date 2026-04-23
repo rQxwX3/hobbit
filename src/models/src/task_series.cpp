@@ -55,8 +55,7 @@ TaskSeries::TaskSeries(const TaskData &task,
     auto results{std::vector<mods::SingularTask>{}};
 
     auto addGeneratedSingulars{
-        [this, &results](
-            const std::vector<mods::DateTime> &occurrencesOnDate) -> void {
+        [this, &results](const occurrences_t &occurrencesOnDate) -> void {
             for (const auto dt : occurrencesOnDate) {
                 // TODO: assert dt.getData() = datetime.getData()
 

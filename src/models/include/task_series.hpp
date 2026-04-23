@@ -5,6 +5,7 @@
 #include <singular_task.hpp>
 #include <task_data.hpp>
 #include <task_override.hpp>
+#include <uuid.hpp>
 
 #include <optional>
 #include <variant>
@@ -15,12 +16,14 @@ class TaskSeries {
     using recurrencePattern_t =
         std::variant<hbt::mods::util::IntervalRecurrence,
                      hbt::mods::util::WeekdayRecurrence>;
+
+    using occurrences_t = util::RecurrencePattern::occurrences_t;
+
     using deadline_t = TaskData::deadline_t;
-
     using start_t = TaskData::start_t;
-    using stop_t = std::optional<hbt::mods::DateTime>;
 
-    using uuid_t = std::string;
+    using stop_t = std::optional<hbt::mods::DateTime>;
+    using uuid_t = core::uuid::uuid_t;
 
   private:
     static constexpr auto invalidDeadlineError{std::string_view{

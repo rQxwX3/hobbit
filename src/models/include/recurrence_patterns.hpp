@@ -8,11 +8,28 @@
 #include <optional>
 
 namespace hbt::mods::util {
-class IntervalRecurrence {
+class RecurrencePattern {
   public:
     using occurrence_t = hbt::mods::DateTime;
     using occurrences_t = std::vector<occurrence_t>;
 
+  public:
+    RecurrencePattern(const RecurrencePattern &) = default;
+    auto operator=(const RecurrencePattern &) -> RecurrencePattern & = default;
+
+    RecurrencePattern(RecurrencePattern &&) = delete;
+    auto operator=(RecurrencePattern &&) -> RecurrencePattern & = delete;
+
+  public:
+    virtual ~RecurrencePattern() = default;
+
+  public:
+    [[nodiscard]] virtual auto getOccurrencesOnDate(mods::DateTime start,
+                                                    mods::Date date) const
+        -> occurrences_t = 0;
+};
+
+class IntervalRecurrence : public RecurrencePattern {
   private:
     static constexpr auto typeJSON{std::string{"interval"}};
 
@@ -46,14 +63,10 @@ class IntervalRecurrence {
   public:
     [[nodiscard]] auto getOccurrencesOnDate(mods::DateTime start,
                                             mods::Date date) const
-        -> occurrences_t;
+        -> occurrences_t override;
 };
 
-class WeekdayRecurrence {
-  public:
-    using occurrence_t = hbt::mods::DateTime;
-    using occurrences_t = std::vector<occurrence_t>;
-
+class WeekdayRecurrence : public RecurrencePattern {
   private:
     static constexpr auto typeJSON{std::string{"weekday"}};
 
@@ -90,6 +103,6 @@ class WeekdayRecurrence {
   public:
     [[nodiscard]] auto getOccurrencesOnDate(mods::DateTime start,
                                             mods::Date date) const
-        -> occurrences_t;
+        -> occurrences_t override;
 };
 } // namespace hbt::mods::util
