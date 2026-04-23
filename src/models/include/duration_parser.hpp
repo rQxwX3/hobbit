@@ -8,13 +8,13 @@
 #include <string>
 #include <unordered_set>
 
-#include <duration_units.hpp>
+#include <duration.hpp>
 
 namespace hbt::mods::util {
 template <typename T>
-concept DurationUnitsParserConcept =
-    requires(T parser, const std::string &s, const DurationUnits &u) {
-        { parser.parse(s) } -> std::same_as<std::optional<DurationUnits>>;
+concept DurationParserConcept =
+    requires(T parser, const std::string &s, const Duration &u) {
+        { parser.parse(s) } -> std::same_as<std::optional<Duration>>;
         { parser.format(u) } -> std::convertible_to<std::string>;
     };
 
@@ -23,22 +23,22 @@ class NaturalLanguageParser {
     class UnitBucket {
       private:
         using possibleValues_t = std::unordered_set<std::string>;
-        using addUnitCallback_t = std::function<void(
-            DurationUnits &durationUnits, DurationUnits::value_t value)>;
+        using addUnitCallback_t =
+            std::function<void(Duration &duration, Duration::value_t value)>;
 
       private:
-        DurationUnits::unit_t unit;
+        Duration::unit_t unit;
         possibleValues_t possibleValues_;
         addUnitCallback_t addUnitCallback_;
 
       public:
-        UnitBucket(DurationUnits::unit_t unit, possibleValues_t possibleValues,
+        UnitBucket(Duration::unit_t unit, possibleValues_t possibleValues,
                    addUnitCallback_t addUnitCallback)
             : unit{unit}, possibleValues_{std::move(possibleValues)},
               addUnitCallback_{std::move(addUnitCallback)} {}
 
       public:
-        [[nodiscard]] constexpr auto getUnit() const -> DurationUnits::unit_t {
+        [[nodiscard]] constexpr auto getUnit() const -> Duration::unit_t {
             return unit;
         }
 
@@ -47,15 +47,14 @@ class NaturalLanguageParser {
             return possibleValues_.contains(unitString);
         }
 
-        auto addUnit(DurationUnits &durationUnits, DurationUnits::value_t value)
-            -> bool {
-            addUnitCallback_(durationUnits, value);
+        auto addUnit(Duration &duration, Duration::value_t value) -> bool {
+            addUnitCallback_(duration, value);
             return true;
         }
     };
 
-    using unitBuckets_t = std::array<UnitBucket, DurationUnits::unit_t::COUNT_>;
-    using matchedBuckets_t = std::bitset<DurationUnits::unit_t::COUNT_>;
+    using unitBuckets_t = std::array<UnitBucket, Duration::unit_t::COUNT_>;
+    using matchedBuckets_t = std::bitset<Duration::unit_t::COUNT_>;
 
   private:
     [[nodiscard]] static auto
@@ -73,65 +72,64 @@ class NaturalLanguageParser {
     inline static const size_t pairRegexPatternUnitGroup{2};
 
   private:
-    inline static const std::array<std::string, DurationUnits::unit_t::COUNT_>
+    inline static const std::array<std::string, Duration::unit_t::COUNT_>
         preferredNaturalLanguageValues{"years", "months", "weeks",
                                        "days",  "hours",  "minutes"};
 
     inline static const std::array<std::unordered_set<std::string>,
-                                   DurationUnits::unit_t::COUNT_>
+                                   Duration::unit_t::COUNT_>
         possibleValues{
             getAllSubstrings(
-                preferredNaturalLanguageValues[DurationUnits::unit_t::YEAR],
+                preferredNaturalLanguageValues[Duration::unit_t::YEAR],
                 {"e", "a", "r", "s"}),
 
             getAllSubstrings(
-                preferredNaturalLanguageValues[DurationUnits::unit_t::MONTH],
+                preferredNaturalLanguageValues[Duration::unit_t::MONTH],
                 {"o", "n", "t", "h", "s", "hs"}),
 
             getAllSubstrings(
-                preferredNaturalLanguageValues[DurationUnits::unit_t::WEEK],
+                preferredNaturalLanguageValues[Duration::unit_t::WEEK],
                 {"e", "k", "s"}),
 
             getAllSubstrings(
-                preferredNaturalLanguageValues[DurationUnits::unit_t::DAY],
+                preferredNaturalLanguageValues[Duration::unit_t::DAY],
                 {"a", "y", "s"}),
 
             getAllSubstrings(
-                preferredNaturalLanguageValues[DurationUnits::unit_t::HOUR],
+                preferredNaturalLanguageValues[Duration::unit_t::HOUR],
                 {"o", "u", "r", "s"}),
 
             getAllSubstrings(
-                preferredNaturalLanguageValues[DurationUnits::unit_t::MINUTE],
+                preferredNaturalLanguageValues[Duration::unit_t::MINUTE],
                 {"m", "i", "n", "u", "t", "e", "s", "ms", "mt"}),
         };
 
   private:
-    static auto createUnitBucket(DurationUnits::unit_t unit) -> UnitBucket {
-        return UnitBucket{unit, possibleValues[unit],
-                          [unit](DurationUnits &durationUnits,
-                                 DurationUnits::value_t value) -> void {
-                              durationUnits.addUnit(unit, value);
-                          }};
+    static auto createUnitBucket(Duration::unit_t unit) -> UnitBucket {
+        return UnitBucket{
+            unit, possibleValues[unit],
+            [unit](Duration &duration, Duration::value_t value) -> void {
+                duration.addUnit(unit, value);
+            }};
     }
 
   private:
     inline static const auto yearBucket{
-        createUnitBucket(DurationUnits::unit_t::YEAR)};
+        createUnitBucket(Duration::unit_t::YEAR)};
 
     inline static const auto monthBucket{
-        createUnitBucket(DurationUnits::unit_t::MONTH)};
+        createUnitBucket(Duration::unit_t::MONTH)};
 
     inline static const auto weekBucket{
-        createUnitBucket(DurationUnits::unit_t::WEEK)};
+        createUnitBucket(Duration::unit_t::WEEK)};
 
-    inline static const auto dayBucket{
-        createUnitBucket(DurationUnits::unit_t::DAY)};
+    inline static const auto dayBucket{createUnitBucket(Duration::unit_t::DAY)};
 
     inline static const auto hourBucket{
-        createUnitBucket(DurationUnits::unit_t::HOUR)};
+        createUnitBucket(Duration::unit_t::HOUR)};
 
     inline static const auto minuteBucket{
-        createUnitBucket(DurationUnits::unit_t::MINUTE)};
+        createUnitBucket(Duration::unit_t::MINUTE)};
 
     inline static unitBuckets_t buckets{yearBucket, monthBucket, weekBucket,
                                         dayBucket,  hourBucket,  minuteBucket};
@@ -141,31 +139,28 @@ class NaturalLanguageParser {
         -> std::optional<std::reference_wrapper<const UnitBucket>>;
 
     [[nodiscard]] static auto
-    parseUnit(const std::string &unit, DurationUnits::value_t value,
-              DurationUnits &durationUnits, matchedBuckets_t &matchedBuckets)
-        -> bool;
+    parseUnit(const std::string &unit, Duration::value_t value,
+              Duration &duration, matchedBuckets_t &matchedBuckets) -> bool;
 
     [[nodiscard]] static auto parseAllUnits(const std::string &filteredInput,
-                                            DurationUnits &durationUnits)
-        -> bool;
+                                            Duration &duration) -> bool;
 
   public:
     [[nodiscard]] static auto parse(const std::string &input)
-        -> std::optional<DurationUnits>;
+        -> std::optional<Duration>;
 
   public:
     [[nodiscard]] static auto
-    formatUnitValuePairToNaturalLanguage(DurationUnits::unitValuePair_t pair)
+    formatUnitValuePairToNaturalLanguage(Duration::unitValuePair_t pair)
         -> std::string;
 
   public:
-    [[nodiscard]] auto static format(const DurationUnits &durationUnits)
-        -> std::string;
+    [[nodiscard]] auto static format(const Duration &duration) -> std::string;
 };
 
 class ISO8601DurationParser {
   private:
-    using unit_t = DurationUnits::unit_t;
+    using unit_t = Duration::unit_t;
 
   private:
     /*
@@ -189,24 +184,22 @@ class ISO8601DurationParser {
 
   public:
     [[nodiscard]] static auto parse(const std::string &input)
-        -> std::optional<DurationUnits>;
+        -> std::optional<Duration>;
 
-    [[nodiscard]] auto static format(const DurationUnits &durationUnits)
-        -> std::string;
+    [[nodiscard]] auto static format(const Duration &duration) -> std::string;
 };
 
 template <typename Parser>
-    requires DurationUnitsParserConcept<Parser>
-class DurationUnitsParser {
+    requires DurationParserConcept<Parser>
+class DurationParser {
   public:
     [[nodiscard]] static auto parse(const std::string &input)
-        -> std::optional<DurationUnits> {
+        -> std::optional<Duration> {
         return Parser::parse(input);
     }
 
-    [[nodiscard]] static auto format(const DurationUnits &durationUnits)
-        -> std::string {
-        return Parser::format(durationUnits);
+    [[nodiscard]] static auto format(const Duration &duration) -> std::string {
+        return Parser::format(duration);
     }
 };
 } // namespace hbt::mods::util

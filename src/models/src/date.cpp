@@ -85,7 +85,7 @@ Date::Date(year_t year, month_t month, day_t day)
     auto sysdays{
         std::chrono::sys_days{newYMD} +
         std::chrono::days(interval.getUnitValue(Interval::unit_t::WEEK) *
-                          DurationUnits::daysInWeek) +
+                          Duration::daysInWeek) +
         std::chrono::days(interval.getUnitValue(Interval::unit_t::DAY))};
 
     return {ymd_t(sysdays)};
@@ -106,13 +106,12 @@ auto Date::operator+=(const Interval &interval) -> Date & {
     return *this;
 }
 
-[[nodiscard]] auto Date::getDiff(const Date &d1, const Date &d2)
-    -> DurationUnits {
+[[nodiscard]] auto Date::getDiff(const Date &d1, const Date &d2) -> Duration {
     auto d1TP{std::chrono::sys_days{d1.getYMD()}};
     auto d2TP{std::chrono::sys_days{d2.getYMD()}};
 
     auto diff{(d1TP > d2TP) ? d1TP - d2TP : d2TP - d1TP};
 
-    return DurationUnits::fromUnit(DurationUnits::unit_t::DAY, (diff).count());
+    return Duration::fromUnit(Duration::unit_t::DAY, (diff).count());
 }
 } // namespace hbt::mods

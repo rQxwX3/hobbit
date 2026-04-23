@@ -68,6 +68,6 @@ class Date {
 
   public:
     [[nodiscard]] static auto getDiff(const Date &d1, const Date &d2)
-        -> DurationUnits;
+        -> Duration;
 };
 } // namespace hbt::mods

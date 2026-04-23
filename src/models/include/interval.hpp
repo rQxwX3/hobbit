@@ -2,7 +2,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include <duration_units.hpp>
+#include <duration.hpp>
 
 #include <optional>
 
@@ -15,24 +15,24 @@ class Interval {
     constexpr static auto defaultMonthHandling{MonthHandling::WRAP_AROUND};
 
   public:
-    using value_t = hbt::mods::DurationUnits::value_t;
-    using unit_t = hbt::mods::DurationUnits::unit_t;
+    using value_t = hbt::mods::Duration::value_t;
+    using unit_t = hbt::mods::Duration::unit_t;
 
   private:
   private:
-    hbt::mods::DurationUnits durationUnits_;
+    hbt::mods::Duration duration_;
     MonthHandling monthHandling_;
 
   public:
-    Interval(hbt::mods::DurationUnits durationUnits,
+    Interval(hbt::mods::Duration duration,
              MonthHandling monthHandling = defaultMonthHandling);
 
     Interval(const Interval &other);
 
   public:
-    explicit Interval(hbt::mods::DurationUnits::Units units =
-                          hbt::mods::DurationUnits::Units{},
-                      MonthHandling monthHandling = defaultMonthHandling);
+    explicit Interval(
+        hbt::mods::Duration::Units units = hbt::mods::Duration::Units{},
+        MonthHandling monthHandling = defaultMonthHandling);
 
   public:
     [[nodiscard]] static auto years(value_t value) -> Interval;
@@ -53,7 +53,7 @@ class Interval {
   public:
     [[nodiscard]] auto getMonthHandling() const -> MonthHandling;
 
-    [[nodiscard]] auto getDurationUnits() const -> DurationUnits;
+    [[nodiscard]] auto getDuration() const -> Duration;
 
   public:
     auto setMonthHandling(MonthHandling monthHandling) -> void;

@@ -1,13 +1,12 @@
 #include <datetime.hpp>
-#include <duration_units.hpp>
-#include <duration_units_parser.hpp>
+#include <duration.hpp>
+#include <duration_parser.hpp>
 
 #include <algorithm>
 #include <string>
 
 namespace hbt::mods {
-
-auto DurationUnits::validateValue(value_t value) -> value_t {
+auto Duration::validateValue(value_t value) -> value_t {
     if (value > maxValue) {
         throw std::invalid_argument(std::string{invalidValueError});
     }
@@ -15,7 +14,7 @@ auto DurationUnits::validateValue(value_t value) -> value_t {
     return value;
 }
 
-auto DurationUnits::validateArray(array_t array) -> array_t {
+auto Duration::validateArray(array_t array) -> array_t {
     for (auto value : array) {
         try {
             validateValue(value);
@@ -27,8 +26,7 @@ auto DurationUnits::validateArray(array_t array) -> array_t {
     return array;
 }
 
-[[nodiscard]] auto DurationUnits::validateStruct(struct_t unitsStruct)
-    -> struct_t {
+[[nodiscard]] auto Duration::validateStruct(struct_t unitsStruct) -> struct_t {
     try {
         validateArray(unitsStruct.toArray());
     } catch (std::invalid_argument) {
@@ -38,15 +36,14 @@ auto DurationUnits::validateArray(array_t array) -> array_t {
     return unitsStruct;
 }
 
-DurationUnits::DurationUnits() : units_{array_t{}} {}
+Duration::Duration() : units_{array_t{}} {}
 
-DurationUnits::DurationUnits(array_t unitsArray)
-    : units_{validateArray(unitsArray)} {}
+Duration::Duration(array_t unitsArray) : units_{validateArray(unitsArray)} {}
 
-DurationUnits::DurationUnits(const Units &unitsStruct)
+Duration::Duration(const Units &unitsStruct)
     : units_{validateStruct(unitsStruct).toArray()} {};
 
-auto DurationUnits::convertUnitsUpwards() -> DurationUnits {
+auto Duration::convertUnitsUpwards() -> Duration {
     auto minutesToHours{[this]() -> void {
         units_[unit_t::HOUR] += units_[unit_t::MINUTE] / minutesInHour;
         units_[unit_t::MINUTE] %= minutesInHour;
@@ -75,15 +72,14 @@ auto DurationUnits::convertUnitsUpwards() -> DurationUnits {
     return *this;
 }
 
-[[nodiscard]] auto DurationUnits::fromUnit(unit_t unit, value_t value)
-    -> DurationUnits {
+[[nodiscard]] auto Duration::fromUnit(unit_t unit, value_t value) -> Duration {
     auto array{array_t{}};
     array[unit] = validateValue(value);
 
-    return DurationUnits{array}.convertUnitsUpwards();
+    return Duration{array}.convertUnitsUpwards();
 }
 
-[[nodiscard]] auto DurationUnits::getMaxNonZeroUnit() const
+[[nodiscard]] auto Duration::getMaxNonZeroUnit() const
     -> std::optional<unit_t> {
     for (auto unit{static_cast<size_t>(unit_t::YEAR)}; unit != unit_t::COUNT_;
          ++unit) {
@@ -95,7 +91,7 @@ auto DurationUnits::convertUnitsUpwards() -> DurationUnits {
     return std::nullopt;
 }
 
-[[nodiscard]] auto DurationUnits::getNonZeroUnitValuePairs() const
+[[nodiscard]] auto Duration::getNonZeroUnitValuePairs() const
     -> std::vector<unitValuePair_t> {
     std::vector<unitValuePair_t> result;
     result.reserve(unit_t::COUNT_);
@@ -110,7 +106,7 @@ auto DurationUnits::convertUnitsUpwards() -> DurationUnits {
     return result;
 }
 
-auto DurationUnits::addUnit(unit_t unit, value_t value) -> void {
+auto Duration::addUnit(unit_t unit, value_t value) -> void {
     auto result{units_[unit] + value};
 
     try {
@@ -120,17 +116,16 @@ auto DurationUnits::addUnit(unit_t unit, value_t value) -> void {
     }
 }
 
-[[nodiscard]] auto DurationUnits::getUnitValue(unit_t unit) const -> value_t {
+[[nodiscard]] auto Duration::getUnitValue(unit_t unit) const -> value_t {
     return units_[unit];
 }
 
-[[nodiscard]] auto DurationUnits::isZero() const -> bool {
+[[nodiscard]] auto Duration::isZero() const -> bool {
     return std::ranges::all_of(units_.begin(), units_.end(),
                                [](auto value) -> bool { return value == 0; });
 }
 
-[[nodiscard]] auto DurationUnits::onlyContainsUnit(unit_t onlyUnit) const
-    -> bool {
+[[nodiscard]] auto Duration::onlyContainsUnit(unit_t onlyUnit) const -> bool {
     for (auto unit{static_cast<size_t>(unit_t::YEAR)}; unit != unit_t::COUNT_;
          ++unit) {
 
@@ -146,8 +141,7 @@ auto DurationUnits::addUnit(unit_t unit, value_t value) -> void {
     return true;
 }
 
-[[nodiscard]] auto DurationUnits::isMultipleOf(DurationUnits other) const
-    -> bool {
+[[nodiscard]] auto Duration::isMultipleOf(Duration other) const -> bool {
     auto thisCopy{*this};
 
     thisCopy.convertUnitsUpwards();
@@ -176,9 +170,9 @@ auto DurationUnits::addUnit(unit_t unit, value_t value) -> void {
     return true;
 }
 
-[[nodiscard]] auto DurationUnits::operator+(const DurationUnits &other) const
-    -> DurationUnits {
-    auto result{DurationUnits{*this}};
+[[nodiscard]] auto Duration::operator+(const Duration &other) const
+    -> Duration {
+    auto result{Duration{*this}};
 
     for (auto unitInt{static_cast<size_t>(unit_t::YEAR)};
          unitInt != unit_t::COUNT_; ++unitInt) {
@@ -190,7 +184,7 @@ auto DurationUnits::addUnit(unit_t unit, value_t value) -> void {
     return result;
 }
 
-[[nodiscard]] auto DurationUnits::operator<=>(const DurationUnits &other) const
+[[nodiscard]] auto Duration::operator<=>(const Duration &other) const
     -> std::strong_ordering {
     for (auto unit{static_cast<size_t>(unit_t::YEAR)}; unit != unit_t::COUNT_;
          ++unit) {
@@ -204,24 +198,21 @@ auto DurationUnits::addUnit(unit_t unit, value_t value) -> void {
     return std::strong_ordering::equal;
 }
 
-[[nodiscard]] auto DurationUnits::fromISO8601String(const std::string &string)
-    -> std::optional<DurationUnits> {
-    return util::DurationUnitsParser<util::ISO8601DurationParser>::parse(
-        string);
+[[nodiscard]] auto Duration::fromISO8601String(const std::string &string)
+    -> std::optional<Duration> {
+    return util::DurationParser<util::ISO8601DurationParser>::parse(string);
 }
 
-[[nodiscard]] auto DurationUnits::toISO8601String() const -> std::string {
-    return util::DurationUnitsParser<util::ISO8601DurationParser>::format(
-        *this);
+[[nodiscard]] auto Duration::toISO8601String() const -> std::string {
+    return util::DurationParser<util::ISO8601DurationParser>::format(*this);
 }
 
-[[nodiscard]] auto DurationUnits::fromNaturalLanguage(const std::string &input)
-    -> std::optional<DurationUnits> {
-    return util::DurationUnitsParser<util::NaturalLanguageParser>::parse(input);
+[[nodiscard]] auto Duration::fromNaturalLanguage(const std::string &input)
+    -> std::optional<Duration> {
+    return util::DurationParser<util::NaturalLanguageParser>::parse(input);
 }
 
-[[nodiscard]] auto DurationUnits::toNaturalLanguage() const -> std::string {
-    return util::DurationUnitsParser<util::NaturalLanguageParser>::format(
-        *this);
+[[nodiscard]] auto Duration::toNaturalLanguage() const -> std::string {
+    return util::DurationParser<util::NaturalLanguageParser>::format(*this);
 }
 } // namespace hbt::mods

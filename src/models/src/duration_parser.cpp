@@ -1,4 +1,4 @@
-#include <duration_units_parser.hpp>
+#include <duration_parser.hpp>
 
 #include <algorithm>
 #include <ranges>
@@ -50,9 +50,10 @@ NaturalLanguageParser::getBucketOfUnit(const std::string &unitString)
     return std::nullopt;
 }
 
-[[nodiscard]] auto NaturalLanguageParser::parseUnit(
-    const std::string &unit, DurationUnits::value_t value,
-    DurationUnits &durationUnits, matchedBuckets_t &matchedBuckets) -> bool {
+[[nodiscard]] auto
+NaturalLanguageParser::parseUnit(const std::string &unit,
+                                 Duration::value_t value, Duration &duration,
+                                 matchedBuckets_t &matchedBuckets) -> bool {
 
     auto res{getBucketOfUnit(unit)};
     if (!res.has_value()) {
@@ -67,12 +68,12 @@ NaturalLanguageParser::getBucketOfUnit(const std::string &unitString)
     }
 
     matchedBuckets.set(bucketUnit);
-    return bucket.addUnit(durationUnits, value);
+    return bucket.addUnit(duration, value);
 }
 
 [[nodiscard]] auto
 NaturalLanguageParser::parseAllUnits(const std::string &filteredInput,
-                                     DurationUnits &durationUnits) -> bool {
+                                     Duration &duration) -> bool {
     auto matchedBuckets{matchedBuckets_t{}};
 
     for (auto it(std::sregex_iterator{filteredInput.begin(),
@@ -83,11 +84,11 @@ NaturalLanguageParser::parseAllUnits(const std::string &filteredInput,
         auto value{std::stoi(match[pairRegexPatternValueGroup].str())};
         auto unit{match[pairRegexPatternUnitGroup].str()};
 
-        if (!DurationUnits::isValidValue(value)) {
+        if (!Duration::isValidValue(value)) {
             return false;
         }
 
-        if (!parseUnit(unit, value, durationUnits, matchedBuckets)) {
+        if (!parseUnit(unit, value, duration, matchedBuckets)) {
             return false;
         }
     }
@@ -106,23 +107,23 @@ NaturalLanguageParser::parseAllUnits(const std::string &filteredInput,
 }
 
 [[nodiscard]] auto NaturalLanguageParser::parse(const std::string &input)
-    -> std::optional<DurationUnits> {
+    -> std::optional<Duration> {
     if (!std::regex_match(input, fullRegexPattern)) {
         return std::nullopt;
     }
 
-    auto durationUnits{DurationUnits{}};
+    auto duration{Duration{}};
     auto filteredInput{filterInput(input)};
 
-    if (parseAllUnits(filteredInput, durationUnits)) {
-        return durationUnits;
+    if (parseAllUnits(filteredInput, duration)) {
+        return duration;
     }
 
     return std::nullopt;
 }
 
 [[nodiscard]] auto NaturalLanguageParser::formatUnitValuePairToNaturalLanguage(
-    DurationUnits::unitValuePair_t pair) -> std::string {
+    Duration::unitValuePair_t pair) -> std::string {
     auto unit{pair.first};
     auto value{pair.second};
 
@@ -136,11 +137,10 @@ NaturalLanguageParser::parseAllUnits(const std::string &filteredInput,
     return valueString + unitString;
 }
 
-[[nodiscard]] auto
-NaturalLanguageParser::format(const DurationUnits &durationUnits)
+[[nodiscard]] auto NaturalLanguageParser::format(const Duration &duration)
     -> std::string {
     auto result{std::string{}};
-    auto unitValuePairs{durationUnits.getNonZeroUnitValuePairs()};
+    auto unitValuePairs{duration.getNonZeroUnitValuePairs()};
 
     for (const auto pair : unitValuePairs) {
         result += formatUnitValuePairToNaturalLanguage(pair) + ", ";
@@ -155,13 +155,13 @@ NaturalLanguageParser::format(const DurationUnits &durationUnits)
 }
 
 [[nodiscard]] auto ISO8601DurationParser::parse(const std::string &input)
-    -> std::optional<DurationUnits> {
+    -> std::optional<Duration> {
     std::smatch matches;
     if (!std::regex_match(input, matches, pattern)) {
         return std::nullopt;
     }
 
-    DurationUnits result;
+    Duration result;
 
     auto parseGroup{[&matches, &result](unit_t unit) -> void {
         auto unitGroup{patternUnitGroups[unit]};
@@ -170,8 +170,8 @@ NaturalLanguageParser::format(const DurationUnits &durationUnits)
             auto groupString{matches[unitGroup].str()};
 
             groupString.pop_back(); // remove trailing 'Y', 'M', etc.
-            result.addUnit(unit, static_cast<DurationUnits::value_t>(
-                                     std::stoll(groupString)));
+            result.addUnit(
+                unit, static_cast<Duration::value_t>(std::stoll(groupString)));
         }
     }};
 
@@ -183,26 +183,25 @@ NaturalLanguageParser::format(const DurationUnits &durationUnits)
     return result;
 }
 
-[[nodiscard]] auto
-ISO8601DurationParser::format(const DurationUnits &durationUnits)
+[[nodiscard]] auto ISO8601DurationParser::format(const Duration &duration)
     -> std::string {
-    if (durationUnits.isZero()) {
+    if (duration.isZero()) {
         return zeroValueFormat;
     }
 
     auto result{std::string{formatPrefix}};
     auto timeSectionStarted{false};
 
-    auto formatDateGroup{[&durationUnits, &result](unit_t unit) -> void {
-        if (const auto value{durationUnits.getUnitValue(unit)}; value) {
+    auto formatDateGroup{[&duration, &result](unit_t unit) -> void {
+        if (const auto value{duration.getUnitValue(unit)}; value) {
             result += std::to_string(value);
             result += unitSeparators[unit];
         }
     }};
 
     auto formatTimeGroup{
-        [&timeSectionStarted, &durationUnits, &result](unit_t unit) -> void {
-            if (const auto value{durationUnits.getUnitValue(unit)}; value) {
+        [&timeSectionStarted, &duration, &result](unit_t unit) -> void {
+            if (const auto value{duration.getUnitValue(unit)}; value) {
                 if (!timeSectionStarted) {
                     result += timeSectionSeparator;
                     timeSectionStarted = true;

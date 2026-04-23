@@ -1,7 +1,7 @@
 #pragma once
 
 #include <datetime.hpp>
-#include <duration_units.hpp>
+#include <duration.hpp>
 #include <task.hpp>
 
 #include <vector>
@@ -13,7 +13,7 @@ class UI {
         std::function<void(std::string, hbt::mods::Interval)>;
 
   public:
-    using IntervalUnits = hbt::mods::DurationUnits::unit_t;
+    using IntervalUnits = hbt::mods::Duration::unit_t;
 
   public:
     enum class Screen : uint8_t {

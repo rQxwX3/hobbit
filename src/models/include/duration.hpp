@@ -8,18 +8,18 @@
 #include <vector>
 
 namespace hbt::mods {
-class DurationUnits {
+class Duration {
   private:
     static constexpr std::string_view invalidValueError{
-        "DurationUnits: provided value is too high "
+        "Duration: provided value is too high "
         "(possible signed overflow)"};
 
     static constexpr std::string_view invalidArrayError{
-        "DurationUnits: provided array contains invalid value(s) "
+        "Duration: provided array contains invalid value(s) "
         "(possible signed overflow)"};
 
     static constexpr std::string_view invalidStructError{
-        "DurationUnits: provided struct contains invalid value(s) "
+        "Duration: provided struct contains invalid value(s) "
         "(possible signed overflow)"};
 
   public:
@@ -76,18 +76,17 @@ class DurationUnits {
     [[nodiscard]] static auto validateStruct(struct_t unitsStruct) -> struct_t;
 
   public:
-    DurationUnits();
+    Duration();
 
-    explicit DurationUnits(array_t unitsArray);
+    explicit Duration(array_t unitsArray);
 
-    explicit DurationUnits(const struct_t &unitsStruct);
+    explicit Duration(const struct_t &unitsStruct);
 
   private:
-    auto convertUnitsUpwards() -> DurationUnits;
+    auto convertUnitsUpwards() -> Duration;
 
   public:
-    [[nodiscard]] static auto fromUnit(unit_t unit, value_t value)
-        -> DurationUnits;
+    [[nodiscard]] static auto fromUnit(unit_t unit, value_t value) -> Duration;
 
   public:
     auto addUnit(unit_t unit, value_t value) -> void;
@@ -103,29 +102,28 @@ class DurationUnits {
 
     [[nodiscard]] auto onlyContainsUnit(unit_t onlyUnit) const -> bool;
 
-    [[nodiscard]] auto isMultipleOf(DurationUnits other) const -> bool;
+    [[nodiscard]] auto isMultipleOf(Duration other) const -> bool;
 
     [[nodiscard]] static auto isValidValue(value_t value) -> bool;
 
   public:
-    [[nodiscard]] auto operator+(const DurationUnits &other) const
-        -> DurationUnits;
+    [[nodiscard]] auto operator+(const Duration &other) const -> Duration;
 
-    [[nodiscard]] auto operator<=>(const DurationUnits &other) const
+    [[nodiscard]] auto operator<=>(const Duration &other) const
         -> std::strong_ordering;
 
-    [[nodiscard]] auto operator==(const DurationUnits &other) const
+    [[nodiscard]] auto operator==(const Duration &other) const
         -> bool = default;
 
   public:
     [[nodiscard]] auto toISO8601String() const -> std::string;
 
     [[nodiscard]] static auto fromISO8601String(const std::string &string)
-        -> std::optional<DurationUnits>;
+        -> std::optional<Duration>;
 
   public:
     [[nodiscard]] static auto fromNaturalLanguage(const std::string &input)
-        -> std::optional<DurationUnits>;
+        -> std::optional<Duration>;
 
     [[nodiscard]] auto toNaturalLanguage() const -> std::string;
 };

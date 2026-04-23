@@ -3,65 +3,61 @@
 #include <string>
 
 namespace hbt::mods {
-Interval::Interval(hbt::mods::DurationUnits durationUnits,
-                   MonthHandling monthHandling)
-    : durationUnits_{durationUnits}, monthHandling_{monthHandling} {}
+Interval::Interval(hbt::mods::Duration duration, MonthHandling monthHandling)
+    : duration_{duration}, monthHandling_{monthHandling} {}
 
 Interval::Interval(const Interval &other) = default;
 
-Interval::Interval(hbt::mods::DurationUnits::Units units,
+Interval::Interval(hbt::mods::Duration::Units units,
                    MonthHandling monthHandling)
-    : durationUnits_{hbt::mods::DurationUnits{units}},
-      monthHandling_{monthHandling} {}
+    : duration_{hbt::mods::Duration{units}}, monthHandling_{monthHandling} {}
 
 [[nodiscard]] auto Interval::years(value_t value) -> Interval {
-    auto durationUnits{hbt::mods::DurationUnits::fromUnit(unit_t::YEAR, value)};
+    auto duration{hbt::mods::Duration::fromUnit(unit_t::YEAR, value)};
 
-    return Interval{durationUnits};
+    return Interval{duration};
 }
 
 [[nodiscard]] auto Interval::months(value_t value) -> Interval {
-    auto durationUnits{
-        hbt::mods::DurationUnits::fromUnit(unit_t::MONTH, value)};
+    auto duration{hbt::mods::Duration::fromUnit(unit_t::MONTH, value)};
 
-    return Interval{durationUnits, MonthHandling::CUT_OFF};
+    return Interval{duration, MonthHandling::CUT_OFF};
 }
 
 [[nodiscard]] auto Interval::weeks(value_t value) -> Interval {
-    auto durationUnits{hbt::mods::DurationUnits::fromUnit(unit_t::WEEK, value)};
+    auto duration{hbt::mods::Duration::fromUnit(unit_t::WEEK, value)};
 
-    return Interval{durationUnits};
+    return Interval{duration};
 }
 
 [[nodiscard]] auto Interval::days(value_t value) -> Interval {
-    auto durationUnits{hbt::mods::DurationUnits::fromUnit(unit_t::DAY, value)};
+    auto duration{hbt::mods::Duration::fromUnit(unit_t::DAY, value)};
 
-    return Interval{durationUnits};
+    return Interval{duration};
 }
 
 [[nodiscard]] auto Interval::hours(value_t value) -> Interval {
-    auto durationUnits{hbt::mods::DurationUnits::fromUnit(unit_t::HOUR, value)};
+    auto duration{hbt::mods::Duration::fromUnit(unit_t::HOUR, value)};
 
-    return Interval{durationUnits};
+    return Interval{duration};
 }
 
 [[nodiscard]] auto Interval::minutes(value_t value) -> Interval {
-    auto durationUnits{
-        hbt::mods::DurationUnits::fromUnit(unit_t::MINUTE, value)};
+    auto duration{hbt::mods::Duration::fromUnit(unit_t::MINUTE, value)};
 
-    return Interval{durationUnits};
+    return Interval{duration};
 }
 
 [[nodiscard]] auto Interval::getUnitValue(unit_t unit) const -> value_t {
-    return durationUnits_.getUnitValue(unit);
+    return duration_.getUnitValue(unit);
 }
 
 [[nodiscard]] auto Interval::getMonthHandling() const -> MonthHandling {
     return monthHandling_;
 }
 
-[[nodiscard]] auto Interval::getDurationUnits() const -> DurationUnits {
-    return durationUnits_;
+[[nodiscard]] auto Interval::getDuration() const -> Duration {
+    return duration_;
 }
 
 auto Interval::setMonthHandling(MonthHandling monthHandling) -> void {
@@ -70,55 +66,54 @@ auto Interval::setMonthHandling(MonthHandling monthHandling) -> void {
 
 [[nodiscard]] auto Interval::operator+(const Interval &other) const
     -> Interval {
-    return Interval{this->durationUnits_ + other.durationUnits_};
+    return Interval{this->duration_ + other.duration_};
 }
 
 [[nodiscard]] auto Interval::isZero() const -> bool {
-    return durationUnits_.isZero();
+    return duration_.isZero();
 }
 
 [[nodiscard]] auto Interval::onlyContainsUnit(unit_t unit) const -> bool {
-    return durationUnits_.onlyContainsUnit(unit);
+    return duration_.onlyContainsUnit(unit);
 }
 
 [[nodiscard]] auto Interval::toJSON() const -> nlohmann::json {
     return {
-        {"duration_units", durationUnits_.toISO8601String()},
+        {"duration", duration_.toISO8601String()},
         {"month_handling", std::to_string(static_cast<int>(monthHandling_))}};
 }
 
 [[nodiscard]] auto Interval::fromJSON(const nlohmann::json &json)
     -> std::optional<Interval> {
-    if (!json.contains("duration_units") || !json.contains("month_handling")) {
+    if (!json.contains("duration") || !json.contains("month_handling")) {
         return std::nullopt;
     }
 
-    auto durationUnitsFromISO8601String{
-        hbt::mods::DurationUnits::fromISO8601String(
-            json["duration_units"].get<std::string>())};
+    auto durationFromISO8601String{hbt::mods::Duration::fromISO8601String(
+        json["duration"].get<std::string>())};
 
-    if (!durationUnitsFromISO8601String.has_value()) {
+    if (!durationFromISO8601String.has_value()) {
         return std::nullopt;
     }
 
     auto monthHandling{static_cast<Interval::MonthHandling>(
         std::stoi(json["month_handling"].get<std::string>()))};
 
-    return Interval{durationUnitsFromISO8601String.value(), monthHandling};
+    return Interval{durationFromISO8601String.value(), monthHandling};
 }
 
 [[nodiscard]] auto Interval::fromNaturalLanguage(const std::string &input)
     -> std::optional<Interval> {
-    auto durationUnits{DurationUnits::fromNaturalLanguage(input)};
+    auto duration{Duration::fromNaturalLanguage(input)};
 
-    if (durationUnits.has_value()) {
-        return Interval{durationUnits.value()};
+    if (duration.has_value()) {
+        return Interval{duration.value()};
     }
 
     return std::nullopt;
 }
 
 [[nodiscard]] auto Interval::toNaturalLanguage() const -> std::string {
-    return durationUnits_.toNaturalLanguage();
+    return duration_.toNaturalLanguage();
 }
 } // namespace hbt::mods

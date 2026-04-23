@@ -67,6 +67,6 @@ class DateTime {
 
   public:
     [[nodiscard]] static auto getDiff(const DateTime &dt1, const DateTime &dt2)
-        -> DurationUnits;
+        -> Duration;
 };
 } // namespace hbt::mods

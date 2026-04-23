@@ -142,7 +142,7 @@ WeekdayRecurrence::WeekdayRecurrence(const mods::Interval &interval,
 [[nodiscard]] auto
 WeekdayRecurrence::getDateOfFirstOccurrence(mods::DateTime start) const
     -> occurrence_t {
-    for (auto days{0}; days != DurationUnits::daysInWeek; ++days) {
+    for (auto days{0}; days != Duration::daysInWeek; ++days) {
         auto date{start + Interval::days(days)};
 
         if (weekdays_.containsWeekday(date.getDate().getWeekday())) {
@@ -161,11 +161,11 @@ WeekdayRecurrence::getDateOfFirstOccurrence(mods::DateTime start) const
         return false;
     }
 
-    auto intervalDurationUnits{interval_.getDurationUnits()};
+    auto intervalDuration{interval_.getDuration()};
     auto dateOfFirstOccurrence{getDateOfFirstOccurrence(start)};
 
     return Date::getDiff(date, dateOfFirstOccurrence.getDate())
-        .isMultipleOf(intervalDurationUnits);
+        .isMultipleOf(intervalDuration);
 }
 
 [[nodiscard]] auto WeekdayRecurrence::getOccurrencesOnDate(

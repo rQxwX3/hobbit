@@ -53,11 +53,10 @@ Time::Time(hours_t hours, minutes_t minutes)
     return {Time(result % timeInDay), result / timeInDay != 0};
 }
 
-[[nodiscard]] auto Time::getDiff(const Time &t1, const Time &t2)
-    -> DurationUnits {
+[[nodiscard]] auto Time::getDiff(const Time &t1, const Time &t2) -> Duration {
     auto diff{(t1 > t2) ? t1.getValue() - t2.getValue()
                         : t2.getValue() - t1.getValue()};
 
-    return DurationUnits::fromUnit(DurationUnits::unit_t::MINUTE, diff.count());
+    return Duration::fromUnit(Duration::unit_t::MINUTE, diff.count());
 }
 } // namespace hbt::mods

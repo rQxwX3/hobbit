@@ -77,8 +77,8 @@ DateTime::DateTime(year_t year, month_t month, day_t day, hours_t hours,
     const auto hour{std::stoi(matches[hourGroup].str())};
     const auto minute{std::stoi(matches[minuteGroup].str())};
 
-    if (hour < 0 || hour > DurationUnits::hoursInDay - 1 || minute < 0 ||
-        minute > DurationUnits::minutesInHour - 1) {
+    if (hour < 0 || hour > Duration::hoursInDay - 1 || minute < 0 ||
+        minute > Duration::minutesInHour - 1) {
         return std::nullopt;
     }
 
@@ -108,7 +108,7 @@ auto DateTime::operator+=(const Interval &interval) -> DateTime & {
 }
 
 [[nodiscard]] auto DateTime::getDiff(const DateTime &dt1, const DateTime &dt2)
-    -> DurationUnits {
+    -> Duration {
     auto dateDiff{Date::getDiff(dt1.getDate(), dt2.getDate())};
     auto timeDiff{Time::getDiff(dt1.getTime(), dt2.getTime())};
 

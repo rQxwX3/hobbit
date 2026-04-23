@@ -3,8 +3,8 @@
 #include <duration_units.hpp>
 
 namespace test::mods {
-using hbt::mods::DurationUnits;
-using unit_t = hbt::mods::DurationUnits::unit_t;
+using hbt::mods::Duration;
+using unit_t = hbt::mods::Duration::unit_t;
 
 TEST(DurationUnitsTest, EmptyOnConstruction) {
     auto durationUnits{DurationUnits{}};
@@ -230,7 +230,7 @@ TEST(DurationUnitsTest, ToFromInValidISO8601String) {
 }
 
 TEST(DurationUnitsTest, FromValidNaturalLanguage) {
-    using hbt::mods::DurationUnits;
+    using hbt::mods::Duration;
 
     auto input{"1year, 2months, 3weeks, 4 days, 5 hours, 6 minutes"};
     auto parsed{DurationUnits::fromNaturalLanguage(input)};
