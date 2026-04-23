@@ -49,6 +49,8 @@ class Time {
     [[nodiscard]] auto operator+(const Interval &interval) const
         -> std::pair<Time, bool>;
 
-    [[nodiscard]] auto operator-(const Time &other) const -> DurationUnits;
+  public:
+    [[nodiscard]] static auto getDiff(const Time &t1, const Time &t2)
+        -> DurationUnits;
 };
 } // namespace hbt::mods

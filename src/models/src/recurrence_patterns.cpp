@@ -164,7 +164,7 @@ WeekdayRecurrence::getDateOfFirstOccurrence(mods::DateTime start) const
     auto intervalDurationUnits{interval_.getDurationUnits()};
     auto dateOfFirstOccurrence{getDateOfFirstOccurrence(start)};
 
-    return (date - dateOfFirstOccurrence.getDate())
+    return Date::getDiff(date, dateOfFirstOccurrence.getDate())
         .isMultipleOf(intervalDurationUnits);
 }
 

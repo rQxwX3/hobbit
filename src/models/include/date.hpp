@@ -66,6 +66,8 @@ class Date {
 
     auto operator+=(const Interval &interval) -> Date &;
 
-    [[nodiscard]] auto operator-(const Date &other) const -> DurationUnits;
+  public:
+    [[nodiscard]] static auto getDiff(const Date &d1, const Date &d2)
+        -> DurationUnits;
 };
 } // namespace hbt::mods

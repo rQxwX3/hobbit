@@ -107,10 +107,10 @@ auto DateTime::operator+=(const Interval &interval) -> DateTime & {
     return *this;
 }
 
-[[nodiscard]] auto DateTime::operator-(const DateTime &other) const
+[[nodiscard]] auto DateTime::getDiff(const DateTime &dt1, const DateTime &dt2)
     -> DurationUnits {
-    auto dateDiff{getDate() - other.getDate()};
-    auto timeDiff{getTime() - other.getTime()};
+    auto dateDiff{Date::getDiff(dt1.getDate(), dt2.getDate())};
+    auto timeDiff{Time::getDiff(dt1.getTime(), dt2.getTime())};
 
     return dateDiff + timeDiff;
 }

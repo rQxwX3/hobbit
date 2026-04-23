@@ -106,13 +106,14 @@ auto Date::operator+=(const Interval &interval) -> Date & {
     return *this;
 }
 
-[[nodiscard]] auto Date::getDiff(const Date &d1, const Date &d2)
-    -> DurationUnits {
-    auto d1TP{std::chrono::sys_days{d1.getYMD()}};
-    auto d2TP{std::chrono::sys_days{d2.getYMD()}};
+[[nodiscard]] auto Date::operator-(const Date &other) const -> DurationUnits {
+    auto thisTP{std::chrono::sys_days{ymd_}};
+    auto otherTP{std::chrono::sys_days{other.getYMD()}};
 
-    auto diff{(d1TP > d2TP) ? d1TP - d2TP : d2TP - d1TP};
-
-    return DurationUnits::fromUnit(DurationUnits::unit_t::DAY, (diff).count());
+    return DurationUnits::fromUnit(DurationUnits::unit_t::DAY,
+                                   (thisTP - otherTP).count());
 }
+
+[[nodiscard]] auto Date::getDiff(const Date &d1, const Date &d2)
+    -> DurationUnits;
 } // namespace hbt::mods
