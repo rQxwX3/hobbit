@@ -9,6 +9,19 @@
 
 namespace hbt::mods {
 class DurationUnits {
+  private:
+    static constexpr std::string_view invalidValueError{
+        "DurationUnits: provided value is too high "
+        "(possible signed overflow)"};
+
+    static constexpr std::string_view invalidArrayError{
+        "DurationUnits: provided array contains invalid value(s) "
+        "(possible signed overflow)"};
+
+    static constexpr std::string_view invalidStructError{
+        "DurationUnits: provided struct contains invalid value(s) "
+        "(possible signed overflow)"};
+
   public:
     using unit_t = enum : uint8_t {
         YEAR,
@@ -38,6 +51,8 @@ class DurationUnits {
         }
     };
 
+    using struct_t = Units;
+
   public:
     static constexpr value_t maxValue{999};
 
@@ -53,12 +68,19 @@ class DurationUnits {
   private:
     [[nodiscard]] auto getMaxNonZeroUnit() const -> std::optional<unit_t>;
 
+  private:
+    static auto validateValue(value_t value) -> value_t;
+
+    static auto validateArray(array_t array) -> array_t;
+
+    [[nodiscard]] static auto validateStruct(struct_t unitsStruct) -> struct_t;
+
   public:
     DurationUnits();
 
     explicit DurationUnits(array_t unitsArray);
 
-    explicit DurationUnits(const Units &unitsStruct);
+    explicit DurationUnits(const struct_t &unitsStruct);
 
   private:
     auto convertUnitsUpwards() -> DurationUnits;

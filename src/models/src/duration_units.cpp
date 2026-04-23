@@ -6,12 +6,45 @@
 #include <string>
 
 namespace hbt::mods {
+
+auto DurationUnits::validateValue(value_t value) -> value_t {
+    if (value > maxValue) {
+        throw std::invalid_argument(std::string{invalidValueError});
+    }
+
+    return value;
+}
+
+auto DurationUnits::validateArray(array_t array) -> array_t {
+    for (auto value : array) {
+        try {
+            validateValue(value);
+        } catch (std::invalid_argument) {
+            throw std::invalid_argument(std::string{invalidArrayError});
+        }
+    }
+
+    return array;
+}
+
+[[nodiscard]] auto DurationUnits::validateStruct(struct_t unitsStruct)
+    -> struct_t {
+    try {
+        validateArray(unitsStruct.toArray());
+    } catch (std::invalid_argument) {
+        throw std::invalid_argument(std::string(invalidStructError));
+    }
+
+    return unitsStruct;
+}
+
 DurationUnits::DurationUnits() : units_{array_t{}} {}
 
-DurationUnits::DurationUnits(array_t unitsArray) : units_{unitsArray} {}
+DurationUnits::DurationUnits(array_t unitsArray)
+    : units_{validateArray(unitsArray)} {}
 
 DurationUnits::DurationUnits(const Units &unitsStruct)
-    : units_{unitsStruct.toArray()} {};
+    : units_{validateStruct(unitsStruct).toArray()} {};
 
 auto DurationUnits::convertUnitsUpwards() -> DurationUnits {
     auto minutesToHours{[this]() -> void {
@@ -45,7 +78,7 @@ auto DurationUnits::convertUnitsUpwards() -> DurationUnits {
 [[nodiscard]] auto DurationUnits::fromUnit(unit_t unit, value_t value)
     -> DurationUnits {
     auto array{array_t{}};
-    array[unit] = value;
+    array[unit] = validateValue(value);
 
     return DurationUnits{array}.convertUnitsUpwards();
 }
@@ -78,7 +111,13 @@ auto DurationUnits::convertUnitsUpwards() -> DurationUnits {
 }
 
 auto DurationUnits::addUnit(unit_t unit, value_t value) -> void {
-    units_[unit] += value;
+    auto result{units_[unit] + value};
+
+    try {
+        units_[unit] = validateValue(result);
+    } catch (std::invalid_argument) {
+        units_[unit] = result % maxValue;
+    }
 }
 
 [[nodiscard]] auto DurationUnits::getUnitValue(unit_t unit) const -> value_t {
@@ -137,10 +176,6 @@ auto DurationUnits::addUnit(unit_t unit, value_t value) -> void {
     return true;
 }
 
-[[nodiscard]] auto DurationUnits::isValidValue(value_t value) -> bool {
-    return value <= maxValue;
-}
-
 [[nodiscard]] auto DurationUnits::operator+(const DurationUnits &other) const
     -> DurationUnits {
     auto result{DurationUnits{*this}};
@@ -157,7 +192,6 @@ auto DurationUnits::addUnit(unit_t unit, value_t value) -> void {
 
 [[nodiscard]] auto DurationUnits::operator<=>(const DurationUnits &other) const
     -> std::strong_ordering {
-
     for (auto unit{static_cast<size_t>(unit_t::YEAR)}; unit != unit_t::COUNT_;
          ++unit) {
         if (auto cmp = getUnitValue(static_cast<unit_t>(unit)) <=>
