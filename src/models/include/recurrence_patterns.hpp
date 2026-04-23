@@ -14,6 +14,8 @@ class RecurrencePattern {
     using occurrences_t = std::vector<occurrence_t>;
 
   public:
+    RecurrencePattern() = default;
+
     RecurrencePattern(const RecurrencePattern &) = default;
     auto operator=(const RecurrencePattern &) -> RecurrencePattern & = default;
 
@@ -69,6 +71,11 @@ class IntervalRecurrence : public RecurrencePattern {
 class WeekdayRecurrence : public RecurrencePattern {
   private:
     static constexpr auto typeJSON{std::string{"weekday"}};
+
+  private:
+    static constexpr auto invalidIntervalError{
+        std::string_view{"WeekdayRecurrence: provided interval contains units "
+                         "others than week"}};
 
   private:
     hbt::mods::Interval interval_;

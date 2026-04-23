@@ -90,8 +90,7 @@ WeekdayRecurrence::WeekdayRecurrence(const mods::Interval &interval,
                                      mods::Weekdays weekdays)
     : weekdays_{weekdays} {
     if (!interval.onlyContainsUnit(mods::Interval::unit_t::WEEK)) {
-        throw std::invalid_argument(
-            "Only weekly intervals are accepted by weekday recurrence");
+        throw std::invalid_argument(std::string(invalidIntervalError));
     }
 
     interval_ = interval;

@@ -10,17 +10,17 @@
 namespace hbt::mods {
 class Duration {
   private:
-    static constexpr std::string_view invalidValueError{
-        "Duration: provided value is too high "
-        "(possible signed overflow)"};
+    static constexpr auto invalidValueError{
+        std::string_view{"Duration: provided value is too high "
+                         "(possible signed overflow)"}};
 
-    static constexpr std::string_view invalidArrayError{
-        "Duration: provided array contains invalid value(s) "
-        "(possible signed overflow)"};
+    static constexpr auto invalidArrayError{
+        std::string_view{"Duration: provided array contains invalid value(s) "
+                         "(possible signed overflow)"}};
 
-    static constexpr std::string_view invalidStructError{
-        "Duration: provided struct contains invalid value(s) "
-        "(possible signed overflow)"};
+    static constexpr auto invalidStructError{
+        std::string_view{"Duration: provided struct contains invalid value(s) "
+                         "(possible signed overflow)"}};
 
   public:
     using unit_t = enum : uint8_t {
@@ -54,13 +54,13 @@ class Duration {
     using struct_t = Units;
 
   public:
-    static constexpr value_t maxValue{999};
+    static constexpr auto maxValue{value_t{999}};
 
   public:
-    static constexpr value_t minutesInHour{60};
-    static constexpr value_t hoursInDay{24};
-    static constexpr value_t daysInWeek{7};
-    static constexpr value_t monthsInYear{12};
+    static constexpr auto minutesInHour{value_t{60}};
+    static constexpr auto hoursInDay{value_t{24}};
+    static constexpr auto daysInWeek{value_t{7}};
+    static constexpr auto monthsInYear{value_t{12}};
 
   private:
     array_t units_;
