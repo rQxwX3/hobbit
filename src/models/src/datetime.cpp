@@ -97,7 +97,7 @@ DateTime::DateTime(year_t year, month_t month, day_t day, hours_t hours,
     -> DateTime {
     auto [newTime, overflow]{getTime() + interval};
     auto newDate{getDate() +
-                 ((overflow) ? interval + Interval::days(1) : interval)};
+                 ((overflow) ? interval + Duration::days(1) : interval)};
 
     return DateTime{newDate, newTime};
 }

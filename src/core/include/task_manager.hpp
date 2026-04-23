@@ -25,8 +25,8 @@ class TaskManager {
     using calendar_t = std::unordered_map<hbt::mods::Date, singulars_t>;
 
   private:
-    static const inline auto lookaheadInterval{hbt::mods::Interval::days(90)};
-    static const inline auto retentionInterval{hbt::mods::Interval::days(7)};
+    static const inline auto lookaheadDuration{hbt::mods::Duration::days(90)};
+    static const inline auto retentionDuration{hbt::mods::Duration::days(7)};
 
   private:
     series_repo_t seriesRepo_;

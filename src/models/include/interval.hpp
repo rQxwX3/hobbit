@@ -35,19 +35,6 @@ class Interval {
         MonthHandling monthHandling = defaultMonthHandling);
 
   public:
-    [[nodiscard]] static auto years(value_t value) -> Interval;
-
-    [[nodiscard]] static auto months(value_t value) -> Interval;
-
-    [[nodiscard]] static auto weeks(value_t value) -> Interval;
-
-    [[nodiscard]] static auto days(value_t value) -> Interval;
-
-    [[nodiscard]] static auto hours(value_t value) -> Interval;
-
-    [[nodiscard]] static auto minutes(value_t value) -> Interval;
-
-  public:
     [[nodiscard]] auto getUnitValue(unit_t unit) const -> value_t;
 
   public:

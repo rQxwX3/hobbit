@@ -12,42 +12,6 @@ Interval::Interval(hbt::mods::Duration::Units units,
                    MonthHandling monthHandling)
     : duration_{hbt::mods::Duration{units}}, monthHandling_{monthHandling} {}
 
-[[nodiscard]] auto Interval::years(value_t value) -> Interval {
-    auto duration{hbt::mods::Duration::fromUnit(unit_t::YEAR, value)};
-
-    return Interval{duration};
-}
-
-[[nodiscard]] auto Interval::months(value_t value) -> Interval {
-    auto duration{hbt::mods::Duration::fromUnit(unit_t::MONTH, value)};
-
-    return Interval{duration, MonthHandling::CUT_OFF};
-}
-
-[[nodiscard]] auto Interval::weeks(value_t value) -> Interval {
-    auto duration{hbt::mods::Duration::fromUnit(unit_t::WEEK, value)};
-
-    return Interval{duration};
-}
-
-[[nodiscard]] auto Interval::days(value_t value) -> Interval {
-    auto duration{hbt::mods::Duration::fromUnit(unit_t::DAY, value)};
-
-    return Interval{duration};
-}
-
-[[nodiscard]] auto Interval::hours(value_t value) -> Interval {
-    auto duration{hbt::mods::Duration::fromUnit(unit_t::HOUR, value)};
-
-    return Interval{duration};
-}
-
-[[nodiscard]] auto Interval::minutes(value_t value) -> Interval {
-    auto duration{hbt::mods::Duration::fromUnit(unit_t::MINUTE, value)};
-
-    return Interval{duration};
-}
-
 [[nodiscard]] auto Interval::getUnitValue(unit_t unit) const -> value_t {
     return duration_.getUnitValue(unit);
 }

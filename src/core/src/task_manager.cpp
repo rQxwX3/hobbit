@@ -49,7 +49,7 @@ TaskManager::TaskManager(series_repo_t seriesRepo,
     -> calendar_t {
     auto calendar{calendar_t{}};
 
-    for (auto date{from}; date != to; date += mods::Interval::days(1)) {
+    for (auto date{from}; date != to; date += mods::Duration::days(1)) {
         calendar[date] = getTasksForDate(date);
     }
 

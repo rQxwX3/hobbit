@@ -79,6 +79,30 @@ auto Duration::convertUnitsUpwards() -> Duration {
     return Duration{array}.convertUnitsUpwards();
 }
 
+[[nodiscard]] auto Duration::years(value_t value) -> Duration {
+    return fromUnit(unit_t::YEAR, value);
+}
+
+[[nodiscard]] auto Duration::months(value_t value) -> Duration {
+    return fromUnit(unit_t::MONTH, value);
+}
+
+[[nodiscard]] auto Duration::weeks(value_t value) -> Duration {
+    return fromUnit(unit_t::WEEK, value);
+}
+
+[[nodiscard]] auto Duration::days(value_t value) -> Duration {
+    return fromUnit(unit_t::DAY, value);
+}
+
+[[nodiscard]] auto Duration::hours(value_t value) -> Duration {
+    return fromUnit(unit_t::HOUR, value);
+}
+
+[[nodiscard]] auto Duration::minutes(value_t value) -> Duration {
+    return fromUnit(unit_t::MINUTE, value);
+}
+
 [[nodiscard]] auto Duration::getMaxNonZeroUnit() const
     -> std::optional<unit_t> {
     for (auto unit{static_cast<size_t>(unit_t::YEAR)}; unit != unit_t::COUNT_;

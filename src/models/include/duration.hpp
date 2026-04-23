@@ -89,6 +89,19 @@ class Duration {
     [[nodiscard]] static auto fromUnit(unit_t unit, value_t value) -> Duration;
 
   public:
+    [[nodiscard]] static auto years(value_t value) -> Duration;
+
+    [[nodiscard]] static auto months(value_t value) -> Duration;
+
+    [[nodiscard]] static auto weeks(value_t value) -> Duration;
+
+    [[nodiscard]] static auto days(value_t value) -> Duration;
+
+    [[nodiscard]] static auto hours(value_t value) -> Duration;
+
+    [[nodiscard]] static auto minutes(value_t value) -> Duration;
+
+  public:
     auto addUnit(unit_t unit, value_t value) -> void;
 
   public:

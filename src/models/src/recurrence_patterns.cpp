@@ -40,7 +40,7 @@ IntervalRecurrence::IntervalRecurrence(const hbt::mods::Interval &interval)
         return false;
     }
 
-    if (interval_ < Interval::days(1)) {
+    if (interval_.getDuration() < Duration::days(1)) {
         return true;
     }
 
@@ -77,7 +77,7 @@ IntervalRecurrence::getFirstOccurrencesOnDate(mods::DateTime start,
         return result;
     }
 
-    auto nextDay{date + mods::Interval::days(1)};
+    auto nextDay{date + mods::Duration::days(1)};
 
     for (auto dt{firstOccurrence}; dt->getDate() != nextDay; *dt += interval_) {
         result.push_back(*dt);
@@ -143,7 +143,7 @@ WeekdayRecurrence::WeekdayRecurrence(const mods::Interval &interval,
 WeekdayRecurrence::getDateOfFirstOccurrence(mods::DateTime start) const
     -> occurrence_t {
     for (auto days{0}; days != Duration::daysInWeek; ++days) {
-        auto date{start + Interval::days(days)};
+        auto date{start + Duration::days(days)};
 
         if (weekdays_.containsWeekday(date.getDate().getWeekday())) {
             return date;
