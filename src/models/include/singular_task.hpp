@@ -1,55 +1,66 @@
 #pragma once
 
 #include <task_data.hpp>
+#include <uuid.hpp>
 
+#include <array>
 #include <string>
 
 namespace hbt::mods {
 class SingularTask {
   public:
     using deadline_t = TaskData::deadline_t;
-    using start_t = TaskData::start_t;
-    using uuid_t = std::string;
+    using datetime_t = TaskData::datetime_t;
+
+    using uuid_t = core::uuid::uuid_t;
 
   private:
-    static constexpr auto zeroDeadlineJSON{std::string_view{"none"}};
+    enum class Error : uint8_t {
+        JSONMissingRequiredField,
+        JSONFailedToParseTaskData,
+    };
+
+  public:
+    [[nodiscard]] static constexpr auto errorMessage(Error error)
+        -> std::string {
+        switch (error) {
+        case Error::JSONMissingRequiredField:
+            return "SingularTask: missing required field(s) in JSON";
+
+        case Error::JSONFailedToParseTaskData:
+            return "SingularTask: failed to parse TaskData from JSON";
+        }
+    }
 
   private:
-    static constexpr auto invalidDeadlineError{
-        std::string_view{"Tasks can't have deadlines before their date"}};
+    static constexpr auto jsonUUIDField{std::string_view{"uuid"}};
+    static constexpr auto jsonTaskField{std::string_view{"task"}};
 
-    static constexpr auto invalidStartFromError{
-        std::string_view{"Tasks can't happen after their deadline"}};
+    static constexpr auto jsonFields{
+        std::array<std::string_view, 2>{jsonUUIDField, jsonTaskField}};
 
   private:
     TaskData task_;
     uuid_t uuid_;
 
   public:
-    SingularTask(const TaskData &task);
+    SingularTask(TaskData task);
 
-    SingularTask(uuid_t uuid, const TaskData &task);
-
-  private:
-    [[nodiscard]] auto validateTaskData(const TaskData &task) const -> TaskData;
-
-    auto validateDeadline(deadline_t deadline) const -> deadline_t;
-
-    auto validateStart(start_t start) const -> start_t;
+    SingularTask(uuid_t uuid, TaskData task);
 
   public:
     auto setTitle(std::string title) -> void;
 
-    auto setStart(start_t start) -> void;
+    auto setDateTime(datetime_t datetime) -> void;
 
     auto setDeadline(deadline_t deadline) -> void;
 
-    auto setIsCompleted(bool isCompleted) -> void;
+    auto setCompleted(bool completed) -> void;
 
   public:
-    [[nodiscard]] auto getTitle() const & -> const std::string &;
+    [[nodiscard]] auto getTitle() const -> std::string_view;
 
-    [[nodiscard]] auto getStart() const -> start_t;
+    [[nodiscard]] auto getDateTime() const -> datetime_t;
 
     [[nodiscard]] auto getDeadline() const -> deadline_t;
 
@@ -60,10 +71,14 @@ class SingularTask {
 
     [[nodiscard]] auto hasDeadline() const -> bool;
 
+  private:
+    [[nodiscard]] auto static containsAllJSONFields(const nlohmann::json &json)
+        -> bool;
+
   public:
     [[nodiscard]] auto toJSON() const & -> nlohmann::json;
 
     [[nodiscard]] static auto fromJSON(const nlohmann::json &json)
-        -> std::optional<SingularTask>;
+        -> std::expected<SingularTask, Error>;
 };
 } // namespace hbt::mods
