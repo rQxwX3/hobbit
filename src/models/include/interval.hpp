@@ -4,10 +4,42 @@
 
 #include <duration.hpp>
 
-#include <optional>
+#include <array>
+#include <expected>
 
 namespace hbt::mods {
 class Interval {
+  private:
+    enum class Error : uint8_t {
+        JSONMissingRequiredField,
+        JSONFailedToParseDuration,
+
+        NaturalLanguageFailedToParseDuration,
+    };
+
+  public:
+    [[nodiscard]] static constexpr auto errorMessage(Error error)
+        -> std::string {
+        switch (error) {
+        case Error::JSONMissingRequiredField:
+            return "Interval: missing required field(s) in JSON";
+
+        case Error::JSONFailedToParseDuration:
+            return "Interval: failed to parse Duration from JSON";
+
+        case Error::NaturalLanguageFailedToParseDuration:
+            return "Interval: failed to parse Duration from natural language";
+        }
+    }
+
+  private:
+    static constexpr auto jsonDurationField{std::string_view{"duration"}};
+    static constexpr auto jsonMonthHandlingField{
+        std::string_view{"month_handling"}};
+
+    static constexpr auto jsonFields{std::array<std::string_view, 2>{
+        jsonDurationField, jsonMonthHandlingField}};
+
   public:
     enum class MonthHandling : char { CUT_OFF, WRAP_AROUND };
 
@@ -59,15 +91,19 @@ class Interval {
 
     [[nodiscard]] auto onlyContainsUnit(unit_t unit) const -> bool;
 
+  private:
+    [[nodiscard]] auto static containsAllJSONFields(const nlohmann::json &json)
+        -> bool;
+
   public:
     [[nodiscard]] auto toJSON() const -> nlohmann::json;
 
     [[nodiscard]] static auto fromJSON(const nlohmann::json &json)
-        -> std::optional<Interval>;
+        -> std::expected<Interval, Error>;
 
   public:
     [[nodiscard]] static auto fromNaturalLanguage(const std::string &input)
-        -> std::optional<Interval>;
+        -> std::expected<Interval, Error>;
 
     [[nodiscard]] auto toNaturalLanguage() const -> std::string;
 };

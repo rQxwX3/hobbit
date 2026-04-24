@@ -2,26 +2,45 @@
 
 #include <array>
 #include <cstdint>
+#include <expected>
 #include <optional>
 #include <string>
-#include <string_view>
 #include <utility>
 #include <vector>
 
 namespace hbt::mods {
 class Duration {
   private:
-    static constexpr auto invalidValueError{
-        std::string_view{"Duration: provided value is too high "
-                         "(possible signed overflow)"}};
+    enum class Error : uint8_t {
+        ISO8601FailedToParse,
+        NaturalLanguageFailedToParse,
 
-    static constexpr auto invalidArrayError{
-        std::string_view{"Duration: provided array contains invalid value(s) "
-                         "(possible signed overflow)"}};
+        InvalidValue,
+        InvalidArray,
+        InvalidStruct,
+    };
 
-    static constexpr auto invalidStructError{
-        std::string_view{"Duration: provided struct contains invalid value(s) "
-                         "(possible signed overflow)"}};
+  public:
+    [[nodiscard]] static constexpr auto errorMessage(Error error)
+        -> std::string {
+        switch (error) {
+        case Error::ISO8601FailedToParse:
+            return "Duration: failed to parse from JSON";
+
+        case Error::NaturalLanguageFailedToParse:
+            return "Duration: failed to parse from natural language";
+
+        case Error::InvalidValue:
+            return "Duration: provided value is too high (possible sign "
+                   "overflow)";
+
+        case Error::InvalidArray:
+            return "Duration: provided array contains invalid value(s)";
+
+        case Error::InvalidStruct:
+            return "Duration: provided struct contains invalid value(s)";
+        }
+    }
 
   public:
     using unit_t = enum : uint8_t {
@@ -133,11 +152,11 @@ class Duration {
     [[nodiscard]] auto toISO8601String() const -> std::string;
 
     [[nodiscard]] static auto fromISO8601String(const std::string &string)
-        -> std::optional<Duration>;
+        -> std::expected<Duration, Error>;
 
   public:
     [[nodiscard]] static auto fromNaturalLanguage(const std::string &input)
-        -> std::optional<Duration>;
+        -> std::expected<Duration, Error>;
 
     [[nodiscard]] auto toNaturalLanguage() const -> std::string;
 };

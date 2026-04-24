@@ -8,7 +8,7 @@
 namespace hbt::mods {
 auto Duration::validateValue(value_t value) -> value_t {
     if (value > maxValue) {
-        throw std::invalid_argument(std::string{invalidValueError});
+        throw std::invalid_argument(errorMessage(Error::InvalidValue));
     }
 
     return value;
@@ -19,7 +19,7 @@ auto Duration::validateArray(array_t array) -> array_t {
         try {
             validateValue(value);
         } catch (std::invalid_argument) {
-            throw std::invalid_argument(std::string{invalidArrayError});
+            throw std::invalid_argument(errorMessage(Error::InvalidArray));
         }
     }
 
@@ -30,7 +30,7 @@ auto Duration::validateArray(array_t array) -> array_t {
     try {
         validateArray(unitsStruct.toArray());
     } catch (std::invalid_argument) {
-        throw std::invalid_argument(std::string(invalidStructError));
+        throw std::invalid_argument(errorMessage(Error::InvalidStruct));
     }
 
     return unitsStruct;
@@ -223,8 +223,15 @@ auto Duration::addUnit(unit_t unit, value_t value) -> void {
 }
 
 [[nodiscard]] auto Duration::fromISO8601String(const std::string &string)
-    -> std::optional<Duration> {
-    return util::DurationParser<util::ISO8601DurationParser>::parse(string);
+    -> std::expected<Duration, Error> {
+    auto duration{
+        util::DurationParser<util::ISO8601DurationParser>::parse(string)};
+
+    if (!duration) {
+        return std::unexpected(Error::ISO8601FailedToParse);
+    }
+
+    return duration.value();
 }
 
 [[nodiscard]] auto Duration::toISO8601String() const -> std::string {
@@ -232,8 +239,15 @@ auto Duration::addUnit(unit_t unit, value_t value) -> void {
 }
 
 [[nodiscard]] auto Duration::fromNaturalLanguage(const std::string &input)
-    -> std::optional<Duration> {
-    return util::DurationParser<util::NaturalLanguageParser>::parse(input);
+    -> std::expected<Duration, Error> {
+    auto duration{
+        util::DurationParser<util::NaturalLanguageParser>::parse(input)};
+
+    if (!duration) {
+        return std::unexpected(Error::NaturalLanguageFailedToParse);
+    }
+
+    return duration.value();
 }
 
 [[nodiscard]] auto Duration::toNaturalLanguage() const -> std::string {

@@ -41,40 +41,47 @@ auto Interval::setMonthHandling(MonthHandling monthHandling) -> void {
     return duration_.onlyContainsUnit(unit);
 }
 
+[[nodiscard]] auto Interval::containsAllJSONFields(const nlohmann::json &json)
+    -> bool {
+    return std::ranges::all_of(jsonFields, [&json](const auto &field) -> bool {
+        return json.contains(field);
+    });
+}
+
 [[nodiscard]] auto Interval::toJSON() const -> nlohmann::json {
-    return {
-        {"duration", duration_.toISO8601String()},
-        {"month_handling", std::to_string(static_cast<int>(monthHandling_))}};
+    return {{jsonDurationField, duration_.toISO8601String()},
+            {jsonMonthHandlingField,
+             std::to_string(static_cast<int>(monthHandling_))}};
 }
 
 [[nodiscard]] auto Interval::fromJSON(const nlohmann::json &json)
-    -> std::optional<Interval> {
-    if (!json.contains("duration") || !json.contains("month_handling")) {
-        return std::nullopt;
+    -> std::expected<Interval, Error> {
+    if (!containsAllJSONFields(json)) {
+        return std::unexpected(Error::JSONMissingRequiredField);
     }
 
     auto durationFromISO8601String{hbt::mods::Duration::fromISO8601String(
-        json["duration"].get<std::string>())};
+        json[jsonDurationField].get<std::string>())};
 
-    if (!durationFromISO8601String.has_value()) {
-        return std::nullopt;
+    if (!durationFromISO8601String) {
+        return std::unexpected(Error::JSONFailedToParseDuration);
     }
 
     auto monthHandling{static_cast<Interval::MonthHandling>(
-        std::stoi(json["month_handling"].get<std::string>()))};
+        std::stoi(json[jsonMonthHandlingField].get<std::string>()))};
 
     return Interval{durationFromISO8601String.value(), monthHandling};
 }
 
 [[nodiscard]] auto Interval::fromNaturalLanguage(const std::string &input)
-    -> std::optional<Interval> {
+    -> std::expected<Interval, Error> {
     auto duration{Duration::fromNaturalLanguage(input)};
 
-    if (duration.has_value()) {
-        return Interval{duration.value()};
+    if (!duration) {
+        return std::unexpected(Error::NaturalLanguageFailedToParseDuration);
     }
 
-    return std::nullopt;
+    return Interval{duration.value()};
 }
 
 [[nodiscard]] auto Interval::toNaturalLanguage() const -> std::string {
