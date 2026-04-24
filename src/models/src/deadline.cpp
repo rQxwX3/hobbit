@@ -1,10 +1,35 @@
 #include <deadline.hpp>
 
 namespace hbt::mods {
-Deadline::Deadline(type_t type) : type_{std::move(type)} {}
+Deadline::Deadline(type_t type)
+    : type_{std::move(validateUnderlyingType(std::move(type)))} {}
 
-[[nodiscard]] auto Deadline::getUnderlyingType() const -> type_t {
-    return std::visit([](const auto &value) -> type_t { return value; }, type_);
+[[nodiscard]] auto Deadline::validateUnderlyingType(type_t type) const
+    -> type_t {
+    if (std::holds_alternative<Interval>(type) ||
+        std::holds_alternative<DateTime>(type)) {
+        return type;
+    }
+
+    throw std::invalid_argument(errorMessage(Error::InvalidUnderlyingType));
+}
+
+[[nodiscard]] auto Deadline::getType() const -> Type {
+    if (std::holds_alternative<Interval>(type_)) {
+        return Type::Interval;
+    }
+
+    if (std::holds_alternative<DateTime>(type_)) {
+        return Type::DateTime;
+    }
+}
+
+[[nodiscard]] auto Deadline::getInterval() const -> Interval {
+    return std::get<Interval>(type_);
+}
+
+[[nodiscard]] auto Deadline::getDateTime() const -> DateTime {
+    return std::get<DateTime>(type_);
 }
 
 [[nodiscard]] auto Deadline::toJSON() const -> nlohmann::json {
