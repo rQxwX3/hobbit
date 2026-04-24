@@ -1,88 +1,67 @@
 #include <task_data.hpp>
 
 namespace hbt::mods {
-TaskData::TaskData(std::string title, start_t start, bool isCompleted,
+TaskData::TaskData(std::string title, DateTime datetime, bool completed,
                    deadline_t deadline)
-    : title{std::move(title)}, start{start}, deadline{std::move(deadline)},
-      isCompleted{isCompleted} {}
+    : title{std::move(title)}, datetime{datetime},
+      deadline{std::move(deadline)}, completed{completed} {}
 
 [[nodiscard]] auto TaskData::toJSON() const & -> nlohmann::json {
     nlohmann::json json = {
-        {"title", title},
-        {"datetime", start.toISO8601String()},
-        {"deadline", deadlineToJSON()},
-        {"is_completed", isCompleted},
+        {jsonTitleField, title},
+        {jsonDateTimeField, datetime.toISO8601String()},
+        {jsonDeadlineField,
+         (deadline.has_value() ? deadline->toJSON() : jsonNullDeadlineValue)},
+        {jsonCompletedField, completed},
     };
 
     return json;
 }
 
-[[nodiscard]] auto TaskData::fromJSON(const nlohmann::json &json)
-    -> std::optional<TaskData> {
-    if (!json.contains("title") || !json.contains("is_completed") ||
-        !json.contains("datetime") || !json.contains("deadline")) {
-        return std::nullopt;
-    }
-
-    auto dateTimeFromISO8601{hbt::mods::DateTime::fromISO8601String(
-        json["datetime"].get<std::string>())};
-    if (!dateTimeFromISO8601.has_value()) {
-        return std::nullopt;
-    }
-
-    auto deadlineFromJSON{TaskData::deadlineFromJSON(json["deadline"])};
-    if (!deadlineFromJSON.has_value()) {
-        return std::nullopt;
-    }
-
-    return TaskData{json["title"].get<std::string>(),
-                    dateTimeFromISO8601.value(),
-                    json["is_completed"].get<bool>(), deadlineFromJSON.value()};
-}
-
-[[nodiscard]] auto TaskData::deadlineToJSON() const -> nlohmann::json {
-    if (std::holds_alternative<std::monostate>(deadline)) {
-        return {{"type", "none"}};
-    }
-
-    if (std::holds_alternative<hbt::mods::Interval>(deadline)) {
-        auto intervalJSON{std::get<hbt::mods::Interval>(deadline).toJSON()};
-
-        return {{"type", "interval"}, {"interval", intervalJSON}};
-    }
-
-    auto datetimeISO8601{
-        std::get<hbt::mods::DateTime>(deadline).toISO8601String()};
-
-    return {{"type", "datetime"}, {"datetime", datetimeISO8601}};
-}
-
 [[nodiscard]] auto TaskData::deadlineFromJSON(const nlohmann::json &json)
-    -> std::optional<deadline_t> {
-    if (!json.contains("type")) {
+    -> std::expected<deadline_t, Error> {
+    if (json[jsonDeadlineField] == jsonNullDeadlineValue) {
         return std::nullopt;
     }
 
-    if (json["type"] == "none") {
-        return std::monostate{};
+    auto deadlineFromJSON{Deadline::fromJSON(json[jsonDeadlineField])};
+    if (!deadlineFromJSON) {
+        return std::unexpected(Error::JSONFailedToParseDeadline);
     }
 
-    if (json["type"] == "interval") {
-        if (!json.contains("interval")) {
-            return std::nullopt;
+    return deadlineFromJSON.value();
+}
+
+[[nodiscard]] auto TaskData::containsAllJSONFields(const nlohmann::json &json)
+    -> bool {
+    for (auto field : jsonFields) {
+        if (!json.contains(field)) {
+            return false;
         }
-
-        return hbt::mods::Interval::fromJSON(json["interval"]);
     }
 
-    if (json["type"] == "datetime") {
-        if (!json.contains("datetime")) {
-            return std::nullopt;
-        }
+    return true;
+}
 
-        return hbt::mods::DateTime::fromISO8601String(json["datetime"]);
+[[nodiscard]] auto TaskData::fromJSON(const nlohmann::json &json)
+    -> std::expected<TaskData, Error> {
+    if (!containsAllJSONFields(json)) {
+        return std::unexpected(Error::JSONMissingRequiredField);
     }
 
-    return std::nullopt;
+    auto dateTimeFromISO8601{DateTime::fromISO8601String(
+        json[jsonDateTimeField].get<std::string>())};
+    if (!dateTimeFromISO8601) {
+        return std::unexpected(Error::JSONFailedToParseDateTime);
+    }
+
+    auto deadline{TaskData::deadlineFromJSON(json[jsonDeadlineField])};
+    if (!deadline) {
+        return std::unexpected(deadline.error());
+    }
+
+    return TaskData{json[jsonTitleField].get<std::string>(),
+                    dateTimeFromISO8601.value(),
+                    json[jsonCompletedField].get<bool>(), deadline.value()};
 }
 } // namespace hbt::mods
