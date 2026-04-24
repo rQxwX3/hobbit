@@ -1,45 +1,33 @@
 #include <recurrence_patterns.hpp>
 
 namespace hbt::mods::util {
-IntervalRecurrencePattern::IntervalRecurrencePattern(
-    const hbt::mods::Interval &interval)
+IntervalRecurrencePattern::IntervalRecurrencePattern(const Interval &interval)
     : interval_{interval} {}
 
-[[nodiscard]] auto
-IntervalRecurrencePattern::isValidJSON(const nlohmann::json &json) -> bool {
-    return json.contains("type") && json["type"] != typeJSON &&
-           json.contains("interval");
-}
-
 [[nodiscard]] auto IntervalRecurrencePattern::toJSON() const -> nlohmann::json {
-    return {{"type", typeJSON}, {"interval", interval_.toJSON()}};
+    return interval_.toJSON();
 };
 
 [[nodiscard]] auto
 IntervalRecurrencePattern::fromJSON(const nlohmann::json &json)
-    -> std::optional<IntervalRecurrencePattern> {
-    if (!isValidJSON(json)) {
-        return std::nullopt;
-    }
-
-    auto intervalFromJSON{hbt::mods::Interval::fromJSON(json["interval"])};
-    if (!intervalFromJSON.has_value()) {
-        return std::nullopt;
+    -> std::expected<IntervalRecurrencePattern, Error> {
+    auto intervalFromJSON{Interval::fromJSON(json)};
+    if (!intervalFromJSON) {
+        return std::unexpected(Error::JSONFailedToParseInterval);
     }
 
     return IntervalRecurrencePattern(intervalFromJSON.value());
 }
 
-[[nodiscard]] auto IntervalRecurrencePattern::getInterval() const
-    -> hbt::mods::Interval {
+[[nodiscard]] auto IntervalRecurrencePattern::getInterval() const -> Interval {
     return interval_;
 }
 
 [[nodiscard]] auto
 IntervalRecurrencePattern::happensOnDate(mods::DateTime start,
                                          mods::Date date) const -> bool {
-    if (interval_.isZero() && start.getDate() != date) {
-        return false;
+    if (interval_.isZero()) {
+        return start.getDate() == date;
     }
 
     if (interval_.getDuration() < Duration::days(1)) {
@@ -79,69 +67,47 @@ IntervalRecurrencePattern::getFirstOccurrencesOnDate(mods::DateTime start,
         return result;
     }
 
-    auto nextDay{date + mods::Duration::days(1)};
+    auto endDate{date + mods::Duration::days(1)};
 
-    for (auto dt{firstOccurrence}; dt->getDate() != nextDay; *dt += interval_) {
+    for (auto dt{firstOccurrence}; dt->getDate() != endDate; *dt += interval_) {
         result.push_back(*dt);
     }
 
     return result;
 }
 
-WeekdayRecurrence::WeekdayRecurrence(const mods::Interval &interval,
-                                     mods::Weekdays weekdays)
-    : weekdays_{weekdays} {
+auto WeekdayRecurrencePattern::validateInterval(const Interval &interval)
+    -> Interval {
     if (!interval.onlyContainsUnit(mods::Interval::unit_t::WEEK)) {
-        throw std::invalid_argument(std::string(invalidIntervalError));
+        throw std::invalid_argument(errorMessage(Error::InvalidInterval));
     }
 
-    interval_ = interval;
+    return interval;
 }
 
-[[nodiscard]] auto WeekdayRecurrence::isValidJSON(const nlohmann::json &json)
-    -> bool {
-    return json.contains("type") && json["type"] == typeJSON &&
-           json.contains("interval") && json.contains("weekdays");
-}
-
-[[nodiscard]] auto WeekdayRecurrence::toJSON() const -> nlohmann::json {
-    return {{"type", typeJSON},
-            {"interval", interval_.toJSON()},
-            {"weekdays", weekdays_.toJSON()}};
-}
-
-[[nodiscard]] auto WeekdayRecurrence::fromJSON(const nlohmann::json &json)
-    -> std::optional<WeekdayRecurrence> {
-    if (!isValidJSON(json)) {
-        return std::nullopt;
+auto WeekdayRecurrencePattern::validateWeekdays(Weekdays weekdays) -> Weekdays {
+    if (weekdays.getDays().none()) {
+        throw std::invalid_argument(errorMessage(Error::InvalidWeekdays));
     }
 
-    auto intervalFromJSON{Interval::fromJSON(json["interval"])};
-    if (!intervalFromJSON.has_value()) {
-        return std::nullopt;
-    }
-
-    auto weekdaysFromJSON{Weekdays::fromJSON(json["weekdays"])};
-    if (!weekdaysFromJSON.has_value()) {
-        return std::nullopt;
-    }
-
-    return WeekdayRecurrence{intervalFromJSON.value(),
-                             weekdaysFromJSON.value()};
+    return weekdays;
 }
 
-[[nodiscard]] auto WeekdayRecurrence::getInterval() const
-    -> hbt::mods::Interval {
+WeekdayRecurrencePattern::WeekdayRecurrencePattern(
+    const mods::Interval &interval, mods::Weekdays weekdays)
+    : weekdays_{validateWeekdays(weekdays)},
+      interval_{validateInterval(interval)} {}
+
+[[nodiscard]] auto WeekdayRecurrencePattern::getInterval() const -> Interval {
     return interval_;
 }
 
-[[nodiscard]] auto WeekdayRecurrence::getWeekdays() const
-    -> hbt::mods::Weekdays {
+[[nodiscard]] auto WeekdayRecurrencePattern::getWeekdays() const -> Weekdays {
     return weekdays_;
 }
 
 [[nodiscard]] auto
-WeekdayRecurrence::getDateOfFirstOccurrence(mods::DateTime start) const
+WeekdayRecurrencePattern::getDateOfFirstOccurrence(mods::DateTime start) const
     -> occurrence_t {
     for (auto days{0}; days != Duration::daysInWeek; ++days) {
         auto date{start + Duration::days(days)};
@@ -151,30 +117,63 @@ WeekdayRecurrence::getDateOfFirstOccurrence(mods::DateTime start) const
         }
     }
 
-    // TODO: assert this function always returns a value (through ctor or
-    // otherwise)
+    throw std::runtime_error(errorMessage(Error::EmptyWeekdays));
 }
 
-[[nodiscard]] auto WeekdayRecurrence::happensOnDate(hbt::mods::DateTime start,
-                                                    hbt::mods::Date date) const
+[[nodiscard]] auto WeekdayRecurrencePattern::happensOnDate(DateTime start,
+                                                           Date date) const
     -> bool {
-    if (weekdays_.containsWeekday(date.getWeekday())) {
+    if (!weekdays_.containsWeekday(date.getWeekday())) {
         return false;
     }
 
     auto intervalDuration{interval_.getDuration()};
-    auto dateOfFirstOccurrence{getDateOfFirstOccurrence(start)};
+    auto firstOccurrenceDate{getDateOfFirstOccurrence(start)};
 
-    return Date::getDiff(date, dateOfFirstOccurrence.getDate())
+    return Date::getDiff(date, firstOccurrenceDate.getDate())
         .isMultipleOf(intervalDuration);
 }
 
-[[nodiscard]] auto WeekdayRecurrence::getOccurrencesOnDate(
+[[nodiscard]] auto WeekdayRecurrencePattern::getOccurrencesOnDate(
     mods::DateTime start, mods::Date date) const -> occurrences_t {
     if (happensOnDate(start, date)) {
         return {mods::DateTime(date)};
     }
 
     return {};
+}
+
+[[nodiscard]] auto WeekdayRecurrencePattern::toJSON() const -> nlohmann::json {
+    return {{jsonIntervalField, interval_.toJSON()},
+            {jsonWeekdaysField, weekdays_.toJSON()}};
+}
+
+[[nodiscard]] auto
+WeekdayRecurrencePattern::containsAllJSONFields(const nlohmann::json &json)
+    -> bool {
+    return std::ranges::all_of(jsonFields, [json](const auto &field) -> bool {
+        return json.contains(field);
+    });
+}
+
+[[nodiscard]] auto
+WeekdayRecurrencePattern::fromJSON(const nlohmann::json &json)
+    -> std::expected<WeekdayRecurrencePattern, Error> {
+    if (!containsAllJSONFields(json)) {
+        return std::unexpected(Error::JSONMissingRequiredField);
+    }
+
+    auto intervalFromJSON{Interval::fromJSON(json[jsonIntervalField])};
+    if (!intervalFromJSON) {
+        return std::unexpected(Error::JSONFailedToParseInterval);
+    }
+
+    auto weekdaysFromJSON{Weekdays::fromJSON(json[jsonWeekdaysField])};
+    if (!weekdaysFromJSON) {
+        return std::unexpected(Error::JSONFailedToParseWeekdays);
+    }
+
+    return WeekdayRecurrencePattern{intervalFromJSON.value(),
+                                    weekdaysFromJSON.value()};
 }
 } // namespace hbt::mods::util

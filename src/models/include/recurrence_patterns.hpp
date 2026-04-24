@@ -5,7 +5,9 @@
 
 #include <nlohmann/json.hpp>
 
-#include <optional>
+#include <array>
+#include <expected>
+#include <string_view>
 
 namespace hbt::mods::util {
 class RecurrencePattern {
@@ -15,6 +17,13 @@ class RecurrencePattern {
 
   public:
     RecurrencePattern() = default;
+
+  public:
+    RecurrencePattern(const RecurrencePattern &) = default;
+    auto operator=(const RecurrencePattern &) -> RecurrencePattern & = default;
+
+    RecurrencePattern(RecurrencePattern &&) = delete;
+    auto operator=(RecurrencePattern &&) -> RecurrencePattern & = delete;
 
   public:
     virtual ~RecurrencePattern() = default;
@@ -27,29 +36,31 @@ class RecurrencePattern {
 
 class IntervalRecurrencePattern : public RecurrencePattern {
   private:
-    static constexpr auto typeJSON{std::string{"interval"}};
+    enum class Error : uint8_t {
+        JSONFailedToParseInterval,
+    };
+
+  public:
+    [[nodiscard]] static constexpr auto errorMessage(Error error)
+        -> std::string {
+        switch (error) {
+        case Error::JSONFailedToParseInterval:
+            return "IntervalRecurrencePattern: failed to parse Interval from "
+                   "JSON";
+        }
+    }
 
   private:
-    hbt::mods::Interval interval_;
-
-  private:
-    [[nodiscard]] auto static isValidJSON(const nlohmann::json &json) -> bool;
+    Interval interval_;
 
   public:
-    IntervalRecurrencePattern(const hbt::mods::Interval &interval);
+    IntervalRecurrencePattern(const Interval &interval);
 
   public:
-    [[nodiscard]] auto toJSON() const -> nlohmann::json;
-
-    [[nodiscard]] auto static fromJSON(const nlohmann::json &json)
-        -> std::optional<IntervalRecurrencePattern>;
+    [[nodiscard]] auto getInterval() const -> Interval;
 
   public:
-    [[nodiscard]] auto getInterval() const -> hbt::mods::Interval;
-
-  public:
-    [[nodiscard]] auto happensOnDate(hbt::mods::DateTime start,
-                                     hbt::mods::Date date) const -> bool;
+    [[nodiscard]] auto happensOnDate(DateTime start, Date date) const -> bool;
 
   private:
     [[nodiscard]] auto getFirstOccurrencesOnDate(mods::DateTime start,
@@ -60,50 +71,100 @@ class IntervalRecurrencePattern : public RecurrencePattern {
     [[nodiscard]] auto getOccurrencesOnDate(mods::DateTime start,
                                             mods::Date date) const
         -> occurrences_t override;
-};
-
-class WeekdayRecurrencePattern : public RecurrencePattern {
-  private:
-    static constexpr auto typeJSON{std::string{"weekday"}};
-
-  private:
-    static constexpr auto invalidIntervalError{
-        std::string_view{"WeekdayRecurrence: provided interval contains units "
-                         "others than week"}};
-
-  private:
-    hbt::mods::Interval interval_;
-    hbt::mods::Weekdays weekdays_;
-
-  private:
-    [[nodiscard]] auto static isValidJSON(const nlohmann::json &json) -> bool;
-
-  private:
-    [[nodiscard]] auto getDateOfFirstOccurrence(mods::DateTime start) const
-        -> occurrence_t;
-
-  public:
-    WeekdayRecurrencePattern(const hbt::mods::Interval &interval,
-                             hbt::mods::Weekdays weekdays);
 
   public:
     [[nodiscard]] auto toJSON() const -> nlohmann::json;
 
     [[nodiscard]] auto static fromJSON(const nlohmann::json &json)
-        -> std::optional<WeekdayRecurrencePattern>;
+        -> std::expected<IntervalRecurrencePattern, Error>;
+};
+
+class WeekdayRecurrencePattern : public RecurrencePattern {
+  private:
+    enum class Error : uint8_t {
+        JSONMissingRequiredField,
+
+        JSONFailedToParseInterval,
+        JSONFailedToParseWeekdays,
+
+        InvalidInterval,
+        InvalidWeekdays,
+
+        EmptyWeekdays,
+    };
 
   public:
-    [[nodiscard]] auto getInterval() const -> hbt::mods::Interval;
+    [[nodiscard]] static constexpr auto errorMessage(Error error)
+        -> std::string {
+        switch (error) {
+        case Error::JSONMissingRequiredField:
+            return "WeekdayRecurrencePattern: missing required field(s) in "
+                   "JSON";
 
-    [[nodiscard]] auto getWeekdays() const -> hbt::mods::Weekdays;
+        case Error::JSONFailedToParseInterval:
+            return "WeekdayRecurrencePattern: failed to parse Interval from "
+                   "JSON";
+
+        case Error::JSONFailedToParseWeekdays:
+            return "WeekdayRecurrencePattern: failed to parse Weekdays from "
+                   "JSON";
+
+        case Error::InvalidInterval:
+            return "WeekdayRecurrencePattern: provided Interval contains units "
+                   "other than week";
+
+        case Error::InvalidWeekdays:
+            return "WeekdayRecurrencePattern: provided Weekdays do not contain "
+                   "single selected day";
+
+        case Error::EmptyWeekdays:
+            return "WeekdayRecurrencePattern: no occurrences found due to "
+                   "invalid Weekdays object";
+        }
+    }
+
+  private:
+    static constexpr auto jsonIntervalField{std::string_view{"interval"}};
+    static constexpr auto jsonWeekdaysField{std::string_view{"weekdays"}};
+
+    static constexpr auto jsonFields{
+        std::array<std::string_view, 2>{jsonIntervalField, jsonWeekdaysField}};
+
+  private:
+    Interval interval_;
+    Weekdays weekdays_;
+
+  private:
+    [[nodiscard]] auto getDateOfFirstOccurrence(DateTime start) const
+        -> occurrence_t;
+
+    static auto validateInterval(const Interval &interval) -> Interval;
+
+    static auto validateWeekdays(Weekdays weekdays) -> Weekdays;
 
   public:
-    [[nodiscard]] auto happensOnDate(hbt::mods::DateTime start,
-                                     hbt::mods::Date date) const -> bool;
+    WeekdayRecurrencePattern(const Interval &interval, Weekdays weekdays);
 
   public:
-    [[nodiscard]] auto getOccurrencesOnDate(mods::DateTime start,
-                                            mods::Date date) const
+    [[nodiscard]] auto getInterval() const -> Interval;
+
+    [[nodiscard]] auto getWeekdays() const -> Weekdays;
+
+  public:
+    [[nodiscard]] auto happensOnDate(DateTime start, Date date) const -> bool;
+
+  public:
+    [[nodiscard]] auto getOccurrencesOnDate(DateTime start, Date date) const
         -> occurrences_t override;
+
+  private:
+    [[nodiscard]] auto static containsAllJSONFields(const nlohmann::json &json)
+        -> bool;
+
+  public:
+    [[nodiscard]] auto toJSON() const -> nlohmann::json;
+
+    [[nodiscard]] auto static fromJSON(const nlohmann::json &json)
+        -> std::expected<WeekdayRecurrencePattern, Error>;
 };
 } // namespace hbt::mods::util
