@@ -49,7 +49,7 @@ auto SingularTask::setCompleted(bool completed) -> void {
 
 [[nodiscard]] auto
 SingularTask::containsAllJSONFields(const nlohmann::json &json) -> bool {
-    return std::ranges::all_of(jsonFields, [json](const auto &field) -> bool {
+    return std::ranges::all_of(jsonFields, [&json](const auto &field) -> bool {
         return json.contains(field);
     });
 }

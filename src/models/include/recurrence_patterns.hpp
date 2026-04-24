@@ -38,6 +38,8 @@ class IntervalRecurrencePattern : public RecurrencePattern {
   private:
     enum class Error : uint8_t {
         JSONFailedToParseInterval,
+
+        InvalidInterval,
     };
 
   public:
@@ -47,8 +49,15 @@ class IntervalRecurrencePattern : public RecurrencePattern {
         case Error::JSONFailedToParseInterval:
             return "IntervalRecurrencePattern: failed to parse Interval from "
                    "JSON";
+
+        case Error::InvalidInterval:
+            return "IntervalRecurrencePattern: cannot instantiate recurrence "
+                   "pattern from zero Interval";
         }
     }
+
+  private:
+    static auto validateInterval(const Interval &interval) -> Interval;
 
   private:
     Interval interval_;
@@ -118,8 +127,8 @@ class WeekdayRecurrencePattern : public RecurrencePattern {
                    "single selected day";
 
         case Error::EmptyWeekdays:
-            return "WeekdayRecurrencePattern: no occurrences found due to "
-                   "invalid Weekdays object";
+            return "WeekdayRecurrencePattern: invalid object state (empty "
+                   "Weekdays object)";
         }
     }
 

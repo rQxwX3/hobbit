@@ -1,7 +1,6 @@
 #include <recurrence.hpp>
 
 namespace hbt::mods::util {
-
 Recurrence::Recurrence(pattern_t pattern) : pattern_{std::move(pattern)} {}
 
 [[nodiscard]] auto Recurrence::getPatternType() const -> PatternType {
@@ -12,6 +11,8 @@ Recurrence::Recurrence(pattern_t pattern) : pattern_{std::move(pattern)} {}
     if (std::holds_alternative<WeekdayRecurrencePattern>(pattern_)) {
         return PatternType::Weekday;
     }
+
+    throw std::runtime_error(errorMessage(Error::UnsupportedPatternType));
 }
 
 [[nodiscard]] auto Recurrence::getIntervalPattern() const
@@ -24,16 +25,23 @@ Recurrence::Recurrence(pattern_t pattern) : pattern_{std::move(pattern)} {}
     return std::get<WeekdayRecurrencePattern>(pattern_);
 }
 
-[[nodiscard]] auto Recurrence::getOccurrencesOnDate(mods::DateTime start,
-                                                    mods::Date date) const
+[[nodiscard]] auto Recurrence::getOccurrencesOnDate(DateTime start,
+                                                    Date date) const
     -> occurrences_t {
-    switch (getPatternType()) {
-    case PatternType::Interval:
-        return getIntervalPattern().getOccurrencesOnDate(start, date);
+    return std::visit(
+        [&](const auto &pattern) -> auto {
+            return pattern.getOccurrencesOnDate(start, date);
+        },
+        pattern_);
+}
 
-    case PatternType::Weekday:
-        return getWeekdayPattern().getOccurrencesOnDate(start, date);
-    }
+[[nodiscard]] auto Recurrence::isForDate(DateTime start, Date date) const
+    -> bool {
+    return std::visit(
+        [&](const auto &pattern) -> bool {
+            return pattern.happensOnDate(start, date);
+        },
+        pattern_);
 }
 
 [[nodiscard]] auto Recurrence::toJSON() const -> nlohmann::json {
@@ -45,12 +53,15 @@ Recurrence::Recurrence(pattern_t pattern) : pattern_{std::move(pattern)} {}
     case PatternType::Weekday:
         return {{jsonPatternTypeField, jsonWeekdayPatternTypeValue},
                 {jsonPatternField, getWeekdayPattern().toJSON()}};
+
+    default:
+        throw std::runtime_error(errorMessage(Error::UnsupportedPatternType));
     }
 }
 
 [[nodiscard]] auto Recurrence::containsAllJSONFields(const nlohmann::json &json)
     -> bool {
-    return std::ranges::all_of(jsonFields, [json](const auto &field) -> bool {
+    return std::ranges::all_of(jsonFields, [&json](const auto &field) -> bool {
         return json.contains(field);
     });
 }

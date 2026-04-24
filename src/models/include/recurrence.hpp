@@ -38,6 +38,8 @@ class Recurrence {
         JSONFailedToParseWeekdayPattern,
 
         JSONUnsupportedPatternType,
+
+        UnsupportedPatternType,
     };
 
   public:
@@ -57,6 +59,10 @@ class Recurrence {
 
         case Error::JSONUnsupportedPatternType:
             return "Recurrence: unsupported pattern type provided in JSON";
+
+        case Error::UnsupportedPatternType:
+            return "Recurrence: invalid object state (unsupported pattern "
+                   "type)";
         }
     }
 
@@ -80,9 +86,11 @@ class Recurrence {
     [[nodiscard]] auto getWeekdayPattern() const -> WeekdayRecurrencePattern;
 
   public:
-    [[nodiscard]] auto getOccurrencesOnDate(mods::DateTime start,
-                                            mods::Date date) const
+    [[nodiscard]] auto getOccurrencesOnDate(DateTime start, Date date) const
         -> occurrences_t;
+
+  public:
+    [[nodiscard]] auto isForDate(DateTime start, Date date) const -> bool;
 
   private:
     [[nodiscard]] static auto containsAllJSONFields(const nlohmann::json &json)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <datetime.hpp>
+#include <recurrence.hpp>
 #include <recurrence_patterns.hpp>
 #include <singular_task.hpp>
 #include <task_data.hpp>
@@ -8,15 +9,10 @@
 #include <uuid.hpp>
 
 #include <optional>
-#include <variant>
 
 namespace hbt::mods {
 class TaskSeries {
   public:
-    using recurrencePattern_t =
-        std::variant<hbt::mods::util::IntervalRecurrence,
-                     hbt::mods::util::WeekdayRecurrence>;
-
     using occurrences_t = util::RecurrencePattern::occurrences_t;
 
     using deadline_t = TaskData::deadline_t;
@@ -59,15 +55,12 @@ class TaskSeries {
   private:
     TaskData task_;
 
-    recurrencePattern_t recurrencePattern_;
-
     stop_t stop_;
-
     uuid_t uuid_;
 
-  private:
-    [[nodiscard]] auto validateTaskData(const TaskData &task) const -> TaskData;
+    util::Recurrence recurrence_;
 
+  private:
     auto validateDeadline(deadline_t deadline) const -> deadline_t;
 
     auto validateStart(start_t start) const -> start_t;
@@ -75,7 +68,7 @@ class TaskSeries {
     auto validateStop(stop_t stop) const -> stop_t;
 
   public:
-    TaskSeries(const TaskData &taskData, recurrencePattern_t recurrencePattern,
+    TaskSeries(TaskData taskData, util::Recurrence recurrence,
                stop_t stop = std::nullopt);
 
   public:
@@ -83,7 +76,7 @@ class TaskSeries {
 
     [[nodiscard]] auto getStop() const -> stop_t;
 
-    [[nodiscard]] auto getRecurrencePattern() const -> recurrencePattern_t;
+    [[nodiscard]] auto getRecurrence() const -> util::Recurrence;
 
     [[nodiscard]] auto getUUID() const -> uuid_t;
 
@@ -94,7 +87,7 @@ class TaskSeries {
 
     auto setDeadline(deadline_t deadline) -> void;
 
-    auto setRecurrencePattern(recurrencePattern_t recurrencePattern);
+    auto setRecurrence(util::Recurrence recurrence) -> void;
 
   private:
     [[nodiscard]] auto generateFirstSingularOfDate(mods::Date date) const

@@ -1,8 +1,17 @@
 #include <recurrence_patterns.hpp>
 
 namespace hbt::mods::util {
+auto IntervalRecurrencePattern::validateInterval(const Interval &interval)
+    -> Interval {
+    if (interval.isZero()) {
+        throw std::invalid_argument(errorMessage(Error::InvalidInterval));
+    }
+
+    return interval;
+}
+
 IntervalRecurrencePattern::IntervalRecurrencePattern(const Interval &interval)
-    : interval_{interval} {}
+    : interval_{validateInterval(interval)} {}
 
 [[nodiscard]] auto IntervalRecurrencePattern::toJSON() const -> nlohmann::json {
     return interval_.toJSON();
@@ -151,7 +160,7 @@ WeekdayRecurrencePattern::getDateOfFirstOccurrence(mods::DateTime start) const
 [[nodiscard]] auto
 WeekdayRecurrencePattern::containsAllJSONFields(const nlohmann::json &json)
     -> bool {
-    return std::ranges::all_of(jsonFields, [json](const auto &field) -> bool {
+    return std::ranges::all_of(jsonFields, [&json](const auto &field) -> bool {
         return json.contains(field);
     });
 }
