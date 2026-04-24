@@ -20,20 +20,41 @@ class TaskSeries {
     using occurrences_t = util::RecurrencePattern::occurrences_t;
 
     using deadline_t = TaskData::deadline_t;
-    using start_t = TaskData::start_t;
+    using start_t = TaskData::datetime_t;
 
     using stop_t = std::optional<hbt::mods::DateTime>;
     using uuid_t = core::uuid::uuid_t;
 
-  private:
-    static constexpr auto invalidDeadlineError{std::string_view{
-        "Recurrent tasks can only have interval-based deadlines"}};
+    enum class Error : uint8_t {
+        JSONMissingRequiredField,
 
-    static constexpr auto invalidStartFromError{std::string_view{
-        "Recurrent tasks can't start after they stop repeating"}};
+        JSONFailedToParseTaskData,
 
-    static constexpr auto invalidRepeatUntilError{std::string_view{
-        "Recurrent tasks can't stop repeating before they start"}};
+        InvalidDeadline,
+        InvalidStart,
+        InvalidStop,
+    };
+
+  public:
+    [[nodiscard]] static constexpr auto errorMessage(Error error)
+        -> std::string {
+        switch (error) {
+        case Error::JSONMissingRequiredField:
+            return "TaskSeries: missing required field(s) in JSON";
+
+        case Error::JSONFailedToParseTaskData:
+            return "TaskSeries: failed to parse TaskData from JSON";
+
+        case Error::InvalidDeadline:
+            return "TaskSeries: only interval-based deadlines are supported";
+
+        case Error::InvalidStart:
+            return "TaskSeries: provided start datetime is after series stop";
+
+        case Error::InvalidStop:
+            return "TaskSeries: provided stop datetime is before series start";
+        }
+    }
 
   private:
     TaskData task_;
@@ -44,10 +65,6 @@ class TaskSeries {
 
     uuid_t uuid_;
 
-  public:
-    TaskSeries(const TaskData &taskData, recurrencePattern_t recurrencePattern,
-               stop_t stop = std::nullopt);
-
   private:
     [[nodiscard]] auto validateTaskData(const TaskData &task) const -> TaskData;
 
@@ -57,13 +74,18 @@ class TaskSeries {
 
     auto validateStop(stop_t stop) const -> stop_t;
 
-  private:
-    [[nodiscard]] auto generateFirstSingularOfDate(mods::Date date) const
-        -> std::optional<hbt::mods::SingularTask>;
+  public:
+    TaskSeries(const TaskData &taskData, recurrencePattern_t recurrencePattern,
+               stop_t stop = std::nullopt);
 
   public:
-    [[nodiscard]] auto generateSingularsForDate(mods::Date date) const
-        -> std::vector<hbt::mods::SingularTask>;
+    [[nodiscard]] auto getStart() const -> start_t;
+
+    [[nodiscard]] auto getStop() const -> stop_t;
+
+    [[nodiscard]] auto getRecurrencePattern() const -> recurrencePattern_t;
+
+    [[nodiscard]] auto getUUID() const -> uuid_t;
 
   public:
     auto setStart(start_t start) -> void;
@@ -74,12 +96,13 @@ class TaskSeries {
 
     auto setRecurrencePattern(recurrencePattern_t recurrencePattern);
 
+  private:
+    [[nodiscard]] auto generateFirstSingularOfDate(mods::Date date) const
+        -> std::optional<hbt::mods::SingularTask>;
+
   public:
-    [[nodiscard]] auto getRecurrencePattern() const -> recurrencePattern_t;
-
-    [[nodiscard]] auto getStop() const -> stop_t;
-
-    [[nodiscard]] auto getUUID() const -> uuid_t;
+    [[nodiscard]] auto generateSingularsForDate(mods::Date date) const
+        -> std::vector<hbt::mods::SingularTask>;
 
   public:
     [[nodiscard]] auto isForDate(hbt::mods::Date date) const -> bool;
