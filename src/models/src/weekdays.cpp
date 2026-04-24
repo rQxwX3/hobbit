@@ -1,6 +1,15 @@
 #include <weekdays.hpp>
 
 namespace hbt::mods {
+auto Weekdays::validateString(const std::string &string) -> std::string {
+    if (string.length() != daysCount) {
+        throw std::invalid_argument(
+            errorMessage(Error::StringLengthMoreThanWeek));
+    }
+
+    return string;
+}
+
 Weekdays::Weekdays(const std::vector<DateTime::weekday_t> &weekdays) {
     for (const auto wd : weekdays) {
         days_.set(static_cast<size_t>(wd));
@@ -9,7 +18,8 @@ Weekdays::Weekdays(const std::vector<DateTime::weekday_t> &weekdays) {
 
 Weekdays::Weekdays(days_t days) : days_{days} {}
 
-Weekdays::Weekdays(const std::string &daysString) : days_{daysString} {}
+Weekdays::Weekdays(const std::string &daysString)
+    : days_{validateString(daysString)} {}
 
 [[nodiscard]] auto Weekdays::getDays() const -> days_t { return days_; }
 
@@ -22,20 +32,11 @@ Weekdays::Weekdays(const std::string &daysString) : days_{daysString} {}
 }
 
 [[nodiscard]] auto Weekdays::fromJSON(const nlohmann::json &json)
-    -> std::optional<Weekdays> {
+    -> std::expected<Weekdays, Error> {
     if (!json.is_string()) {
-        return std::nullopt;
+        return std::unexpected(Error::JSONNotString);
     }
 
-    auto str{json.get<std::string>()};
-    if (str.length() != daysCount) {
-        return std::nullopt;
-    }
-
-    try {
-        return Weekdays{str};
-    } catch (std::invalid_argument) {
-        return std::nullopt;
-    }
+    return Weekdays{validateString(json.get<std::string>())};
 }
 }; // namespace hbt::mods
