@@ -16,12 +16,6 @@ class RecurrencePattern {
   public:
     RecurrencePattern() = default;
 
-    RecurrencePattern(const RecurrencePattern &) = default;
-    auto operator=(const RecurrencePattern &) -> RecurrencePattern & = default;
-
-    RecurrencePattern(RecurrencePattern &&) = delete;
-    auto operator=(RecurrencePattern &&) -> RecurrencePattern & = delete;
-
   public:
     virtual ~RecurrencePattern() = default;
 
@@ -31,7 +25,7 @@ class RecurrencePattern {
         -> occurrences_t = 0;
 };
 
-class IntervalRecurrence : public RecurrencePattern {
+class IntervalRecurrencePattern : public RecurrencePattern {
   private:
     static constexpr auto typeJSON{std::string{"interval"}};
 
@@ -42,13 +36,13 @@ class IntervalRecurrence : public RecurrencePattern {
     [[nodiscard]] auto static isValidJSON(const nlohmann::json &json) -> bool;
 
   public:
-    IntervalRecurrence(const hbt::mods::Interval &interval);
+    IntervalRecurrencePattern(const hbt::mods::Interval &interval);
 
   public:
     [[nodiscard]] auto toJSON() const -> nlohmann::json;
 
     [[nodiscard]] auto static fromJSON(const nlohmann::json &json)
-        -> std::optional<IntervalRecurrence>;
+        -> std::optional<IntervalRecurrencePattern>;
 
   public:
     [[nodiscard]] auto getInterval() const -> hbt::mods::Interval;
@@ -68,7 +62,7 @@ class IntervalRecurrence : public RecurrencePattern {
         -> occurrences_t override;
 };
 
-class WeekdayRecurrence : public RecurrencePattern {
+class WeekdayRecurrencePattern : public RecurrencePattern {
   private:
     static constexpr auto typeJSON{std::string{"weekday"}};
 
@@ -89,14 +83,14 @@ class WeekdayRecurrence : public RecurrencePattern {
         -> occurrence_t;
 
   public:
-    WeekdayRecurrence(const hbt::mods::Interval &interval,
-                      hbt::mods::Weekdays weekdays);
+    WeekdayRecurrencePattern(const hbt::mods::Interval &interval,
+                             hbt::mods::Weekdays weekdays);
 
   public:
     [[nodiscard]] auto toJSON() const -> nlohmann::json;
 
     [[nodiscard]] auto static fromJSON(const nlohmann::json &json)
-        -> std::optional<WeekdayRecurrence>;
+        -> std::optional<WeekdayRecurrencePattern>;
 
   public:
     [[nodiscard]] auto getInterval() const -> hbt::mods::Interval;

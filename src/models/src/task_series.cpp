@@ -95,10 +95,10 @@ auto TaskSeries::setRecurrencePattern(recurrencePattern_t recurrencePattern) {
             }
         }};
 
-    if (std::holds_alternative<mods::util::IntervalRecurrence>(
+    if (std::holds_alternative<mods::util::IntervalRecurrencePattern>(
             recurrencePattern_)) {
-        auto pattern{
-            std::get<mods::util::IntervalRecurrence>(recurrencePattern_)};
+        auto pattern{std::get<mods::util::IntervalRecurrencePattern>(
+            recurrencePattern_)};
 
         addGeneratedSingulars(pattern.getOccurrencesOnDate(getStart(), date));
     }
@@ -120,8 +120,9 @@ auto TaskSeries::setRecurrencePattern(recurrencePattern_t recurrencePattern) {
         return false;
     }
 
-    if (std::holds_alternative<util::IntervalRecurrence>(recurrencePattern_)) {
-        return std::get<util::IntervalRecurrence>(recurrencePattern_)
+    if (std::holds_alternative<util::IntervalRecurrencePattern>(
+            recurrencePattern_)) {
+        return std::get<util::IntervalRecurrencePattern>(recurrencePattern_)
             .happensOnDate(getStart(), date);
     }
 

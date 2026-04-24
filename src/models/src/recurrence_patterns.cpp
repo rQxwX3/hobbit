@@ -1,21 +1,23 @@
 #include <recurrence_patterns.hpp>
 
 namespace hbt::mods::util {
-IntervalRecurrence::IntervalRecurrence(const hbt::mods::Interval &interval)
+IntervalRecurrencePattern::IntervalRecurrencePattern(
+    const hbt::mods::Interval &interval)
     : interval_{interval} {}
 
-[[nodiscard]] auto IntervalRecurrence::isValidJSON(const nlohmann::json &json)
-    -> bool {
+[[nodiscard]] auto
+IntervalRecurrencePattern::isValidJSON(const nlohmann::json &json) -> bool {
     return json.contains("type") && json["type"] != typeJSON &&
            json.contains("interval");
 }
 
-[[nodiscard]] auto IntervalRecurrence::toJSON() const -> nlohmann::json {
+[[nodiscard]] auto IntervalRecurrencePattern::toJSON() const -> nlohmann::json {
     return {{"type", typeJSON}, {"interval", interval_.toJSON()}};
 };
 
-[[nodiscard]] auto IntervalRecurrence::fromJSON(const nlohmann::json &json)
-    -> std::optional<IntervalRecurrence> {
+[[nodiscard]] auto
+IntervalRecurrencePattern::fromJSON(const nlohmann::json &json)
+    -> std::optional<IntervalRecurrencePattern> {
     if (!isValidJSON(json)) {
         return std::nullopt;
     }
@@ -25,17 +27,17 @@ IntervalRecurrence::IntervalRecurrence(const hbt::mods::Interval &interval)
         return std::nullopt;
     }
 
-    return IntervalRecurrence(intervalFromJSON.value());
+    return IntervalRecurrencePattern(intervalFromJSON.value());
 }
 
-[[nodiscard]] auto IntervalRecurrence::getInterval() const
+[[nodiscard]] auto IntervalRecurrencePattern::getInterval() const
     -> hbt::mods::Interval {
     return interval_;
 }
 
-[[nodiscard]] auto IntervalRecurrence::happensOnDate(mods::DateTime start,
-                                                     mods::Date date) const
-    -> bool {
+[[nodiscard]] auto
+IntervalRecurrencePattern::happensOnDate(mods::DateTime start,
+                                         mods::Date date) const -> bool {
     if (interval_.isZero() && start.getDate() != date) {
         return false;
     }
@@ -56,8 +58,8 @@ IntervalRecurrence::IntervalRecurrence(const hbt::mods::Interval &interval)
 }
 
 [[nodiscard]] auto
-IntervalRecurrence::getFirstOccurrencesOnDate(mods::DateTime start,
-                                              mods::Date date) const
+IntervalRecurrencePattern::getFirstOccurrencesOnDate(mods::DateTime start,
+                                                     mods::Date date) const
     -> std::optional<occurrence_t> {
     for (auto dt{start}; dt.getDate() <= date; dt += interval_) {
         if (dt.getDate() == date) {
@@ -68,7 +70,7 @@ IntervalRecurrence::getFirstOccurrencesOnDate(mods::DateTime start,
     return std::nullopt;
 }
 
-[[nodiscard]] auto IntervalRecurrence::getOccurrencesOnDate(
+[[nodiscard]] auto IntervalRecurrencePattern::getOccurrencesOnDate(
     mods::DateTime start, mods::Date date) const -> occurrences_t {
     auto result{occurrences_t{}};
 
