@@ -38,7 +38,7 @@ namespace hbt::mods::util {
 
 [[nodiscard]] auto
 NaturalLanguageParser::getBucketOfUnit(const std::string &unitString)
-    -> std::optional<std::reference_wrapper<const UnitBucket>> {
+    -> std::expected<UnitBucket, Error> {
     const auto normalizedUnitString{toLower(unitString)};
 
     for (const auto &bucket : buckets) {
@@ -47,33 +47,29 @@ NaturalLanguageParser::getBucketOfUnit(const std::string &unitString)
         }
     }
 
-    return std::nullopt;
+    return std::unexpected(Error::UnitBucketNotFound);
 }
 
-[[nodiscard]] auto
-NaturalLanguageParser::parseUnit(const std::string &unit,
-                                 Duration::value_t value, Duration &duration,
-                                 matchedBuckets_t &matchedBuckets) -> bool {
+auto NaturalLanguageParser::parseUnit(const std::string &unit,
+                                      Duration::value_t value,
+                                      Duration &duration,
+                                      matchedBuckets_t &matchedBuckets)
+    -> void {
 
     auto res{getBucketOfUnit(unit)};
-    if (!res.has_value()) {
-        return false;
+    auto bucket{res.value()};
+    auto unitOfBucket{bucket.getUnit()};
+
+    if (matchedBuckets.test(unitOfBucket)) {
+        throw std::runtime_error(errorMessage(Error::ParsingMatchedUnit));
     }
 
-    auto bucket{res.value().get()};
-    auto bucketUnit{bucket.getUnit()};
-
-    if (matchedBuckets.test(bucketUnit)) {
-        return false;
-    }
-
-    matchedBuckets.set(bucketUnit);
-    return bucket.addUnit(duration, value);
+    matchedBuckets.set(unitOfBucket);
+    bucket.addUnit(duration, value);
 }
 
-[[nodiscard]] auto
-NaturalLanguageParser::parseAllUnits(const std::string &filteredInput,
-                                     Duration &duration) -> bool {
+auto NaturalLanguageParser::parseAllUnits(const std::string &filteredInput,
+                                          Duration &duration) -> void {
     auto matchedBuckets{matchedBuckets_t{}};
 
     for (auto it(std::sregex_iterator{filteredInput.begin(),
@@ -85,15 +81,15 @@ NaturalLanguageParser::parseAllUnits(const std::string &filteredInput,
         auto unit{match[pairRegexPatternUnitGroup].str()};
 
         if (!Duration::isValidValue(value)) {
-            return false;
+            throw std::runtime_error(errorMessage(Error::InvalidUnitValue));
         }
 
-        if (!parseUnit(unit, value, duration, matchedBuckets)) {
-            return false;
+        try {
+            parseUnit(unit, value, duration, matchedBuckets);
+        } catch (std::runtime_error) {
+            throw std::runtime_error(errorMessage(Error::FailedToParseUnit));
         }
     }
-
-    return true;
 }
 
 [[nodiscard]] auto filterInput(const std::string &input) -> std::string {
@@ -107,19 +103,16 @@ NaturalLanguageParser::parseAllUnits(const std::string &filteredInput,
 }
 
 [[nodiscard]] auto NaturalLanguageParser::parse(const std::string &input)
-    -> std::optional<Duration> {
+    -> std::expected<Duration, Error> {
     if (!std::regex_match(input, fullRegexPattern)) {
-        return std::nullopt;
+        return std::unexpected(Error::RegexMismatch);
     }
 
     auto duration{Duration{}};
     auto filteredInput{filterInput(input)};
 
-    if (parseAllUnits(filteredInput, duration)) {
-        return duration;
-    }
-
-    return std::nullopt;
+    parseAllUnits(filteredInput, duration);
+    return duration;
 }
 
 [[nodiscard]] auto NaturalLanguageParser::formatUnitValuePairToNaturalLanguage(
@@ -155,13 +148,13 @@ NaturalLanguageParser::parseAllUnits(const std::string &filteredInput,
 }
 
 [[nodiscard]] auto ISO8601DurationParser::parse(const std::string &input)
-    -> std::optional<Duration> {
+    -> std::expected<Duration, Error> {
     std::smatch matches;
     if (!std::regex_match(input, matches, pattern)) {
-        return std::nullopt;
+        return std::unexpected(Error::RegexMismatch);
     }
 
-    Duration result;
+    Duration result{};
 
     auto parseGroup{[&matches, &result](unit_t unit) -> void {
         auto unitGroup{patternUnitGroups[unit]};

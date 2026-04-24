@@ -2,8 +2,8 @@
 
 #include <array>
 #include <bitset>
+#include <expected>
 #include <functional>
-#include <optional>
 #include <regex>
 #include <string>
 #include <unordered_set>
@@ -14,11 +14,46 @@ namespace hbt::mods::util {
 template <typename T>
 concept DurationParserConcept =
     requires(T parser, const std::string &s, const Duration &u) {
-        { parser.parse(s) } -> std::same_as<std::optional<Duration>>;
+        {
+            parser.parse(s)
+        } -> std::same_as<std::expected<Duration, typename T::Error>>;
+
         { parser.format(u) } -> std::convertible_to<std::string>;
     };
 
 class NaturalLanguageParser {
+  public:
+    enum class Error : uint8_t {
+        RegexMismatch,
+        UnitBucketNotFound,
+        ParsingMatchedUnit,
+        InvalidUnitValue,
+        FailedToParseUnit,
+    };
+
+  public:
+    [[nodiscard]] static constexpr auto errorMessage(Error error)
+        -> std::string {
+        switch (error) {
+        case Error::RegexMismatch:
+            return "NaturalLanguageParser: provided input didn't match regex";
+
+        case Error::UnitBucketNotFound:
+            return "NaturalLanguageParser: unit bucket(s) not initialized";
+
+        case Error::ParsingMatchedUnit:
+            return "NaturalLanguageParser: provided input contains the same "
+                   "unit more than once";
+
+        case Error::InvalidUnitValue:
+            return "NaturalLanguageParser: provided input contains invalid "
+                   "value (possible overflow)";
+
+        case Error::FailedToParseUnit:
+            return "NaturalLanguageParser: couldn't parse one or more units";
+        }
+    }
+
   private:
     class UnitBucket {
       private:
@@ -47,9 +82,8 @@ class NaturalLanguageParser {
             return possibleValues_.contains(unitString);
         }
 
-        auto addUnit(Duration &duration, Duration::value_t value) -> bool {
+        auto addUnit(Duration &duration, Duration::value_t value) -> void {
             addUnitCallback_(duration, value);
-            return true;
         }
     };
 
@@ -136,29 +170,40 @@ class NaturalLanguageParser {
 
   private:
     [[nodiscard]] static auto getBucketOfUnit(const std::string &unitString)
-        -> std::optional<std::reference_wrapper<const UnitBucket>>;
+        -> std::expected<UnitBucket, Error>;
 
-    [[nodiscard]] static auto
-    parseUnit(const std::string &unit, Duration::value_t value,
-              Duration &duration, matchedBuckets_t &matchedBuckets) -> bool;
+    static auto parseUnit(const std::string &unit, Duration::value_t value,
+                          Duration &duration, matchedBuckets_t &matchedBuckets)
+        -> void;
 
-    [[nodiscard]] static auto parseAllUnits(const std::string &filteredInput,
-                                            Duration &duration) -> bool;
+    static auto parseAllUnits(const std::string &filteredInput,
+                              Duration &duration) -> void;
 
-  public:
-    [[nodiscard]] static auto parse(const std::string &input)
-        -> std::optional<Duration>;
-
-  public:
+  private:
     [[nodiscard]] static auto
     formatUnitValuePairToNaturalLanguage(Duration::unitValuePair_t pair)
         -> std::string;
 
   public:
     [[nodiscard]] auto static format(const Duration &duration) -> std::string;
+
+    [[nodiscard]] static auto parse(const std::string &input)
+        -> std::expected<Duration, Error>;
 };
 
 class ISO8601DurationParser {
+  public:
+    enum class Error : uint8_t { RegexMismatch };
+
+  public:
+    [[nodiscard]] static constexpr auto errorMessage(Error error)
+        -> std::string {
+        switch (error) {
+        case Error::RegexMismatch:
+            return "ISO8601DurationParser: provided input didn't match regex";
+        }
+    }
+
   private:
     using unit_t = Duration::unit_t;
 
@@ -184,7 +229,7 @@ class ISO8601DurationParser {
 
   public:
     [[nodiscard]] static auto parse(const std::string &input)
-        -> std::optional<Duration>;
+        -> std::expected<Duration, Error>;
 
     [[nodiscard]] auto static format(const Duration &duration) -> std::string;
 };
@@ -194,7 +239,7 @@ template <typename Parser>
 class DurationParser {
   public:
     [[nodiscard]] static auto parse(const std::string &input)
-        -> std::optional<Duration> {
+        -> std::expected<Duration, typename Parser::Error> {
         return Parser::parse(input);
     }
 
