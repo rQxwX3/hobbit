@@ -13,6 +13,27 @@ class Time {
 
     using value_t = minutes_t;
 
+    enum class Error : uint8_t {
+        InvalidValue,
+        InvalidHour,
+        InvalidMinute,
+    };
+
+  public:
+    [[nodiscard]] static constexpr auto errorMessage(Error error)
+        -> std::string {
+        switch (error) {
+        case Error::InvalidValue:
+            return "Time: can't create Time object with negative value";
+
+        case Error::InvalidHour:
+            return "Time: provided hour value is invalid";
+
+        case Error::InvalidMinute:
+            return "Time: provided minute value is invalid";
+        }
+    }
+
   public:
     static constexpr value_t timeInMinute{1};
     static constexpr value_t timeInHour{timeInMinute * Duration::minutesInHour};
@@ -23,6 +44,10 @@ class Time {
 
   private:
     [[nodiscard]] static auto valueValidator(value_t value) -> value_t;
+
+    [[nodiscard]] static auto hourValidator(hours_t hour) -> hours_t;
+
+    [[nodiscard]] static auto minuteValidator(minutes_t minute) -> minutes_t;
 
   public:
     Time(value_t value);

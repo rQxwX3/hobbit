@@ -6,7 +6,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include <optional>
+#include <expected>
 
 namespace hbt::mods {
 class DateTime {
@@ -19,6 +19,23 @@ class DateTime {
     using time_value_t = Time::value_t;
     using hours_t = Time::hours_t;
     using minutes_t = Time::minutes_t;
+
+    enum class Error : uint8_t {
+        ISO8601RegexMismatch,
+        ISO8601UnitNotMatched,
+    };
+
+  public:
+    [[nodiscard]] static constexpr auto errorMessage(Error error)
+        -> std::string {
+        switch (error) {
+        case Error::ISO8601RegexMismatch:
+            return "DateTime: can't create Time object with negative value";
+
+        case Error::ISO8601UnitNotMatched:
+            return "DateTime: provided input doesn't contain one or more units";
+        }
+    }
 
   private:
     mods::Date date_;
@@ -53,7 +70,7 @@ class DateTime {
     [[nodiscard]] auto toISO8601String() const -> std::string;
 
     [[nodiscard]] static auto fromISO8601String(const std::string &string)
-        -> std::optional<DateTime>;
+        -> std::expected<DateTime, Error>;
 
   public:
     [[nodiscard]] auto operator<=>(const DateTime &other) const

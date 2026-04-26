@@ -1,7 +1,6 @@
 #include <datetime.hpp>
 
 #include <format>
-#include <optional>
 #include <regex>
 
 namespace hbt::mods {
@@ -45,44 +44,45 @@ DateTime::DateTime(year_t year, month_t month, day_t day, hours_t hours,
 }
 
 [[nodiscard]] auto DateTime::fromISO8601String(const std::string &string)
-    -> std::optional<DateTime> {
+    -> std::expected<DateTime, Error> {
     const auto pattern{std::regex{
         R"(^(\d{4})[-./](\d{2})[-./](\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?$)"}};
+
+    std::smatch matches;
+    if (!std::regex_match(string, matches, pattern)) {
+        return std::unexpected(Error::ISO8601RegexMismatch);
+    }
 
     constexpr size_t yearGroup{1};
     constexpr size_t monthGroup{2};
     constexpr size_t dayGroup{3};
     constexpr size_t hourGroup{4};
     constexpr size_t minuteGroup{5};
+
     constexpr size_t secondGroup{6}; // not supported, probably never will be
+                                     // (currently discarding the value)
 
-    std::smatch matches;
-    if (!std::regex_match(string, matches, pattern)) {
-        return std::nullopt;
+    constexpr auto groups{std::array<size_t, minuteGroup>{
+        yearGroup, monthGroup, dayGroup, hourGroup, minuteGroup}};
+
+    if (std::ranges::any_of(groups, [&matches](auto group) -> bool {
+            return !matches[group].matched;
+        })) {
+        return std::unexpected(Error::ISO8601UnitNotMatched);
     }
 
-    if (!matches[yearGroup].matched || !matches[monthGroup].matched ||
-        !matches[dayGroup].matched || !matches[hourGroup].matched ||
-        !matches[minuteGroup].matched) {
-        return std::nullopt;
-    }
+    const auto getGroupValue([&matches](size_t group) -> auto {
+        return std::stoi(matches[group].str());
+    });
 
-    const auto year{std::stoi(matches[yearGroup].str())};
-    const auto month{
-        static_cast<unsigned>(std::stoi(matches[monthGroup].str()))};
-    const auto day{static_cast<unsigned>(std::stoi(matches[dayGroup].str()))};
+    const auto date{
+        mods::Date(year_t{getGroupValue(yearGroup)},
+                   month_t{static_cast<unsigned>(getGroupValue(monthGroup))},
+                   day_t{static_cast<unsigned>(getGroupValue(dayGroup))})};
 
-    const auto date{mods::Date(year_t{year}, month_t{month}, day_t{day})};
-
-    const auto hour{std::stoi(matches[hourGroup].str())};
-    const auto minute{std::stoi(matches[minuteGroup].str())};
-
-    if (hour < 0 || hour > Duration::hoursInDay - 1 || minute < 0 ||
-        minute > Duration::minutesInHour - 1) {
-        return std::nullopt;
-    }
-
-    auto time{duration_cast<time_value_t>(hours_t{hour}) + minutes_t{minute}};
+    const auto time{
+        duration_cast<time_value_t>(hours_t{getGroupValue(hourGroup)}) +
+        minutes_t{getGroupValue(minuteGroup)}};
 
     return DateTime{date, time};
 }

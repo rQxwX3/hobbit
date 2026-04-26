@@ -7,6 +7,13 @@
 namespace hbt::mods {
 class Date {
   public:
+    using ymd_t = std::chrono::year_month_day;
+
+    using year_t = std::chrono::year;
+    using month_t = std::chrono::month;
+    using day_t = std::chrono::day;
+
+  public:
     enum class weekday_t : char {
         MONDAY = 0,
         TUESDAY,
@@ -19,11 +26,18 @@ class Date {
     };
 
   public:
-    using ymd_t = std::chrono::year_month_day;
+    enum class Error : uint8_t {
+        InvalidYMD,
+    };
 
-    using year_t = std::chrono::year;
-    using month_t = std::chrono::month;
-    using day_t = std::chrono::day;
+  public:
+    [[nodiscard]] static constexpr auto errorMessage(Error error)
+        -> std::string {
+        switch (error) {
+        case Error::InvalidYMD:
+            return "Date: provided year-month-day value is not valid";
+        }
+    }
 
   private:
     ymd_t ymd_;

@@ -3,17 +3,34 @@
 namespace hbt::mods {
 [[nodiscard]] auto Time::valueValidator(value_t value) -> value_t {
     if (value < value_t{0}) {
-        throw std::invalid_argument(
-            "Time: can't create Time object with negative value");
+        throw std::invalid_argument(errorMessage(Error::InvalidValue));
     }
 
     return value % timeInDay;
 }
 
+[[nodiscard]] auto Time::hourValidator(hours_t hour) -> hours_t {
+    if (auto count{hour.count()}; count < 0 || count >= Duration::hoursInDay) {
+        throw std::invalid_argument(errorMessage(Error::InvalidHour));
+    }
+
+    return hour;
+}
+
+[[nodiscard]] auto Time::minuteValidator(minutes_t minute) -> minutes_t {
+    if (auto count{minute.count()};
+        count < 0 || count >= Duration::minutesInHour) {
+        throw std::invalid_argument(errorMessage(Error::InvalidMinute));
+    }
+
+    return minute;
+}
+
 Time::Time(value_t value) : value_{valueValidator(value)} {}
 
 Time::Time(hours_t hours, minutes_t minutes)
-    : value_{valueValidator(duration_cast<minutes_t>(hours) + minutes)} {}
+    : value_{duration_cast<minutes_t>(hourValidator(hours)) +
+             minuteValidator(minutes)} {}
 
 [[nodiscard]] auto Time::now() -> Time {
     using namespace std::chrono;

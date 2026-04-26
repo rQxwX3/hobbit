@@ -7,8 +7,7 @@ using std::chrono::floor, std::chrono::system_clock, std::chrono::duration_cast;
 
 [[nodiscard]] auto Date::ymdValidator(ymd_t ymd) -> ymd_t {
     if (!ymd.ok()) {
-        throw std::invalid_argument(
-            "Date: provided year-month-day value is not valid");
+        throw std::invalid_argument(errorMessage(Error::InvalidYMD));
     }
 
     return ymd;
