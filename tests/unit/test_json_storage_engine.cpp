@@ -4,7 +4,7 @@
 #include <gtest/gtest.h>
 #include <nlohmann/json.hpp>
 
-#include <json_storage_engine.hpp>
+#include <json_storage.hpp>
 
 namespace test::store::json {
 class StorageEngineTest : public ::testing::Test {
@@ -38,20 +38,20 @@ class StorageEngineTest : public ::testing::Test {
 TEST_F(StorageEngineTest, ConstructorDoesNotOpenFile) {
     EXPECT_FALSE(std::filesystem::exists(test_filename));
 
-    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    auto storage{hbt::store::json::Storage(test_filename)};
     EXPECT_EQ(storage.getCount(), 0);
     EXPECT_FALSE(std::filesystem::exists(test_filename));
 }
 
 TEST_F(StorageEngineTest, ConstructorHandlesEmptyJSON) {
     createTestFile(nlohmann::json::object());
-    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    auto storage{hbt::store::json::Storage(test_filename)};
 
     EXPECT_EQ(storage.getCount(), 0);
 }
 
 TEST_F(StorageEngineTest, WriteCreatesFileAndSavesData) {
-    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    auto storage{hbt::store::json::Storage(test_filename)};
     storage.write("key", "value");
     ASSERT_TRUE(std::filesystem::exists(test_filename));
 
@@ -61,7 +61,7 @@ TEST_F(StorageEngineTest, WriteCreatesFileAndSavesData) {
 }
 
 TEST_F(StorageEngineTest, WriteUpdatesExsitingKey) {
-    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    auto storage{hbt::store::json::Storage(test_filename)};
     storage.write("key", "value1");
     storage.write("key", "value2");
 
@@ -71,7 +71,7 @@ TEST_F(StorageEngineTest, WriteUpdatesExsitingKey) {
 }
 
 TEST_F(StorageEngineTest, WriteAddsMultipleKeys) {
-    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    auto storage{hbt::store::json::Storage(test_filename)};
 
     storage.write("key1", "value1");
     storage.write("key2", "value2");
@@ -86,12 +86,12 @@ TEST_F(StorageEngineTest, WriteAddsMultipleKeys) {
 
 TEST_F(StorageEngineTest, WritePreservesExistingData) {
     {
-        auto storage{hbt::store::json::StorageEngine(test_filename)};
+        auto storage{hbt::store::json::Storage(test_filename)};
         storage.write("key1", "value1");
     }
 
     {
-        auto storage{hbt::store::json::StorageEngine(test_filename)};
+        auto storage{hbt::store::json::Storage(test_filename)};
         storage.write("key2", "value2");
     }
 
@@ -102,7 +102,7 @@ TEST_F(StorageEngineTest, WritePreservesExistingData) {
 }
 
 TEST_F(StorageEngineTest, ReadReturnsValueForExistingKey) {
-    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    auto storage{hbt::store::json::Storage(test_filename)};
     storage.write("key", "value");
 
     auto result{storage.read("key")};
@@ -111,7 +111,7 @@ TEST_F(StorageEngineTest, ReadReturnsValueForExistingKey) {
 }
 
 TEST_F(StorageEngineTest, ReadReturnsNulloptForMissingKey) {
-    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    auto storage{hbt::store::json::Storage(test_filename)};
     storage.write("key", "value");
 
     auto result{storage.read("nonexistent")};
@@ -119,7 +119,7 @@ TEST_F(StorageEngineTest, ReadReturnsNulloptForMissingKey) {
 }
 
 TEST_F(StorageEngineTest, ReadWorksWithEmptyStringKey) {
-    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    auto storage{hbt::store::json::Storage(test_filename)};
     storage.write("", "value");
 
     auto result{storage.read("")};
@@ -128,7 +128,7 @@ TEST_F(StorageEngineTest, ReadWorksWithEmptyStringKey) {
 }
 
 TEST_F(StorageEngineTest, ReadWorksWithEmptyStringValue) {
-    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    auto storage{hbt::store::json::Storage(test_filename)};
     storage.write("key", "");
 
     auto result{storage.read("key")};
@@ -137,7 +137,7 @@ TEST_F(StorageEngineTest, ReadWorksWithEmptyStringValue) {
 }
 
 TEST_F(StorageEngineTest, RemoveExistingKey) {
-    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    auto storage{hbt::store::json::Storage(test_filename)};
     storage.write("key1", "value1");
     storage.write("key2", "value2");
 
@@ -153,7 +153,7 @@ TEST_F(StorageEngineTest, RemoveExistingKey) {
 }
 
 TEST_F(StorageEngineTest, RemoveNonExistingKeyDoesNothing) {
-    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    auto storage{hbt::store::json::Storage(test_filename)};
     storage.write("key1", "value1");
 
     storage.remove("nonexistent");
@@ -167,7 +167,7 @@ TEST_F(StorageEngineTest, RemoveNonExistingKeyDoesNothing) {
 }
 
 TEST_F(StorageEngineTest, RemoveLastKeyCreatesEmptyJsonObject) {
-    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    auto storage{hbt::store::json::Storage(test_filename)};
     storage.write("key", "value");
 
     storage.remove("key");
@@ -178,21 +178,21 @@ TEST_F(StorageEngineTest, RemoveLastKeyCreatesEmptyJsonObject) {
 }
 
 TEST_F(StorageEngineTest, ExistsReturnsTrueForExistingKey) {
-    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    auto storage{hbt::store::json::Storage(test_filename)};
     storage.write("key", "value");
 
     EXPECT_TRUE(storage.exists("key"));
 }
 
 TEST_F(StorageEngineTest, ExistsReturnsFalseForNonExistingKey) {
-    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    auto storage{hbt::store::json::Storage(test_filename)};
     storage.write("key", "value");
 
     EXPECT_FALSE(storage.exists("nonexistent"));
 }
 
 TEST_F(StorageEngineTest, ExistsReturnsFalseForRemovedKey) {
-    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    auto storage{hbt::store::json::Storage(test_filename)};
     storage.write("key", "value");
 
     storage.remove("key");
@@ -200,7 +200,7 @@ TEST_F(StorageEngineTest, ExistsReturnsFalseForRemovedKey) {
 }
 
 TEST_F(StorageEngineTest, GetCountReturnsCorrectNumberOfKeys) {
-    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    auto storage{hbt::store::json::Storage(test_filename)};
 
     EXPECT_EQ(storage.getCount(), 0);
 
@@ -218,7 +218,7 @@ TEST_F(StorageEngineTest, GetCountReturnsCorrectNumberOfKeys) {
 }
 
 TEST_F(StorageEngineTest, GetKeyValuePairsReturnsAllPairs) {
-    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    auto storage{hbt::store::json::Storage(test_filename)};
 
     storage.write("key1", "value1");
     storage.write("key2", "value2");
@@ -232,14 +232,14 @@ TEST_F(StorageEngineTest, GetKeyValuePairsReturnsAllPairs) {
 }
 
 TEST_F(StorageEngineTest, GetKeyValuePairsReturnsEmptyForEmptyStorage) {
-    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    auto storage{hbt::store::json::Storage(test_filename)};
 
     auto data{storage.getKeyValuePairs()};
     EXPECT_TRUE(data.empty());
 }
 
 TEST_F(StorageEngineTest, ClearRemovesAllData) {
-    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    auto storage{hbt::store::json::Storage(test_filename)};
     storage.write("key1", "value1");
     storage.write("key2", "value2");
 
@@ -253,7 +253,7 @@ TEST_F(StorageEngineTest, ClearRemovesAllData) {
 }
 
 TEST_F(StorageEngineTest, ClearOnEmptyStorageDoesNothing) {
-    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    auto storage{hbt::store::json::Storage(test_filename)};
 
     storage.clear();
     EXPECT_EQ(storage.getCount(), 0);
@@ -264,7 +264,7 @@ TEST_F(StorageEngineTest, ClearOnEmptyStorageDoesNothing) {
 }
 
 TEST_F(StorageEngineTest, HandlesSpecialCharactersInKeys) {
-    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    auto storage{hbt::store::json::Storage(test_filename)};
 
     std::vector<std::string> specialKeys{
         {"key with spaces", "key!@#$%^&*()", "key.with.dots", "key-with-dashes",
@@ -286,7 +286,7 @@ TEST_F(StorageEngineTest, HandlesSpecialCharactersInKeys) {
 }
 
 TEST_F(StorageEngineTest, HandlesSpecialCharactersInValues) {
-    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    auto storage{hbt::store::json::Storage(test_filename)};
 
     std::string specialValue{
         "Value with spaces!@#$%^&*() and emojis 🚀 and unicode 你好"};
@@ -299,7 +299,7 @@ TEST_F(StorageEngineTest, HandlesSpecialCharactersInValues) {
 TEST_F(StorageEngineTest, HandlesLargeValues) {
     constexpr size_t largeInteger{10000};
 
-    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    auto storage{hbt::store::json::Storage(test_filename)};
     std::string largeValue(largeInteger, 'a');
 
     storage.write("key", largeValue);
@@ -310,7 +310,7 @@ TEST_F(StorageEngineTest, HandlesLargeValues) {
 TEST_F(StorageEngineTest, HandlesLargeNumberOfKeys) {
     constexpr size_t largeInteger{1000};
 
-    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    auto storage{hbt::store::json::Storage(test_filename)};
 
     for (int i = 0; i < largeInteger; ++i) {
         storage.write("key" + std::to_string(i), "value" + std::to_string(i));
@@ -325,7 +325,7 @@ TEST_F(StorageEngineTest, HandlesLargeNumberOfKeys) {
 }
 
 TEST_F(StorageEngineTest, SaveUsesIndentedFormat) {
-    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    auto storage{hbt::store::json::Storage(test_filename)};
     storage.write("key", "value");
 
     std::ifstream file(test_filename);
@@ -340,7 +340,7 @@ TEST_F(StorageEngineTest, LoadHandlesMinifiedJson) {
     file << R"({"key":"value"})";
     file.close();
 
-    auto storage{hbt::store::json::StorageEngine(test_filename)};
+    auto storage{hbt::store::json::Storage(test_filename)};
     EXPECT_EQ(storage.getCount(), 1);
     EXPECT_EQ(storage.read("key"), "value");
 }

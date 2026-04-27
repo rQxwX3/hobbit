@@ -1,4 +1,4 @@
-add_library(storage_lib STATIC implementations/src/json_storage_engine.cpp)
+add_library(storage_lib STATIC implementations/src/json_storage.cpp)
 
 target_include_directories(storage_lib PUBLIC
 	implementations/include

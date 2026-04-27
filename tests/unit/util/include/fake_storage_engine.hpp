@@ -1,10 +1,10 @@
-#include <storage_engine.hpp>
+#include <storage.hpp>
 
 #include <string>
 #include <unordered_map>
 
 namespace test::util {
-class FakeStorageEngine : public hbt::store::StorageEngine {
+class FakeStorageEngine : public hbt::store::Storage {
   private:
     std::unordered_map<std::string, std::string> data_;
 

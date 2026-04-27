@@ -1,14 +1,13 @@
 #include <app.hpp>
 #include <json_repository.hpp>
-#include <json_storage_engine.hpp>
+#include <json_storage.hpp>
 #include <task_manager.hpp>
 #include <tui.hpp>
 
 #include <memory>
 
 auto main() -> int {
-    auto storage{
-        std::make_shared<hbt::store::json::StorageEngine>("tasks.json")};
+    auto storage{std::make_shared<hbt::store::json::Storage>("tasks.json")};
 
     auto tasksRepo{std::make_unique<
         hbt::repo::json::MultiItemRepository<hbt::mods::TaskData>>(storage)};
