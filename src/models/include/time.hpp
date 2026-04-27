@@ -69,6 +69,7 @@ class Time {
         -> std::strong_ordering;
 
     [[nodiscard]] auto operator==(const Time &other) const -> bool;
+    [[nodiscard]] auto operator!=(const Time &other) const -> bool;
 
     [[nodiscard]] auto operator+(const Interval &interval) const
         -> std::pair<Time, bool>;

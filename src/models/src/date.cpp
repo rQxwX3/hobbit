@@ -45,6 +45,8 @@ Date::Date(year_t year, month_t month, day_t day)
 
 [[nodiscard]] auto Date::operator==(const Date &other) const -> bool = default;
 
+[[nodiscard]] auto Date::operator!=(const Date &other) const -> bool = default;
+
 [[nodiscard]] auto Date::operator<=>(const Date &other) const
     -> std::strong_ordering = default;
 
@@ -90,14 +92,14 @@ Date::Date(year_t year, month_t month, day_t day)
     return {ymd_t(sysdays)};
 }
 
-[[nodiscard]] auto Date::operator-(const Interval &interval) const -> Date {
-    auto newYMD{
-        ymd_ -
-        std::chrono::years(interval.getUnitValue(Interval::unit_t::YEAR)) -
-        std::chrono::months(interval.getUnitValue(Interval::unit_t::MONTH))};
-
-    return {newYMD};
-}
+// [[nodiscard]] auto Date::operator-(const Interval &interval) const -> Date {
+//     auto newYMD{
+//         ymd_ -
+//         std::chrono::years(interval.getUnitValue(Interval::unit_t::YEAR)) -
+//         std::chrono::months(interval.getUnitValue(Interval::unit_t::MONTH))};
+//
+//     return {newYMD};
+// }
 
 auto Date::operator+=(const Interval &interval) -> Date & {
     *this = *this + interval;

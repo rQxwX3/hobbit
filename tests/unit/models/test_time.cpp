@@ -50,6 +50,7 @@ TEST(TimeTest, ComparisonOperators) {
     EXPECT_TRUE(t2 >= t1);
 
     EXPECT_FALSE(t1 == t2);
+    EXPECT_TRUE(t1 != t2);
 
     auto t3{Time{hours_t{1}, minutes_t{0}}};
     auto t4{Time{hours_t{0}, minutes_t{0}}};
@@ -61,6 +62,7 @@ TEST(TimeTest, ComparisonOperators) {
     EXPECT_TRUE(t4 >= t3);
 
     EXPECT_FALSE(t3 == t4);
+    EXPECT_TRUE(t3 != t4);
 }
 
 TEST(TimeTest, OperatorPlus) {

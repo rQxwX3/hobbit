@@ -60,6 +60,8 @@ Time::Time(hours_t hours, minutes_t minutes)
 
 [[nodiscard]] auto Time::operator==(const Time &other) const -> bool = default;
 
+[[nodiscard]] auto Time::operator!=(const Time &other) const -> bool = default;
+
 [[nodiscard]] auto Time::operator+(const Interval &interval) const
     -> std::pair<Time, bool> {
     auto result{

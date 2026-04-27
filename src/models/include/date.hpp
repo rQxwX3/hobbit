@@ -70,13 +70,15 @@ class Date {
   public:
     [[nodiscard]] auto operator==(const Date &other) const -> bool;
 
+    [[nodiscard]] auto operator!=(const Date &other) const -> bool;
+
     ;
     [[nodiscard]] auto operator<=>(const Date &other) const
         -> std::strong_ordering;
 
     [[nodiscard]] auto operator+(const Interval &interval) const -> Date;
 
-    [[nodiscard]] auto operator-(const Interval &interval) const -> Date;
+    // [[nodiscard]] auto operator-(const Interval &interval) const -> Date;
 
     auto operator+=(const Interval &interval) -> Date &;
 
