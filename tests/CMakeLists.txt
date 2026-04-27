@@ -8,6 +8,7 @@ add_executable(models_test
 	unit/models/test_datetime.cpp
 	unit/models/test_occurrence.cpp
 	unit/models/test_task.cpp
+	unit/models/test_time.cpp
 )
 
 target_link_libraries(models_test PRIVATE 
