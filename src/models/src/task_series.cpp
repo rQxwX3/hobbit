@@ -28,7 +28,7 @@ auto TaskSeries::validateStop(stop_t stop) const -> stop_t {
 
 TaskSeries::TaskSeries(TaskData task, util::Recurrence recurrence, stop_t stop)
     : task_{std::move(task)}, recurrence_{std::move(recurrence)},
-      stop_{validateStop(stop)}, uuid_{core::uuid::generateUUID()} {
+      stop_{validateStop(stop)} {
     validateDeadline(task_.getDeadline());
 }
 
@@ -52,8 +52,6 @@ TaskSeries::TaskSeries(TaskData task, util::Recurrence recurrence, stop_t stop)
 [[nodiscard]] auto TaskSeries::getRecurrence() const -> util::Recurrence {
     return recurrence_;
 }
-
-[[nodiscard]] auto TaskSeries::getUUID() const -> uuid_t { return uuid_; }
 
 auto TaskSeries::setStart(start_t start) -> void {
     task_.setDateTime(validateStart(start));
@@ -93,5 +91,43 @@ auto TaskSeries::setRecurrence(util::Recurrence recurrence) -> void {
     }
 
     return recurrence_.isForDate(getStart(), date);
+}
+
+[[nodiscard]] auto TaskSeries::containsAllJSONFields(const nlohmann::json &json)
+    -> bool {
+    return std::ranges::all_of(jsonFields, [&json](const auto &field) -> bool {
+        return json.contains(field);
+    });
+}
+
+[[nodiscard]] auto TaskSeries::toJSON() const -> nlohmann::json {
+    return {{jsonTaskField, task_.toJSON()},
+            {jsonStopField, stop_->toISO8601String()},
+            {jsonRecurrenceField, recurrence_.toJSON()}};
+}
+
+[[nodiscard]] auto TaskSeries::fromJSON(const nlohmann::json &json)
+    -> std::expected<TaskSeries, Error> {
+    if (!containsAllJSONFields(json)) {
+        return std::unexpected(Error::JSONMissingRequiredField);
+    }
+
+    auto task{TaskData::fromJSON(json[jsonTaskField])};
+    if (!task) {
+        return std::unexpected(Error::JSONFailedToParseTaskData);
+    }
+
+    // maybe validation here?
+    auto stop{DateTime::fromISO8601String(json[jsonStopField])};
+    if (!stop) {
+        return std::unexpected(Error::JSONFailedToParseStop);
+    }
+
+    auto recurrence{util::Recurrence::fromJSON(json[jsonRecurrenceField])};
+    if (!recurrence) {
+        return std::unexpected(Error::JSONFailedToParseRecurrence);
+    }
+
+    return TaskSeries{task.value(), recurrence.value(), stop.value()};
 }
 } // namespace hbt::mods

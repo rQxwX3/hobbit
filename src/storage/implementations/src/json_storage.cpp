@@ -59,7 +59,7 @@ auto Storage::remove(const key_t &key) -> void {
     return pairs_.contains(key);
 }
 
-[[nodiscard]] auto Storage::getKeyValuePairs() const -> pairs_t {
+[[nodiscard]] auto Storage::getKeyValuePairs() const & -> const pairs_t & {
     return pairs_;
 }
 

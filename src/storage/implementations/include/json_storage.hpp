@@ -35,7 +35,7 @@ class Storage : public hbt::store::Storage {
     [[nodiscard]] auto exists(const key_t &key) const -> bool override;
 
   public:
-    [[nodiscard]] auto getKeyValuePairs() const -> pairs_t override;
+    [[nodiscard]] auto getKeyValuePairs() const & -> const pairs_t & override;
 
     auto clear() -> void override;
 };

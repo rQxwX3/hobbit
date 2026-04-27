@@ -1,11 +1,7 @@
 #include <singular_task.hpp>
 
 namespace hbt::mods {
-SingularTask::SingularTask(TaskData task)
-    : task_(std::move(task)), uuid_{core::uuid::generateUUID()} {}
-
-SingularTask::SingularTask(uuid_t uuid, TaskData task)
-    : task_{std::move(task)}, uuid_{std::move(uuid)} {}
+SingularTask::SingularTask(TaskData task) : task_(std::move(task)) {}
 
 auto SingularTask::setTitle(std::string title) -> void {
     task_.setTitle(std::move(title));
@@ -55,7 +51,7 @@ SingularTask::containsAllJSONFields(const nlohmann::json &json) -> bool {
 }
 
 [[nodiscard]] auto SingularTask::toJSON() const & -> nlohmann::json {
-    return {{jsonUUIDField, uuid_}, {jsonTaskField, task_.toJSON()}};
+    return {{jsonTaskField, task_.toJSON()}};
 }
 
 [[nodiscard]] auto SingularTask::fromJSON(const nlohmann::json &json)
@@ -69,7 +65,6 @@ SingularTask::containsAllJSONFields(const nlohmann::json &json) -> bool {
         return std::unexpected(Error::JSONFailedToParseTaskData);
     }
 
-    return SingularTask{json[jsonUUIDField].get<std::string>(),
-                        taskFromJSON.value()};
+    return SingularTask{taskFromJSON.value()};
 }
 } // namespace hbt::mods

@@ -9,12 +9,16 @@
 auto main() -> int {
     auto storage{std::make_shared<hbt::store::json::Storage>("tasks.json")};
 
-    auto tasksRepo{std::make_unique<
-        hbt::repo::json::MultiItemRepository<hbt::mods::TaskData>>(storage)};
+    auto singulars{std::make_unique<
+        hbt::repo::json::MultiItemRepository<hbt::mods::SingularTask>>(
+        storage)};
 
-    auto app{hbt::core::App{
-        std::make_unique<hbt::core::TaskManager>(std::move(tasksRepo)),
-        std::make_unique<hbt::ui::tui::TUI>()}};
+    auto series{std::make_unique<
+        hbt::repo::json::MultiItemRepository<hbt::mods::TaskSeries>>(storage)};
+
+    auto app{hbt::core::App{std::make_unique<hbt::core::TaskManager>(
+                                std::move(series), std::move(singulars)),
+                            std::make_unique<hbt::ui::tui::TUI>()}};
 
     app.run();
 }

@@ -6,7 +6,6 @@
 #include <singular_task.hpp>
 #include <task_data.hpp>
 #include <task_override.hpp>
-#include <uuid.hpp>
 
 #include <optional>
 
@@ -19,16 +18,13 @@ class TaskSeries {
     using start_t = TaskData::datetime_t;
 
     using stop_t = std::optional<hbt::mods::DateTime>;
-    using uuid_t = core::uuid::uuid_t;
 
     enum class Error : uint8_t {
         JSONMissingRequiredField,
 
         JSONFailedToParseTaskData,
-
-        InvalidDeadline,
-        InvalidStart,
-        InvalidStop,
+        JSONFailedToParseStop,
+        JSONFailedToParseRecurrence,
     };
 
   public:
@@ -41,22 +37,26 @@ class TaskSeries {
         case Error::JSONFailedToParseTaskData:
             return "TaskSeries: failed to parse TaskData from JSON";
 
-        case Error::InvalidDeadline:
-            return "TaskSeries: only interval-based deadlines are supported";
+        case Error::JSONFailedToParseRecurrence:
+            return "TaskSeries: failed to parse Recurrence from JSON";
 
-        case Error::InvalidStart:
-            return "TaskSeries: provided start datetime is after series stop";
-
-        case Error::InvalidStop:
-            return "TaskSeries: provided stop datetime is before series start";
+        case Error::JSONFailedToParseStop:
+            return "TaskSeries: failed to parse stop DateTime from JSON";
         }
     }
+
+  private:
+    static constexpr auto jsonTaskField{std::string_view{"task"}};
+    static constexpr auto jsonStopField{std::string_view{"stop"}};
+    static constexpr auto jsonRecurrenceField{std::string_view{"recurrence"}};
+
+    static constexpr auto jsonFields{std::array<std::string_view, 3>{
+        jsonTaskField, jsonStopField, jsonRecurrenceField}};
 
   private:
     TaskData task_;
 
     stop_t stop_;
-    uuid_t uuid_;
 
     util::Recurrence recurrence_;
 
@@ -78,8 +78,6 @@ class TaskSeries {
 
     [[nodiscard]] auto getRecurrence() const -> util::Recurrence;
 
-    [[nodiscard]] auto getUUID() const -> uuid_t;
-
   public:
     auto setStart(start_t start) -> void;
 
@@ -99,5 +97,15 @@ class TaskSeries {
 
   public:
     [[nodiscard]] auto isForDate(hbt::mods::Date date) const -> bool;
+
+  private:
+    [[nodiscard]] auto static containsAllJSONFields(const nlohmann::json &json)
+        -> bool;
+
+  public:
+    [[nodiscard]] auto toJSON() const -> nlohmann::json;
+
+    [[nodiscard]] static auto fromJSON(const nlohmann::json &json)
+        -> std::expected<TaskSeries, Error>;
 };
 } // namespace hbt::mods

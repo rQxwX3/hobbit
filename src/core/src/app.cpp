@@ -1,22 +1,21 @@
 #include <app.hpp>
+#include <datetime.hpp>
+#include <task_data.hpp>
 
 namespace hbt::core {
-App::App(std::unique_ptr<hbt::core::TaskService> tasks,
-         std::unique_ptr<hbt::ui::UI> ui)
-    : tasks_{std::move(tasks)}, ui_{std::move(ui)},
-      date_{hbt::mods::DateTime::today()} {
+App::App(tasks_t tasks, ui_t ui)
+    : tasks_{std::move(tasks)}, ui_{std::move(ui)} {
 
-    ui_->setCreateTaskCallback([this](std::string title,
-                                      hbt::mods::Interval interval) -> void {
-        auto task{hbt::mods::Task{
-            std::move(title),
-            {hbt::mods::Occurrence{hbt::mods::DateTime::today(), interval}}}};
+    ui_->setCreateTaskCallback(
+        [this](std::string title, hbt::mods::Interval interval) -> void {
+            // auto task{hbt::mods::TaskData{}};
+            //
+            // tasks_->createTask(task);
+            // ui_->populateTaskList(task);
+            // TODO:
+        });
 
-        tasks_->createTask(task);
-        ui_->populateTaskList(task);
-    });
-
-    ui_->setTaskList(tasks_->getTasksForDate(date_));
+    // ui_->setTaskList(tasks_->getTasksForDate(hbt::mods::Date::today()));
 };
 
 auto App::run() -> void { ui_->start(); }

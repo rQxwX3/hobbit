@@ -7,7 +7,6 @@ namespace hbt::core {
 [[nodiscard]] auto TaskManager::instantiateSeriesForDate(mods::Date date) const
     -> singulars_t {
     auto result{singulars_t{}};
-
     auto series{seriesRepo_->getAll()};
 
     for (const auto &s : series) {
@@ -59,8 +58,8 @@ TaskManager::TaskManager(series_repo_t seriesRepo,
 [[nodiscard]] auto TaskManager::getCalendarForToday() const -> calendar_t {
     auto today{mods::Date::today()};
 
-    return getTasksForDateRange(today - retentionInterval,
-                                today + lookaheadInterval);
+    return getTasksForDateRange(today - retentionDuration,
+                                today + lookaheadDuration);
 }
 
 // auto TaskManager::createTask(const hbt::mods::Task &task) -> id_t {

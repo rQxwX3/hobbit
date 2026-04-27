@@ -1,21 +1,23 @@
 #pragma once
 
 #include <datetime.hpp>
-#include <task_service.hpp>
+#include <task_manager.hpp>
 #include <ui.hpp>
 
 #include <memory>
 
 namespace hbt::core {
 class App {
+  public:
+    using tasks_t = std::unique_ptr<hbt::core::TaskManager>;
+    using ui_t = std::unique_ptr<hbt::ui::UI>;
+
   private:
-    std::unique_ptr<hbt::core::TaskService> tasks_;
-    std::unique_ptr<hbt::ui::UI> ui_;
-    hbt::mods::DateTime date_;
+    tasks_t tasks_;
+    ui_t ui_;
 
   public:
-    App(std::unique_ptr<hbt::core::TaskService> tasks,
-        std::unique_ptr<hbt::ui::UI> ui);
+    App(tasks_t tasks, ui_t ui);
 
   public:
     auto run() -> void;

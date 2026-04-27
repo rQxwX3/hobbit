@@ -2,8 +2,8 @@
 
 #include <ftxui/component/component_base.hpp>
 
-#include <task.hpp>
 #include <task_component.hpp>
+#include <task_data.hpp>
 
 #include <vector>
 

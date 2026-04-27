@@ -22,7 +22,8 @@ class Storage {
     [[nodiscard]] virtual auto exists(const key_t &key) const -> bool = 0;
 
   public:
-    [[nodiscard]] virtual auto getKeyValuePairs() const -> pairs_t = 0;
+    [[nodiscard]] virtual auto
+    getKeyValuePairs() const & -> const pairs_t & = 0;
 
     virtual auto clear() -> void = 0;
 

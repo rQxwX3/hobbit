@@ -1,7 +1,6 @@
 #pragma once
 
 #include <task_data.hpp>
-#include <uuid.hpp>
 
 #include <array>
 #include <string>
@@ -12,9 +11,7 @@ class SingularTask {
     using deadline_t = TaskData::deadline_t;
     using datetime_t = TaskData::datetime_t;
 
-    using uuid_t = core::uuid::uuid_t;
-
-  private:
+  public:
     enum class Error : uint8_t {
         JSONMissingRequiredField,
         JSONFailedToParseTaskData,
@@ -33,20 +30,16 @@ class SingularTask {
     }
 
   private:
-    static constexpr auto jsonUUIDField{std::string_view{"uuid"}};
     static constexpr auto jsonTaskField{std::string_view{"task"}};
 
     static constexpr auto jsonFields{
-        std::array<std::string_view, 2>{jsonUUIDField, jsonTaskField}};
+        std::array<std::string_view, 1>{jsonTaskField}};
 
   private:
     TaskData task_;
-    uuid_t uuid_;
 
   public:
     SingularTask(TaskData task);
-
-    SingularTask(uuid_t uuid, TaskData task);
 
   public:
     auto setTitle(std::string title) -> void;

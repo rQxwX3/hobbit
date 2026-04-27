@@ -19,7 +19,8 @@ concept JSONSerializable =
     requires(const T &const_t, T &t, T &&rvalue_t, nlohmann::json j) {
         { const_t.toJSON() } -> std::convertible_to<nlohmann::json>;
 
-        { std::move(rvalue_t).toJSON() } -> std::convertible_to<nlohmann::json>;
+        // { std::move(rvalue_t).toJSON() } ->
+        // std::convertible_to<nlohmann::json>;
 
         { T::fromJSON(j) } -> std::same_as<std::expected<T, typename T::Error>>;
     };
@@ -140,11 +141,11 @@ class SingleItemRepository : public hbt::repo::SingleItemRepository<T> {
     auto clear() -> void override { base.storage_->clear(); }
 };
 
-template <typename IDT>
-concept IDCompatible = std::same_as<IDT, core::uuid::uuid_t>;
+template <JSONSerializable T>
+class MultiItemRepository : public hbt::repo::MultiItemRepository<T> {
+  public:
+    using uuid_t = core::uuid::uuid_t;
 
-template <JSONSerializable T, IDCompatible IDT = core::uuid::uuid_t>
-class MultiItemRepository : public hbt::repo::MultiItemRepository<T, IDT> {
   private:
     hbt::repo::json::Repository<T> base_;
 
@@ -153,7 +154,7 @@ class MultiItemRepository : public hbt::repo::MultiItemRepository<T, IDT> {
         : base_{std::move(storage)} {}
 
   public:
-    auto save(const T &data) -> IDT override {
+    auto save(const T &data) -> uuid_t override {
         auto uuid{core::uuid::generateUUID()};
 
         base_.storage_->write(uuid, base_.serialize(data));
@@ -161,7 +162,7 @@ class MultiItemRepository : public hbt::repo::MultiItemRepository<T, IDT> {
         return uuid;
     }
 
-    auto save(T &&data) -> IDT override {
+    auto save(T &&data) -> uuid_t override {
         auto uuid{core::uuid::generateUUID()};
 
         base_.storage_->write(uuid, base_.serialize(std::move(data)));
@@ -169,15 +170,26 @@ class MultiItemRepository : public hbt::repo::MultiItemRepository<T, IDT> {
         return uuid;
     }
 
-    auto update(const IDT &id, const T &data) -> void override {
+    auto update(const uuid_t &id, const T &data) -> void override {
         if (!exists(id)) {
             return;
+            // TODO error
         }
 
         base_.storage_->write(id, base_.serialize(data));
     }
 
-    [[nodiscard]] auto load(const IDT &id) const -> std::optional<T> override {
+    auto remove(const uuid_t &id) -> void override {
+        base_.storage_->remove(id);
+    }
+
+    [[nodiscard]] auto exists(const uuid_t &id) const -> bool override {
+        return base_.storage_->exists(id);
+    }
+
+  public:
+    [[nodiscard]] auto getByID(const uuid_t &id) const
+        -> std::optional<T> override {
         auto value{base_.storage_->read(id)};
 
         if (!value) {
@@ -187,13 +199,6 @@ class MultiItemRepository : public hbt::repo::MultiItemRepository<T, IDT> {
         return base_.deserialize(*value);
     }
 
-    auto remove(const IDT &id) -> void override { base_.storage_->remove(id); }
-
-    [[nodiscard]] auto exists(const IDT &id) const -> bool override {
-        return base_.storage_->exists(id);
-    }
-
-  public:
     [[nodiscard]] auto getAll() const -> std::vector<T> override {
         std::vector<T> result;
 

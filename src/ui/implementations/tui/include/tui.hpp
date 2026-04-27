@@ -5,7 +5,7 @@
 #include <ftxui/screen/screen.hpp>
 
 #include <datetime.hpp>
-#include <task.hpp>
+#include <task_data.hpp>
 #include <ui.hpp>
 
 #include <orchestrator_component.hpp>

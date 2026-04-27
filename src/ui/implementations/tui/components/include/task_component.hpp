@@ -2,7 +2,7 @@
 
 #include <ftxui/component/component.hpp>
 
-#include <task.hpp>
+#include <task_data.hpp>
 
 #include <string>
 

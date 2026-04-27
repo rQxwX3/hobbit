@@ -22,8 +22,6 @@ template <typename T> class Repository {
   public:
     [[nodiscard]] virtual auto getAll() const -> std::vector<T> = 0;
 
-    [[nodiscard]] virtual auto getCount() const -> size_t = 0;
-
     virtual auto clear() -> void = 0;
 };
 
@@ -55,8 +53,10 @@ template <typename T> class SingleItemRepository : public Repository<T> {
     [[nodiscard]] virtual auto exists() const -> bool = 0;
 };
 
-template <typename T, typename IDT = hbt::core::uuid::uuid_t>
-class MultiItemRepository : public Repository<T> {
+template <typename T> class MultiItemRepository : public Repository<T> {
+  public:
+    using uuid_t = core::uuid::uuid_t;
+
   public:
     MultiItemRepository() = default;
 
@@ -71,20 +71,20 @@ class MultiItemRepository : public Repository<T> {
     auto operator=(MultiItemRepository &&) -> MultiItemRepository & = delete;
 
   public:
-    virtual auto save(const T &data) -> IDT = 0;
+    virtual auto save(const T &data) -> uuid_t = 0;
 
-    virtual auto save(T &&data) -> IDT = 0;
+    virtual auto save(T &&data) -> uuid_t = 0;
 
-    virtual auto update(const IDT &id, const T &data) -> void = 0;
+    virtual auto update(const uuid_t &id, const T &data) -> void = 0;
 
-    [[nodiscard]] virtual auto load(const IDT &id) const
-        -> std::optional<T> = 0;
+    virtual auto remove(const uuid_t &id) -> void = 0;
 
-    virtual auto remove(const IDT &id) -> void = 0;
-
-    [[nodiscard]] virtual auto exists(const IDT &id) const -> bool = 0;
+    [[nodiscard]] virtual auto exists(const uuid_t &id) const -> bool = 0;
 
   public:
-    virtual auto getByID(const IDT &id) const -> std::optional<T> = 0;
+    [[nodiscard]] virtual auto getByID(const uuid_t &id) const
+        -> std::optional<T> = 0;
+
+    [[nodiscard]] auto virtual getAll() const -> std::vector<T> = 0;
 };
 } // namespace hbt::repo
