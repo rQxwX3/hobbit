@@ -15,8 +15,11 @@ DateTime::DateTime()
           return duration_cast<time_value_t>(now - today);
       }()} {}
 
-DateTime::DateTime(mods::Date date, time_value_t time)
+DateTime::DateTime(mods::Date date, mods::Time time)
     : date_{date}, time_{time} {}
+
+DateTime::DateTime(mods::Date date, time_value_t timeValue)
+    : date_{date}, time_{mods::Time(timeValue)} {}
 
 DateTime::DateTime(year_t year, month_t month, day_t day, hours_t hours,
                    minutes_t minutes)
@@ -59,8 +62,8 @@ DateTime::DateTime(year_t year, month_t month, day_t day, hours_t hours,
     constexpr size_t hourGroup{4};
     constexpr size_t minuteGroup{5};
 
-    constexpr size_t secondGroup{6}; // not supported, probably never will be
-                                     // (currently discarding the value)
+    constexpr size_t secondGroup{6}; // not supported, probably never will
+                                     // be (currently discarding the value)
 
     constexpr auto groups{std::array<size_t, minuteGroup>{
         yearGroup, monthGroup, dayGroup, hourGroup, minuteGroup}};

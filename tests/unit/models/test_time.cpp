@@ -70,26 +70,26 @@ TEST(TimeTest, OperatorPlus) {
 
     auto res1 = t + hbt::mods::Interval{
                         hbt::mods::Duration::Units{.hours{1}, .minutes{1}}};
-    EXPECT_EQ(res1.first.getHour(), 1);
-    EXPECT_EQ(res1.first.getMinute(), 1);
+    EXPECT_EQ(res1.first.getHour(), value_t{1});
+    EXPECT_EQ(res1.first.getMinute(), value_t{1});
     EXPECT_EQ(res1.second, false);
 
     auto res2 = t + hbt::mods::Interval{
                         hbt::mods::Duration::Units{.hours{24}, .minutes{0}}};
-    EXPECT_EQ(res2.first.getHour(), 0);
-    EXPECT_EQ(res2.first.getMinute(), 0);
+    EXPECT_EQ(res2.first.getHour(), value_t{0});
+    EXPECT_EQ(res2.first.getMinute(), value_t{0});
     EXPECT_EQ(res2.second, true);
 
     auto res3 = t + hbt::mods::Interval{hbt::mods::Duration::Units{
                         .hours{0}, .minutes{Time::timeInDay.count()}}};
-    EXPECT_EQ(res3.first.getHour(), 0);
-    EXPECT_EQ(res3.first.getMinute(), 0);
+    EXPECT_EQ(res3.first.getHour(), value_t{0});
+    EXPECT_EQ(res3.first.getMinute(), value_t{0});
     EXPECT_EQ(res3.second, true);
 
     auto res4 = t + hbt::mods::Interval{
                         hbt::mods::Duration::Units{.hours{24}, .minutes{1}}};
-    EXPECT_EQ(res4.first.getHour(), 0);
-    EXPECT_EQ(res4.first.getMinute(), 1);
+    EXPECT_EQ(res4.first.getHour(), value_t{0});
+    EXPECT_EQ(res4.first.getMinute(), value_t{1});
     EXPECT_EQ(res4.second, true);
 }
 

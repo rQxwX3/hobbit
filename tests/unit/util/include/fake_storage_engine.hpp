@@ -1,33 +1,33 @@
-#include <storage.hpp>
-
-#include <string>
-#include <unordered_map>
-
-namespace test::util {
-class FakeStorageEngine : public hbt::store::Storage {
-  private:
-    std::unordered_map<std::string, std::string> data_;
-
-  public:
-    auto write(const std::string &key, const std::string &value)
-        -> void override;
-
-    [[nodiscard]] auto read(const std::string &key) const
-        -> std::optional<std::string> override;
-
-    auto remove(const std::string &key) -> void override;
-
-    [[nodiscard]] auto exists(const std::string &key) const -> bool override;
-
-  public:
-    [[nodiscard]] auto getCount() const -> size_t override;
-
-    [[nodiscard]] auto getKeyValuePairs() const
-        -> std::unordered_map<std::string, std::string> override;
-
-    auto clear() -> void override;
-
-  public:
-    ~FakeStorageEngine() override = default;
-};
-} // namespace test::util
+// #include <storage.hpp>
+//
+// #include <string>
+// #include <unordered_map>
+//
+// namespace test::util {
+// class FakeStorageEngine : public hbt::store::Storage {
+//   private:
+//     std::unordered_map<std::string, std::string> data_;
+//
+//   public:
+//     auto write(const std::string &key, const std::string &value)
+//         -> void override;
+//
+//     [[nodiscard]] auto read(const std::string &key) const
+//         -> std::optional<std::string> override;
+//
+//     auto remove(const std::string &key) -> void override;
+//
+//     [[nodiscard]] auto exists(const std::string &key) const -> bool override;
+//
+//   public:
+//     [[nodiscard]] auto getCount() const -> size_t override;
+//
+//     [[nodiscard]] auto getKeyValuePairs() const
+//         -> std::unordered_map<std::string, std::string> override;
+//
+//     auto clear() -> void override;
+//
+//   public:
+//     ~FakeStorageEngine() override = default;
+// };
+// } // namespace test::util

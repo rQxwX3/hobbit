@@ -1,144 +1,147 @@
-#include <algorithm>
-
-#include <datetime.hpp>
-#include <task_manager.hpp>
-
-namespace hbt::core {
-[[nodiscard]] auto TaskManager::instantiateSeriesForDate(mods::Date date) const
-    -> singulars_t {
-    auto result{singulars_t{}};
-    auto series{seriesRepo_->getAll()};
-
-    for (const auto &s : series) {
-        auto singulars{s.generateSingularsForDate(date)};
-
-        result.insert(result.end(), std::make_move_iterator(singulars.begin()),
-                      std::make_move_iterator(singulars.end()));
-    }
-
-    return result;
-}
-
-TaskManager::TaskManager(series_repo_t seriesRepo,
-                         singulars_repo_t singularsRepo)
-    : seriesRepo_{std::move(seriesRepo)},
-      singularsRepo_{std::move(singularsRepo)} {}
-
-[[nodiscard]] auto TaskManager::getTasksForDate(mods::Date date) const
-    -> singulars_t {
-    auto result{singulars_t{}};
-    auto singulars{singularsRepo_->getAll()};
-
-    for (const auto &singular : singulars) {
-        if (singular.isForDate(date)) {
-            result.push_back(singular);
-        }
-    }
-
-    auto instantiatedSeries{instantiateSeriesForDate(date)};
-    result.insert(result.end(),
-                  std::make_move_iterator(instantiatedSeries.begin()),
-                  std::make_move_iterator(instantiatedSeries.end()));
-
-    return result;
-}
-
-[[nodiscard]] auto TaskManager::getTasksForDateRange(mods::Date from,
-                                                     mods::Date to) const
-    -> calendar_t {
-    auto calendar{calendar_t{}};
-
-    for (auto date{from}; date != to; date += mods::Duration::days(1)) {
-        calendar[date] = getTasksForDate(date);
-    }
-
-    return calendar;
-}
-
-[[nodiscard]] auto TaskManager::getCalendarForToday() const -> calendar_t {
-    auto today{mods::Date::today()};
-
-    return getTasksForDateRange(today - retentionDuration,
-                                today + lookaheadDuration);
-}
-
-// auto TaskManager::createTask(const hbt::mods::Task &task) -> id_t {
-//     return repository_->save(task);
-// }
+// #include <algorithm>
 //
-// auto TaskManager::createTask(std::string title,
-//                              std::vector<hbt::mods::Occurrence> occurrences)
-//     -> id_t {
-//     return repository_->save(
-//         hbt::mods::Task{std::move(title), std::move(occurrences)});
-// }
+// #include <datetime.hpp>
+// #include <task_manager.hpp>
 //
-// auto TaskManager::deleteTask(id_t id) -> void { repository_->remove(id); }
+// namespace hbt::core {
+// [[nodiscard]] auto TaskManager::instantiateSeriesForDate(mods::Date date)
+// const
+//     -> singulars_t {
+//     auto result{singulars_t{}};
+//     auto series{seriesRepo_->getAll()};
 //
-// auto TaskManager::changeTaskTitle(id_t id, std::string title) -> void {
-//     auto taskOpt{repository_->load(id)};
+//     for (const auto &s : series) {
+//         auto singulars{s.generateSingularsForDate(date)};
 //
-//     if (taskOpt.has_value()) {
-//         auto task{std::move(taskOpt.value())};
-//
-//         task.setTitle(std::move(title));
-//
-//         repository_->update(id, task);
+//         result.insert(result.end(),
+//         std::make_move_iterator(singulars.begin()),
+//                       std::make_move_iterator(singulars.end()));
 //     }
+//
+//     return result;
 // }
 //
-// auto TaskManager::changeTaskOccurrences(
-//     id_t id, std::vector<hbt::mods::Occurrence> occurrences) -> void {
-//     auto taskOpt{repository_->load(id)};
+// TaskManager::TaskManager(series_repo_t seriesRepo,
+//                          singulars_repo_t singularsRepo)
+//     : seriesRepo_{std::move(seriesRepo)},
+//       singularsRepo_{std::move(singularsRepo)} {}
 //
-//     if (taskOpt.has_value()) {
-//         auto task{std::move(taskOpt.value())};
+// [[nodiscard]] auto TaskManager::getTasksForDate(mods::Date date) const
+//     -> singulars_t {
+//     auto result{singulars_t{}};
+//     auto singulars{singularsRepo_->getAll()};
 //
-//         task.setOccurrences(std::move(occurrences));
-//
-//         repository_->update(id, task);
+//     for (const auto &singular : singulars) {
+//         if (singular.isForDate(date)) {
+//             result.push_back(singular);
+//         }
 //     }
+//
+//     auto instantiatedSeries{instantiateSeriesForDate(date)};
+//     result.insert(result.end(),
+//                   std::make_move_iterator(instantiatedSeries.begin()),
+//                   std::make_move_iterator(instantiatedSeries.end()));
+//
+//     return result;
 // }
 //
-// auto TaskManager::completeTask(id_t id) -> void {
-//     auto taskOpt{repository_->load(id)};
+// [[nodiscard]] auto TaskManager::getTasksForDateRange(mods::Date from,
+//                                                      mods::Date to) const
+//     -> calendar_t {
+//     auto calendar{calendar_t{}};
 //
-//     if (taskOpt.has_value()) {
-//         auto task{std::move(taskOpt.value())};
-//
-//         task.setIsCompleted(true);
-//
-//         repository_->update(id, task);
+//     for (auto date{from}; date != to; date += mods::Duration::days(1)) {
+//         calendar[date] = getTasksForDate(date);
 //     }
+//
+//     return calendar;
 // }
 //
-// auto TaskManager::uncompleteTask(id_t id) -> void {
-//     auto taskOpt{repository_->load(id)};
+// [[nodiscard]] auto TaskManager::getCalendarForToday() const -> calendar_t {
+//     auto today{mods::Date::today()};
 //
-//     if (taskOpt.has_value()) {
-//         auto task{std::move(taskOpt.value())};
-//
-//         task.setIsCompleted(false);
-//
-//         repository_->update(id, task);
-//     }
+//     return getTasksForDateRange(today - retentionDuration,
+//                                 today + lookaheadDuration);
 // }
 //
-// [[nodiscard]] auto
-// TaskManager::getTasksForDate(const mods::DateTime &date) const
-//     -> std::vector<hbt::mods::Task> {
-//     auto tasksForDate{std::vector<hbt::mods::Task>()};
-//     const auto &allTasks{repository_->getAll()};
-//
-//     std::ranges::copy_if(allTasks, std::back_inserter(tasksForDate),
-//                          [date](const hbt::mods::Task &task) -> bool {
-//                              return task.isForDate(date);
-//                          });
-//
-//     return tasksForDate;
-// }
-//
-// [[nodiscard]] auto TaskManager::getCount() const -> size_t {
-//     return repository_->getCount();
-// }
-} // namespace hbt::core
+// // auto TaskManager::createTask(const hbt::mods::Task &task) -> id_t {
+// //     return repository_->save(task);
+// // }
+// //
+// // auto TaskManager::createTask(std::string title,
+// //                              std::vector<hbt::mods::Occurrence>
+// occurrences)
+// //     -> id_t {
+// //     return repository_->save(
+// //         hbt::mods::Task{std::move(title), std::move(occurrences)});
+// // }
+// //
+// // auto TaskManager::deleteTask(id_t id) -> void { repository_->remove(id); }
+// //
+// // auto TaskManager::changeTaskTitle(id_t id, std::string title) -> void {
+// //     auto taskOpt{repository_->load(id)};
+// //
+// //     if (taskOpt.has_value()) {
+// //         auto task{std::move(taskOpt.value())};
+// //
+// //         task.setTitle(std::move(title));
+// //
+// //         repository_->update(id, task);
+// //     }
+// // }
+// //
+// // auto TaskManager::changeTaskOccurrences(
+// //     id_t id, std::vector<hbt::mods::Occurrence> occurrences) -> void {
+// //     auto taskOpt{repository_->load(id)};
+// //
+// //     if (taskOpt.has_value()) {
+// //         auto task{std::move(taskOpt.value())};
+// //
+// //         task.setOccurrences(std::move(occurrences));
+// //
+// //         repository_->update(id, task);
+// //     }
+// // }
+// //
+// // auto TaskManager::completeTask(id_t id) -> void {
+// //     auto taskOpt{repository_->load(id)};
+// //
+// //     if (taskOpt.has_value()) {
+// //         auto task{std::move(taskOpt.value())};
+// //
+// //         task.setIsCompleted(true);
+// //
+// //         repository_->update(id, task);
+// //     }
+// // }
+// //
+// // auto TaskManager::uncompleteTask(id_t id) -> void {
+// //     auto taskOpt{repository_->load(id)};
+// //
+// //     if (taskOpt.has_value()) {
+// //         auto task{std::move(taskOpt.value())};
+// //
+// //         task.setIsCompleted(false);
+// //
+// //         repository_->update(id, task);
+// //     }
+// // }
+// //
+// // [[nodiscard]] auto
+// // TaskManager::getTasksForDate(const mods::DateTime &date) const
+// //     -> std::vector<hbt::mods::Task> {
+// //     auto tasksForDate{std::vector<hbt::mods::Task>()};
+// //     const auto &allTasks{repository_->getAll()};
+// //
+// //     std::ranges::copy_if(allTasks, std::back_inserter(tasksForDate),
+// //                          [date](const hbt::mods::Task &task) -> bool {
+// //                              return task.isForDate(date);
+// //                          });
+// //
+// //     return tasksForDate;
+// // }
+// //
+// // [[nodiscard]] auto TaskManager::getCount() const -> size_t {
+// //     return repository_->getCount();
+// // }
+// } // namespace hbt::core

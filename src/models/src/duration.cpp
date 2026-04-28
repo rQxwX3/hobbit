@@ -14,6 +14,16 @@ auto Duration::validateValue(value_t value) -> value_t {
     return value;
 }
 
+[[nodiscard]] auto Duration::isValidValue(value_t value) -> bool {
+    try {
+        Duration::validateValue(value);
+
+        return true;
+    } catch (std::invalid_argument) {
+        return false;
+    }
+}
+
 auto Duration::validateArray(array_t array) -> array_t {
     for (auto value : array) {
         try {
@@ -43,33 +53,41 @@ Duration::Duration(array_t unitsArray) : units_{validateArray(unitsArray)} {}
 Duration::Duration(const Units &unitsStruct)
     : units_{validateStruct(unitsStruct).toArray()} {};
 
-auto Duration::convertUnitsUpwards() -> Duration {
-    auto minutesToHours{[this]() -> void {
-        units_[unit_t::HOUR] += units_[unit_t::MINUTE] / minutesInHour;
-        units_[unit_t::MINUTE] %= minutesInHour;
-    }};
+[[nodiscard]] auto Duration::convertUnitsUpwards() const -> Duration {
+    auto copy{*this};
 
-    auto hoursToDays{[this]() -> void {
-        units_[unit_t::DAY] += units_[unit_t::HOUR] / hoursInDay;
-        units_[unit_t::HOUR] %= hoursInDay;
-    }};
+    auto convertUpwards{
+        [&copy](unit_t from, unit_t to, value_t conversionRatio) -> void {
+            assert(to < from);
 
-    auto daysToWeeks{[this]() -> void {
-        units_[unit_t::WEEK] += units_[unit_t::DAY] / daysInWeek;
-        units_[unit_t::DAY] %= daysInWeek;
-    }};
+            copy.units_[to] += copy.units_[from] / conversionRatio;
+            copy.units_[from] %= conversionRatio;
+        }};
 
-    auto monthsToYears{[this]() -> void {
-        units_[unit_t::YEAR] += units_[unit_t::MONTH] / monthsInYear;
-        units_[unit_t::MONTH] %= monthsInYear;
-    }};
+    convertUpwards(unit_t::MINUTE, unit_t::HOUR, minutesInHour);
+    convertUpwards(unit_t::HOUR, unit_t::DAY, hoursInDay);
+    convertUpwards(unit_t::DAY, unit_t::WEEK, daysInWeek);
+    convertUpwards(unit_t::MONTH, unit_t::YEAR, monthsInYear);
 
-    minutesToHours();
-    hoursToDays();
-    daysToWeeks();
-    monthsToYears();
+    return copy;
+}
 
-    return *this;
+[[nodiscard]] auto Duration::convertUnitsDownwards() const -> Duration {
+    auto copy{*this};
+
+    auto convertDownwards{
+        [&copy](unit_t from, unit_t to, value_t conversionRatio) -> void {
+            assert(from > to);
+            copy.units_[to] = copy.units_[from] * conversionRatio;
+            copy.units_[from] = 0;
+        }};
+
+    convertDownwards(unit_t::YEAR, unit_t::MONTH, monthsInYear);
+    convertDownwards(unit_t::WEEK, unit_t::DAY, daysInWeek);
+    convertDownwards(unit_t::DAY, unit_t::HOUR, hoursInDay);
+    convertDownwards(unit_t::HOUR, unit_t::MINUTE, minutesInHour);
+
+    return copy;
 }
 
 [[nodiscard]] auto Duration::fromUnit(unit_t unit, value_t value) -> Duration {
@@ -166,9 +184,7 @@ auto Duration::addUnit(unit_t unit, value_t value) -> void {
 }
 
 [[nodiscard]] auto Duration::isMultipleOf(Duration other) const -> bool {
-    auto thisCopy{*this};
-
-    thisCopy.convertUnitsUpwards();
+    auto convertedThis{this->convertUnitsUpwards()};
     other.convertUnitsUpwards();
 
     for (auto unitInt{static_cast<size_t>(unit_t::YEAR)};

@@ -78,7 +78,7 @@ class Date {
 
     [[nodiscard]] auto operator+(const Interval &interval) const -> Date;
 
-    // [[nodiscard]] auto operator-(const Interval &interval) const -> Date;
+    [[nodiscard]] auto operator-(const Interval &interval) const -> Date;
 
     auto operator+=(const Interval &interval) -> Date &;
 

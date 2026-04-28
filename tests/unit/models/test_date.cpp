@@ -36,16 +36,16 @@ TEST(DateTest, Getters) {
     auto ymd{year_month_day{year{2026}, month{4}, day{27}}};
     auto d1{Date(ymd)};
     EXPECT_EQ(d1.getYMD(), ymd);
-    EXPECT_EQ(d1.getYear(), 2026);
-    EXPECT_EQ(d1.getMonth(), 4);
-    EXPECT_EQ(d1.getDay(), 27);
+    EXPECT_EQ(d1.getYear(), year(2026));
+    EXPECT_EQ(d1.getMonth(), month(4));
+    EXPECT_EQ(d1.getDay(), day(27));
     EXPECT_EQ(d1.getWeekday(), Date::weekday_t::MONDAY);
 
     auto d2{Date(year{2026}, month{4}, day{27})};
     EXPECT_EQ(d2.getYMD(), ymd);
-    EXPECT_EQ(d2.getYear(), 2026);
-    EXPECT_EQ(d2.getMonth(), 4);
-    EXPECT_EQ(d2.getDay(), 27);
+    EXPECT_EQ(d2.getYear(), year(2026));
+    EXPECT_EQ(d2.getMonth(), month(4));
+    EXPECT_EQ(d2.getDay(), day(27));
     EXPECT_EQ(d2.getWeekday(), Date::weekday_t::MONDAY);
 }
 

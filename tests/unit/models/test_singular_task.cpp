@@ -42,7 +42,7 @@ TEST(SingularTaskTest, Setters) {
 TEST(SingularTaskTest, DeadlineHandling) {
     auto dt{DateTime::fromISO8601String("2025-01-01T10:00:00").value()};
     auto deadlineDT{DateTime::fromISO8601String("2025-01-02T10:00:00").value()};
-    auto deadline{Deadline::fromDateTime(deadlineDT)};
+    auto deadline{Deadline(deadlineDT)};
 
     TaskData data{"Test", dt, false, deadline};
     SingularTask task{data};
@@ -60,14 +60,14 @@ TEST(SingularTaskTest, IsForDate) {
     auto sameDate{dt.getDate()};
     EXPECT_TRUE(task.isForDate(sameDate));
 
-    auto otherDate{Date::fromISO8601String("2025-01-02").value()};
-    EXPECT_FALSE(task.isForDate(otherDate));
+    auto otherDate{DateTime::fromISO8601String("2025-01-02T10:00:00").value()};
+    EXPECT_FALSE(task.isForDate(otherDate.getDate()));
 }
 
 TEST(SingularTaskTest, ToFromJSON) {
     auto dt{DateTime::fromISO8601String("2025-01-01T10:00:00").value()};
     auto deadlineDT{DateTime::fromISO8601String("2025-01-02T10:00:00").value()};
-    auto deadline{Deadline::fromDateTime(deadlineDT)};
+    auto deadline{Deadline(deadlineDT)};
 
     TaskData data{"Test", dt, true, deadline};
     SingularTask original{data};
