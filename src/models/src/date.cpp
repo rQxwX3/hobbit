@@ -108,11 +108,17 @@ auto Date::operator+=(const Interval &interval) -> Date & {
 }
 
 [[nodiscard]] auto Date::getDiff(const Date &d1, const Date &d2) -> Duration {
-    auto d1TP{std::chrono::sys_days{d1.getYMD()}};
-    auto d2TP{std::chrono::sys_days{d2.getYMD()}};
+    auto getDateDiff([](const Date &d1, const Date &d2) -> Duration {
+        return Duration(Duration::Units{
+            .years = static_cast<Duration::value_t>(
+                (d1.getYMD().year() - d2.getYMD().year()).count()),
+            .months = static_cast<Duration::value_t>(
+                (d1.getYMD().month() - d2.getYMD().month()).count()),
+            .days = static_cast<Duration::value_t>(
+                (d1.getYMD().day() - d2.getYMD().day()).count()),
+        });
+    });
 
-    auto diff{(d1TP > d2TP) ? d1TP - d2TP : d2TP - d1TP};
-
-    return Duration::fromUnit(Duration::unit_t::DAY, (diff).count());
+    return (d1 > d2) ? getDateDiff(d1, d2) : getDateDiff(d2, d1);
 }
 } // namespace hbt::mods

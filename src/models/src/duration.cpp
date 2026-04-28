@@ -227,6 +227,19 @@ auto Duration::addUnit(unit_t unit, value_t value) -> void {
     return std::strong_ordering::equal;
 }
 
+[[nodiscard]] auto Duration::operator==(const Duration &other) const -> bool {
+    auto convertedThis(this->convertUnitsUpwards());
+    auto convertedOther(other.convertUnitsUpwards());
+
+    for (const auto unit : Duration::units) {
+        if (convertedOther.units_[unit] != convertedThis.units_[unit]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 [[nodiscard]] auto Duration::fromISO8601String(const std::string &string)
     -> std::expected<Duration, Error> {
     auto duration{

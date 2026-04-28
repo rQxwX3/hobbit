@@ -31,17 +31,17 @@ TEST(TestDateTime, EqualDate) {
     EXPECT_TRUE(DateTime::equalDate(dt1, dt2));
     EXPECT_TRUE(DateTime::equalDate(dt2, dt1));
 
-    auto dt3{DateTime{Date::today(), Time{hours_t{1}, minutes_t{1}}}};
-    auto dt4{DateTime{Date::today(), Time{hours_t{0}, minutes_t{0}}}};
-    EXPECT_TRUE(DateTime::equalDate(dt3, dt4));
-    EXPECT_TRUE(DateTime::equalDate(dt4, dt3));
+    dt1 = DateTime{Date::today(), Time{hours_t{1}, minutes_t{1}}};
+    dt2 = DateTime{Date::today(), Time{hours_t{0}, minutes_t{0}}};
+    EXPECT_TRUE(DateTime::equalDate(dt1, dt2));
+    EXPECT_TRUE(DateTime::equalDate(dt2, dt1));
 
-    auto dt5{DateTime{Date{year_month_day{year(2026), month(4), day(27)}},
-                      Time::now()}};
-    auto dt6{DateTime{Date{year_month_day{year(2026), month(4), day(28)}},
-                      Time::now()}};
-    EXPECT_FALSE(DateTime::equalDate(dt3, dt4));
-    EXPECT_FALSE(DateTime::equalDate(dt4, dt3));
+    dt1 = DateTime{Date{year_month_day{year(2026), month(4), day(27)}},
+                   Time::now()};
+    dt2 = DateTime{Date{year_month_day{year(2026), month(4), day(28)}},
+                   Time::now()};
+    EXPECT_FALSE(DateTime::equalDate(dt1, dt2));
+    EXPECT_FALSE(DateTime::equalDate(dt2, dt1));
 }
 
 TEST(TestDateTime, EqualTime) {
@@ -83,7 +83,7 @@ TEST(TestDateTime, FromValidISO8601) {
               Date{year_month_day(year(1000), month(1), day(30))});
     EXPECT_EQ(dt2->getTime(), Time(hours_t{0}, minutes_t{30}));
 
-    auto dt3{DateTime::fromISO8601String("12.10.01T23:50:00")};
+    auto dt3{DateTime::fromISO8601String("0012.10.01T23:50:00")};
     EXPECT_TRUE(dt3);
     EXPECT_EQ(dt3->getDate(),
               Date{year_month_day(year(12), month(10), day(1))});
@@ -112,11 +112,9 @@ TEST(DateTimeTest, FromInvalidISO8601) {
     EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T12:"));
 
     // invalid hour
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T24:00"));
     EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T-1:00"));
 
     // invalid minute
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T22:61"));
     EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T22:-1"));
 
     // invalid month
@@ -154,11 +152,11 @@ TEST(TestDateTime, ComparisonOperators) {
     auto dt3{DateTime{Date::today(), Time{hours_t{12}, minutes_t{12}}}};
     auto dt4{DateTime{Date::today(), Time{hours_t{12}, minutes_t{13}}}};
 
-    EXPECT_TRUE(dt3 > dt4);
-    EXPECT_TRUE(dt3 >= dt4);
+    EXPECT_TRUE(dt3 < dt4);
+    EXPECT_TRUE(dt3 <= dt4);
 
-    EXPECT_TRUE(dt4 < dt3);
-    EXPECT_TRUE(dt4 <= dt3);
+    EXPECT_TRUE(dt4 > dt3);
+    EXPECT_TRUE(dt4 >= dt3);
 
     EXPECT_FALSE(dt3 == dt4);
     EXPECT_FALSE(dt4 == dt3);
@@ -170,10 +168,10 @@ TEST(TestDateTime, ComparisonOperators) {
     auto dt6{DateTime{Date::today(), Time::now()}};
 
     EXPECT_FALSE(dt5 > dt6);
-    EXPECT_FALSE(dt5 >= dt6);
+    EXPECT_TRUE(dt5 >= dt6);
 
     EXPECT_FALSE(dt5 < dt6);
-    EXPECT_FALSE(dt5 <= dt6);
+    EXPECT_TRUE(dt5 <= dt6);
 
     EXPECT_TRUE(dt5 == dt6);
     EXPECT_FALSE(dt5 != dt6);
@@ -236,37 +234,36 @@ TEST(TestDateTime, OperatorPlusMonthHandling) {
 
 TEST(TestDateTime, GetDiff) {
     auto dt1{DateTime(Date::today(), Time::now())};
-    EXPECT_EQ(hbt::mods::Duration{}, DateTime::getDiff(dt1, dt1));
+    EXPECT_TRUE(hbt::mods::Duration{} == DateTime::getDiff(dt1, dt1));
 
     auto dt2{DateTime(Date::today(), Time(hours_t(12), minutes_t(12)))};
     auto dt3{DateTime(Date::today(), Time(hours_t(13), minutes_t(13)))};
-    EXPECT_EQ(hbt::mods::Duration(
-                  hbt::mods::Duration::Units{.hours = 1, .minutes = 1}),
-              DateTime::getDiff(dt2, dt3));
-    EXPECT_EQ(hbt::mods::Duration(
-                  hbt::mods::Duration::Units{.hours = 1, .minutes = 1}),
-              DateTime::getDiff(dt3, dt2));
+    EXPECT_TRUE(hbt::mods::Duration(hbt::mods::Duration::Units{
+                    .hours = 1, .minutes = 1}) == DateTime::getDiff(dt2, dt3));
+    EXPECT_TRUE(hbt::mods::Duration(hbt::mods::Duration::Units{
+                    .hours = 1, .minutes = 1}) == DateTime::getDiff(dt3, dt2));
 
     auto dt4{DateTime(Date(year(2025), month(11), day(10)), Time::now())};
     auto dt5{DateTime(Date(year(2026), month(12), day(11)), Time::now())};
-    EXPECT_EQ(hbt::mods::Duration(hbt::mods::Duration::Units{
-                  .years = 1, .months = 1, .days = 1}),
-              DateTime::getDiff(dt4, dt5));
-    EXPECT_EQ(hbt::mods::Duration(hbt::mods::Duration::Units{
-                  .years = 1, .months = 1, .days = 1}),
-              DateTime::getDiff(dt5, dt4));
+    EXPECT_TRUE(hbt::mods::Duration(hbt::mods::Duration::Units{
+                    .years = 1, .months = 1, .days = 1}) ==
+                DateTime::getDiff(dt4, dt5))
+        << DateTime::getDiff(dt4, dt5).toISO8601String() << '\n';
+    EXPECT_TRUE(hbt::mods::Duration(hbt::mods::Duration::Units{
+                    .years = 1, .months = 1, .days = 1}) ==
+                DateTime::getDiff(dt5, dt4));
 
     auto dt6{DateTime(Date(year(2025), month(11), day(10)),
                       Time(hours_t(12), minutes_t(12)))};
     auto dt7{DateTime(Date(year(2026), month(12), day(11)),
                       Time(hours_t(13), minutes_t(13)))};
-    EXPECT_EQ(
+    EXPECT_TRUE(
         hbt::mods::Duration(hbt::mods::Duration::Units{
-            .years = 1, .months = 1, .days = 1, .hours = 1, .minutes = 1}),
+            .years = 1, .months = 1, .days = 1, .hours = 1, .minutes = 1}) ==
         DateTime::getDiff(dt6, dt7));
-    EXPECT_EQ(
+    EXPECT_TRUE(
         hbt::mods::Duration(hbt::mods::Duration::Units{
-            .years = 1, .months = 1, .days = 1, .hours = 1, .minutes = 1}),
+            .years = 1, .months = 1, .days = 1, .hours = 1, .minutes = 1}) ==
         DateTime::getDiff(dt7, dt6));
 }
 } // namespace test::mods

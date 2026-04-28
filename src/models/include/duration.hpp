@@ -152,8 +152,7 @@ class Duration {
     [[nodiscard]] auto operator<=>(const Duration &other) const
         -> std::strong_ordering;
 
-    [[nodiscard]] auto operator==(const Duration &other) const
-        -> bool = default;
+    [[nodiscard]] auto operator==(const Duration &other) const -> bool;
 
   public:
     [[nodiscard]] auto toISO8601String() const -> std::string;
