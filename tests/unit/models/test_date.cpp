@@ -49,12 +49,17 @@ TEST(DateTest, Getters) {
     EXPECT_EQ(d2.getWeekday(), Date::weekday_t::MONDAY);
 }
 
-TEST(DateTest, TodayIsToday) {
+TEST(DateTest, IsTodayTrueOnCorrectDates) {
     auto today{Date::today()};
     EXPECT_TRUE(today.isToday());
 
     auto d2{Date(year{2026}, month{4}, day{26})};
     EXPECT_FALSE(d2.isToday());
+}
+
+TEST(DateTest, IsTodayFalseOnWrongDates) {
+    auto date{Date{year_month_day(year{2000}, month{12}, day{31})}};
+    EXPECT_FALSE(date.isToday());
 }
 
 TEST(DateTest, ComparisonOperators) {

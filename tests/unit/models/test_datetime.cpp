@@ -3,209 +3,270 @@
 #include <datetime.hpp>
 #include <interval.hpp>
 
-#include <chrono>
-
 namespace test::mods {
+using hbt::mods::Date;
+using std::chrono::day;
+using std::chrono::month;
+using std::chrono::year;
+using std::chrono::year_month_day;
+
 using hbt::mods::DateTime;
+
+using hbt::mods::Time;
+using hours_t = hbt::mods::Time::hours_t;
+using minutes_t = hbt::mods::Time::minutes_t;
+
 using hbt::mods::Interval;
 
-TEST(DateTimeTest, GetYMDComponents) {
-    auto datetime{DateTime{}};
-    auto date{datetime.getDate()};
+TEST(TestDateTime, Getters) {
+    auto dt{DateTime{Date::today(), Time::now()}};
 
-    EXPECT_EQ(datetime.getYear(), date.year());
-    EXPECT_EQ(datetime.getMonth(), date.month());
-    EXPECT_EQ(datetime.getDay(), date.day());
+    EXPECT_EQ(dt.getDate(), Date::today());
+    EXPECT_EQ(dt.getTime(), Time::now());
 }
 
-TEST(DateTimeTest, DefaultConstructorCreatesToday) {
-    using namespace std::chrono;
+TEST(TestDateTime, EqualDate) {
+    auto dt1{DateTime{Date::today(), Time::now()}};
+    auto dt2{DateTime{Date::today(), Time::now()}};
+    EXPECT_TRUE(DateTime::equalDate(dt1, dt2));
+    EXPECT_TRUE(DateTime::equalDate(dt2, dt1));
 
-    auto datetime{DateTime{}};
-    auto currentYMD{year_month_day(floor<days>(system_clock::now()))};
+    auto dt3{DateTime{Date::today(), Time{hours_t{1}, minutes_t{1}}}};
+    auto dt4{DateTime{Date::today(), Time{hours_t{0}, minutes_t{0}}}};
+    EXPECT_TRUE(DateTime::equalDate(dt3, dt4));
+    EXPECT_TRUE(DateTime::equalDate(dt4, dt3));
 
-    EXPECT_EQ(datetime.getDate(), DateTime{currentYMD}.getDate());
+    auto dt5{DateTime{Date{year_month_day{year(2026), month(4), day(27)}},
+                      Time::now()}};
+    auto dt6{DateTime{Date{year_month_day{year(2026), month(4), day(28)}},
+                      Time::now()}};
+    EXPECT_FALSE(DateTime::equalDate(dt3, dt4));
+    EXPECT_FALSE(DateTime::equalDate(dt4, dt3));
 }
 
-TEST(DateTimeTest, YMDConstructor) {
-    using namespace std::chrono;
-    auto currentYMD{year_month_day(floor<days>(system_clock::now()))};
+TEST(TestDateTime, EqualTime) {
+    auto dt1{DateTime{Date::today(), Time::now()}};
+    auto dt2{DateTime{Date::today(), Time::now()}};
+    EXPECT_TRUE(DateTime::equalTime(dt1, dt2));
+    EXPECT_TRUE(DateTime::equalTime(dt2, dt1));
 
-    auto today1{DateTime{}};
-    auto today2{DateTime{currentYMD}};
-
-    EXPECT_EQ(today1.getDate(), today2.getDate());
+    auto dt3{DateTime{Date{year_month_day{year(2026), month(4), day(27)}},
+                      Time::now()}};
+    auto dt4{DateTime{Date{year_month_day(year(2025), month(5), day(28))},
+                      Time::now()}};
+    EXPECT_TRUE(DateTime::equalTime(dt3, dt4));
+    EXPECT_TRUE(DateTime::equalTime(dt4, dt3));
 }
 
-TEST(DateTimeTest, YMDComponentsConstructor) {
-    auto datetime{DateTime{std::chrono::year{2026}, std::chrono::month{3},
-                           std::chrono::day{24}}};
+TEST(TestDateTime, ToFromISO8601) {
+    auto original{DateTime{year_month_day(year{2026}, month{4}, day{27}),
+                           Time{hours_t{12}, minutes_t{12}}}};
 
-    EXPECT_EQ(datetime.getYear(), std::chrono::year{2026});
-    EXPECT_EQ(datetime.getMonth(), std::chrono::month{3});
-    EXPECT_EQ(datetime.getDay(), std::chrono::day{24});
-}
-
-TEST(DateTimeTest, TodayFactoryFunction) {
-    auto today1{DateTime::today()};
-    auto today2{DateTime{}};
-
-    EXPECT_EQ(today1.getDate(), today2.getDate());
-}
-
-TEST(DateTimeTest, IsTodayTrueOnTodayDates) {
-    using namespace std::chrono;
-
-    auto today1{DateTime::today()};
-    EXPECT_TRUE(today1.isToday());
-
-    auto today2{DateTime{}};
-    EXPECT_TRUE(today2.isToday());
-
-    auto currentYMD{year_month_day(floor<days>(system_clock::now()))};
-    auto today3{DateTime{currentYMD}};
-    EXPECT_TRUE(today3.isToday());
-}
-
-TEST(DateTimeTest, IsTodayFalseOnWrongDates) {
-    using namespace std::chrono;
-    auto tommorowYMD{
-        year_month_day(floor<days>(system_clock::now()) + days{1})};
-
-    auto tommorow{DateTime{tommorowYMD}};
-    EXPECT_FALSE(tommorow.isToday());
-}
-
-TEST(DateTimeTest, ToFromISO8601String) {
-    auto original{DateTime{std::chrono::year{2026}, std::chrono::month{3},
-                           std::chrono::day{24}}};
     auto ymdString{original.toISO8601String()};
+    EXPECT_EQ(ymdString, "2026-04-27T12:12");
 
     auto restored{DateTime::fromISO8601String(ymdString)};
-    ASSERT_TRUE(restored.has_value());
+    ASSERT_TRUE(restored);
     EXPECT_EQ(restored, original);
 }
 
-TEST(DateTimeTest, FromValidISO8601String) {
-    EXPECT_TRUE(DateTime::fromISO8601String("2024-12-01T12:30").has_value());
-    EXPECT_TRUE(DateTime::fromISO8601String("2024/12/01T00:30:12").has_value());
-    EXPECT_TRUE(DateTime::fromISO8601String("2024.12.01T23:50:00").has_value());
-    EXPECT_TRUE(DateTime::fromISO8601String("2024-12-01T02:10").has_value());
+TEST(TestDateTime, FromValidISO8601) {
+    auto dt1{DateTime::fromISO8601String("2024-12-01T12:30")};
+    EXPECT_TRUE(dt1);
+    EXPECT_EQ(dt1->getDate(),
+              Date{year_month_day(year(2024), month(12), day(1))});
+    EXPECT_EQ(dt1->getTime(), Time(hours_t{12}, minutes_t{30}));
+
+    auto dt2{DateTime::fromISO8601String("1000/01/30T00:30:12")};
+    EXPECT_TRUE(dt2);
+    EXPECT_EQ(dt2->getDate(),
+              Date{year_month_day(year(1000), month(1), day(30))});
+    EXPECT_EQ(dt2->getTime(), Time(hours_t{0}, minutes_t{30}));
+
+    auto dt3{DateTime::fromISO8601String("12.10.01T23:50:00")};
+    EXPECT_TRUE(dt3);
+    EXPECT_EQ(dt3->getDate(),
+              Date{year_month_day(year(12), month(10), day(1))});
+    EXPECT_EQ(dt3->getTime(), Time(hours_t{23}, minutes_t{50}));
+
+    auto dt4{DateTime::fromISO8601String("2024-12-01T02:10")};
+    EXPECT_TRUE(dt4);
+    EXPECT_EQ(dt4->getDate(),
+              Date{year_month_day(year(2024), month(12), day(1))});
+    EXPECT_EQ(dt4->getTime(), Time(hours_t{2}, minutes_t{10}));
 }
 
-TEST(DateTimeTest, FromInvalidISO8601String) {
-    EXPECT_FALSE(DateTime::fromISO8601String("").has_value());
-    EXPECT_FALSE(DateTime::fromISO8601String("hello").has_value());
+TEST(DateTimeTest, FromInvalidISO8601) {
+    EXPECT_FALSE(DateTime::fromISO8601String(""));
+    EXPECT_FALSE(DateTime::fromISO8601String("hello"));
 
-    EXPECT_FALSE(DateTime::fromISO8601String("2026").has_value());
+    EXPECT_FALSE(DateTime::fromISO8601String("2026"));
 
-    EXPECT_FALSE(DateTime::fromISO8601String("20261231").has_value());
+    EXPECT_FALSE(DateTime::fromISO8601String("20261231"));
 
-    EXPECT_FALSE(DateTime::fromISO8601String("2026-12").has_value());
+    EXPECT_FALSE(DateTime::fromISO8601String("2026-12"));
 
     // missing time section
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01").has_value());
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T12").has_value());
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T12:").has_value());
+    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01"));
+    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T12"));
+    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T12:"));
 
     // invalid hour
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T24:00").has_value());
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T-1:00").has_value());
+    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T24:00"));
+    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T-1:00"));
 
     // invalid minute
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T22:61").has_value());
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T22:-1").has_value());
+    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T22:61"));
+    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T22:-1"));
 
     // invalid month
-    EXPECT_FALSE(DateTime::fromISO8601String("2026-13-31").has_value());
+    EXPECT_FALSE(DateTime::fromISO8601String("2026-13-31"));
 
     // invalid day
-    EXPECT_FALSE(DateTime::fromISO8601String("2026-13-38").has_value());
+    EXPECT_FALSE(DateTime::fromISO8601String("2026-12-38"));
 
     // non-leap year Febrary 29th
-    EXPECT_FALSE(DateTime::fromISO8601String("2026-02-29").has_value());
+    EXPECT_FALSE(DateTime::fromISO8601String("2026-02-29"));
 
     // single digit sections
-    EXPECT_FALSE(DateTime::fromISO8601String("2026-2-29").has_value());
-    EXPECT_FALSE(DateTime::fromISO8601String("2026-02-1").has_value());
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T12:1").has_value());
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T2:10").has_value());
+    EXPECT_FALSE(DateTime::fromISO8601String("2026-2-29"));
+    EXPECT_FALSE(DateTime::fromISO8601String("2026-02-1"));
+    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T12:1"));
+    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T2:10"));
 }
 
-TEST(DateTimeTest, AddNonMonthInterval) {
-    using namespace std::chrono;
+TEST(TestDateTime, ComparisonOperators) {
+    auto dt1{DateTime{Date::today(), Time::now()}};
+    auto dt2{DateTime{Date(year{2024}, month{1}, day{1})}};
 
-    auto datetime{DateTime{}};
+    EXPECT_TRUE(dt1 > dt2);
+    EXPECT_TRUE(dt1 >= dt2);
 
-    auto yearInterval{Interval{{.years = 1}}};
-    auto ymdYearFromNow{year_month_day(floor<days>(system_clock::now())) +
-                        years{1}};
-    EXPECT_EQ(datetime + yearInterval, DateTime{ymdYearFromNow});
+    EXPECT_TRUE(dt2 < dt1);
+    EXPECT_TRUE(dt2 <= dt1);
 
-    auto twoYearInterval{Interval{{.years = 2}}};
-    auto ymdTwoYearsFromNow{year_month_day(floor<days>(system_clock::now())) +
-                            years{2}};
-    EXPECT_EQ(datetime + twoYearInterval, DateTime{ymdTwoYearsFromNow});
+    EXPECT_FALSE(dt1 == dt2);
+    EXPECT_TRUE(dt1 != dt2);
 
-    auto weekInterval{Interval{{.weeks = 1}}};
-    auto ymdWeekFromNow{
-        year_month_day(floor<days>(system_clock::now()) + weeks{1})};
-    EXPECT_EQ(datetime + weekInterval, DateTime{ymdWeekFromNow});
+    EXPECT_FALSE(dt2 == dt1);
+    EXPECT_TRUE(dt2 != dt1);
 
-    auto twoWeekInterval{Interval{{.weeks = 2}}};
-    auto ymdTwoWeeksFromNow{
-        year_month_day(floor<days>(system_clock::now()) + weeks{2})};
-    EXPECT_EQ(datetime + twoWeekInterval, DateTime{ymdTwoWeeksFromNow});
+    auto dt3{DateTime{Date::today(), Time{hours_t{12}, minutes_t{12}}}};
+    auto dt4{DateTime{Date::today(), Time{hours_t{12}, minutes_t{13}}}};
 
-    auto dayInterval{Interval{{.days = 1}}};
-    auto ymdDayFromNow{
-        year_month_day(floor<days>(system_clock::now()) + days{1})};
-    EXPECT_EQ(datetime + dayInterval, DateTime{ymdDayFromNow});
+    EXPECT_TRUE(dt3 > dt4);
+    EXPECT_TRUE(dt3 >= dt4);
 
-    auto twoDayInterval{Interval{{.days = 2}}};
-    auto ymdTwoDaysFromNow{
-        year_month_day(floor<days>(system_clock::now()) + days{2})};
-    EXPECT_EQ(datetime + twoDayInterval, DateTime{ymdTwoDaysFromNow});
+    EXPECT_TRUE(dt4 < dt3);
+    EXPECT_TRUE(dt4 <= dt3);
 
-    auto yearWeekDayInterval{Interval{{.years = 1, .weeks = 1, .days = 1}}};
-    auto ymdYearWeekDayFromNow{
-        year_month_day(floor<days>(system_clock::now()) + days{1} + weeks{1}) +
-        years{1}};
-    EXPECT_EQ(datetime + yearWeekDayInterval, DateTime{ymdYearWeekDayFromNow});
+    EXPECT_FALSE(dt3 == dt4);
+    EXPECT_FALSE(dt4 == dt3);
 
-    auto doubleYearWeekDayInterval{
-        Interval{{.years = 2, .weeks = 2, .days = 2}}};
-    auto ymdDoubleYearWeekDayFromNow{
-        year_month_day(floor<days>(system_clock::now()) + days{2} + weeks{2}) +
-        years{2}};
-    EXPECT_EQ(datetime + doubleYearWeekDayInterval,
-              DateTime{ymdDoubleYearWeekDayFromNow});
+    EXPECT_TRUE(dt3 != dt4);
+    EXPECT_TRUE(dt4 != dt3);
+
+    auto dt5{DateTime{Date::today(), Time::now()}};
+    auto dt6{DateTime{Date::today(), Time::now()}};
+
+    EXPECT_FALSE(dt5 > dt6);
+    EXPECT_FALSE(dt5 >= dt6);
+
+    EXPECT_FALSE(dt5 < dt6);
+    EXPECT_FALSE(dt5 <= dt6);
+
+    EXPECT_TRUE(dt5 == dt6);
+    EXPECT_FALSE(dt5 != dt6);
+
+    EXPECT_TRUE(dt6 == dt5);
+    EXPECT_FALSE(dt6 != dt5);
 }
 
-TEST(DateTimeTest, AddMonthInterval) {
-    using namespace std::chrono;
+TEST(TestDateTime, OperatorPlusNoOverflow) {
+    auto dt{DateTime{Date(year{2027}, month{10}, day{11}),
+                     Time{hours_t{12}, minutes_t{12}}}};
 
-    auto cutOffInterval{
-        Interval{{.months = 1}, Interval::MonthHandling::CUT_OFF}};
-    auto doubleCutOffInterval{
-        Interval{{.months = 2}, Interval::MonthHandling::CUT_OFF}};
+    auto interval{hbt::mods::Interval(hbt::mods::Duration::Units{
+        .years = 1, .months = 1, .days = 1, .hours = 1, .minutes = 1})};
 
-    auto wrapAroundInterval{
-        Interval{{.months = 1}, Interval::MonthHandling::WRAP_AROUND}};
-    auto doubleWrapAroundInterval{
-        Interval{{.months = 2}, Interval::MonthHandling::WRAP_AROUND}};
+    auto res{dt + interval};
 
-    // There is 28 days in Feb 2026
-    auto date1{DateTime{year{2026}, month{1}, day{29}}};
-    auto date1CutOff{DateTime{year{2026}, month{2}, day{28}}};
-    auto date1WrapAround{DateTime{year{2026}, month{3}, day{1}}};
-    EXPECT_EQ(date1 + cutOffInterval, date1CutOff);
-    EXPECT_EQ(date1 + wrapAroundInterval, date1WrapAround);
+    EXPECT_EQ(res.getDate(), Date(year(2028), month(11), day(12)));
+    EXPECT_EQ(res.getTime(), Time(hours_t(13), minutes_t(13)));
+}
 
-    auto date2{DateTime{year{2025}, month{12}, day{29}}};
-    auto date2CutOff{DateTime{year{2026}, month{2}, day{28}}};
-    auto date2WrapAround{DateTime{year{2026}, month{3}, day{1}}};
-    EXPECT_EQ(date2 + doubleCutOffInterval, date2CutOff);
-    EXPECT_EQ(date2 + doubleWrapAroundInterval, date2WrapAround);
+TEST(TestDateTime, OperatorPlusOverflow) {
+    auto dt{DateTime{Date(year{2027}, month{10}, day{11}),
+                     Time{hours_t{22}, minutes_t{50}}}};
+
+    auto interval{hbt::mods::Interval(hbt::mods::Duration::Units{
+        .years = 1, .months = 1, .days = 1, .hours = 1, .minutes = 10})};
+
+    auto res{dt + interval};
+
+    EXPECT_EQ(res.getDate(), Date(year(2028), month(11), day(13)));
+    EXPECT_EQ(res.getTime(), Time(hours_t(0), minutes_t(0)));
+}
+
+TEST(TestDateTime, OperatorPlusMonthHandling) {
+    auto dt{DateTime{Date(year{2027}, month{10}, day{31}),
+                     Time{hours_t{22}, minutes_t{0}}}}; // october has 31 days,
+                                                        // november has 30
+
+    auto wrapAroundInterval{hbt::mods::Interval(
+        hbt::mods::Duration::Units{
+            .years = 0, .months = 1, .days = 0, .hours = 0, .minutes = 0},
+        mods::Interval::MonthHandling::WRAP_AROUND)};
+
+    auto res1{dt + wrapAroundInterval};
+
+    EXPECT_EQ(res1.getDate(), Date(year(2027), month(12), day(1)));
+    EXPECT_EQ(res1.getTime(), Time(hours_t(22), minutes_t(0)));
+
+    auto cutOffInterval{hbt::mods::Interval(
+        hbt::mods::Duration::Units{
+            .years = 0, .months = 1, .days = 0, .hours = 0, .minutes = 0},
+        mods::Interval::MonthHandling::CUT_OFF)};
+
+    auto res2{dt + cutOffInterval};
+
+    EXPECT_EQ(res2.getDate(), Date(year(2027), month(11), day(30)));
+    EXPECT_EQ(res2.getTime(), Time(hours_t(22), minutes_t(0)));
+}
+
+TEST(TestDateTime, GetDiff) {
+    auto dt1{DateTime(Date::today(), Time::now())};
+    EXPECT_EQ(hbt::mods::Duration{}, DateTime::getDiff(dt1, dt1));
+
+    auto dt2{DateTime(Date::today(), Time(hours_t(12), minutes_t(12)))};
+    auto dt3{DateTime(Date::today(), Time(hours_t(13), minutes_t(13)))};
+    EXPECT_EQ(hbt::mods::Duration(
+                  hbt::mods::Duration::Units{.hours = 1, .minutes = 1}),
+              DateTime::getDiff(dt2, dt3));
+    EXPECT_EQ(hbt::mods::Duration(
+                  hbt::mods::Duration::Units{.hours = 1, .minutes = 1}),
+              DateTime::getDiff(dt3, dt2));
+
+    auto dt4{DateTime(Date(year(2025), month(11), day(10)), Time::now())};
+    auto dt5{DateTime(Date(year(2026), month(12), day(11)), Time::now())};
+    EXPECT_EQ(hbt::mods::Duration(hbt::mods::Duration::Units{
+                  .years = 1, .months = 1, .days = 1}),
+              DateTime::getDiff(dt4, dt5));
+    EXPECT_EQ(hbt::mods::Duration(hbt::mods::Duration::Units{
+                  .years = 1, .months = 1, .days = 1}),
+              DateTime::getDiff(dt5, dt4));
+
+    auto dt6{DateTime(Date(year(2025), month(11), day(10)),
+                      Time(hours_t(12), minutes_t(12)))};
+    auto dt7{DateTime(Date(year(2026), month(12), day(11)),
+                      Time(hours_t(13), minutes_t(13)))};
+    EXPECT_EQ(
+        hbt::mods::Duration(hbt::mods::Duration::Units{
+            .years = 1, .months = 1, .days = 1, .hours = 1, .minutes = 1}),
+        DateTime::getDiff(dt6, dt7));
+    EXPECT_EQ(
+        hbt::mods::Duration(hbt::mods::Duration::Units{
+            .years = 1, .months = 1, .days = 1, .hours = 1, .minutes = 1}),
+        DateTime::getDiff(dt7, dt6));
 }
 } // namespace test::mods
