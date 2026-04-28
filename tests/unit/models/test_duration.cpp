@@ -103,6 +103,7 @@ TEST(DurationTest, OperatorPlus) {
 }
 
 TEST(DurationTest, ComparisonOperators) {
+    // TODO compare 1y with 0y100months
     auto first{Duration{}};
     auto second{Duration{}};
 

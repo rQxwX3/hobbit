@@ -123,14 +123,15 @@ Duration::Duration(const Units &unitsStruct)
 
 [[nodiscard]] auto Duration::getMaxNonZeroUnit() const
     -> std::optional<unit_t> {
-    for (auto unit{static_cast<size_t>(unit_t::YEAR)}; unit != unit_t::COUNT_;
-         ++unit) {
-        if (units_[unit] != 0) {
-            return static_cast<unit_t>(unit);
+    auto result{std::optional<unit_t>(std::nullopt)};
+
+    for (const auto unit : Duration::units) {
+        if (!result && units_[unit] != 0) {
+            result = unit;
         }
     }
 
-    return std::nullopt;
+    return result;
 }
 
 [[nodiscard]] auto Duration::getNonZeroUnitValuePairs() const
@@ -138,10 +139,9 @@ Duration::Duration(const Units &unitsStruct)
     std::vector<unitValuePair_t> result;
     result.reserve(unit_t::COUNT_);
 
-    for (auto unit{static_cast<size_t>(unit_t::YEAR)}; unit != unit_t::COUNT_;
-         ++unit) {
+    for (const auto unit : Duration::units) {
         if (auto value{units_[unit]}; value) {
-            result.emplace_back(static_cast<unit_t>(unit), value);
+            result.emplace_back(unit, value);
         }
     }
 
@@ -168,9 +168,7 @@ auto Duration::addUnit(unit_t unit, value_t value) -> void {
 }
 
 [[nodiscard]] auto Duration::onlyContainsUnit(unit_t onlyUnit) const -> bool {
-    for (auto unit{static_cast<size_t>(unit_t::YEAR)}; unit != unit_t::COUNT_;
-         ++unit) {
-
+    for (const auto unit : Duration::units) {
         if (unit == static_cast<size_t>(onlyUnit) && units_[unit] == 0) {
             return false;
         }
@@ -206,10 +204,7 @@ auto Duration::addUnit(unit_t unit, value_t value) -> void {
     -> Duration {
     auto result{Duration{*this}};
 
-    for (auto unitInt{static_cast<size_t>(unit_t::YEAR)};
-         unitInt != unit_t::COUNT_; ++unitInt) {
-
-        auto unit{static_cast<unit_t>(unitInt)};
+    for (const auto unit : Duration::units) {
         result.addUnit(unit, other.getUnitValue(unit));
     }
 
@@ -218,10 +213,12 @@ auto Duration::addUnit(unit_t unit, value_t value) -> void {
 
 [[nodiscard]] auto Duration::operator<=>(const Duration &other) const
     -> std::strong_ordering {
-    for (auto unit{static_cast<size_t>(unit_t::YEAR)}; unit != unit_t::COUNT_;
-         ++unit) {
-        if (auto cmp = getUnitValue(static_cast<unit_t>(unit)) <=>
-                       other.getUnitValue(static_cast<unit_t>(unit));
+    auto convertedThis{this->convertUnitsUpwards()};
+    auto convertedOther{other.convertUnitsUpwards()};
+
+    for (const auto unit : Duration::units) {
+        if (auto cmp{convertedThis.getUnitValue(unit) <=>
+                     convertedOther.getUnitValue(unit)};
             cmp != 0) {
             return cmp;
         }

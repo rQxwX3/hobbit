@@ -82,6 +82,11 @@ class Duration {
     static constexpr auto daysInWeek{value_t{7}};
     static constexpr auto monthsInYear{value_t{12}};
 
+  public:
+    static constexpr auto units{std::array<unit_t, unit_t::COUNT_>{
+        unit_t::YEAR, unit_t::MONTH, unit_t::WEEK, unit_t::DAY, unit_t::HOUR,
+        unit_t::MINUTE}};
+
   private:
     array_t units_;
 
