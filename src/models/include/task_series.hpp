@@ -25,6 +25,9 @@ class TaskSeries {
         JSONFailedToParseTaskData,
         JSONFailedToParseStop,
         JSONFailedToParseRecurrence,
+
+        InvalidDeadline,
+        InvalidStop,
     };
 
   public:
@@ -42,6 +45,12 @@ class TaskSeries {
 
         case Error::JSONFailedToParseStop:
             return "TaskSeries: failed to parse stop DateTime from JSON";
+
+        case Error::InvalidDeadline:
+            return "TaskSeries: only accepts interval-based Deadlines";
+
+        case Error::InvalidStop:
+            return "TaskSeries: series' stop can't be before their start";
         }
     }
 
@@ -79,8 +88,6 @@ class TaskSeries {
     [[nodiscard]] auto getRecurrence() const -> util::Recurrence;
 
   public:
-    auto setStart(start_t start) -> void;
-
     auto setStop(stop_t stop) -> void;
 
     auto setDeadline(deadline_t deadline) -> void;

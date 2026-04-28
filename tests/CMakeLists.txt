@@ -10,7 +10,9 @@ add_executable(models_test
 	unit/models/test_task_data.cpp
 	unit/models/test_singular_task.cpp
 	unit/models/test_time.cpp
+	unit/models/test_recurrence_patterns.cpp
 	unit/models/test_date.cpp
+	unit/models/test_weekdays.cpp
 )
 
 target_link_libraries(models_test PRIVATE 

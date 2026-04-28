@@ -10,14 +10,6 @@ auto TaskSeries::validateDeadline(deadline_t deadline) const -> deadline_t {
     return deadline;
 }
 
-auto TaskSeries::validateStart(start_t start) const -> start_t {
-    if (stop_.has_value() && start > stop_.value()) {
-        throw std::invalid_argument(errorMessage(Error::InvalidStart));
-    }
-
-    return start;
-}
-
 auto TaskSeries::validateStop(stop_t stop) const -> stop_t {
     if (stop.has_value() && stop.value() < getStart()) {
         throw std::invalid_argument(errorMessage(Error::InvalidStop));
@@ -51,10 +43,6 @@ TaskSeries::TaskSeries(TaskData task, util::Recurrence recurrence, stop_t stop)
 
 [[nodiscard]] auto TaskSeries::getRecurrence() const -> util::Recurrence {
     return recurrence_;
-}
-
-auto TaskSeries::setStart(start_t start) -> void {
-    task_.setDateTime(validateStart(start));
 }
 
 auto TaskSeries::setStop(stop_t stop) -> void { stop_ = validateStop(stop); }
