@@ -9,7 +9,7 @@ using hbt::mods::Duration;
 TEST(NaturalLanguageParserTest, ParsesValidInputs) {
     auto result{Duration::fromNaturalLanguage(
         "1year 2months 3weeks 4days 5hours 6minutes")};
-    ASSERT_TRUE(result.has_value());
+    ASSERT_TRUE(result);
 
     EXPECT_EQ(result->getUnitValue(Duration::unit_t::YEAR), 1);
     EXPECT_EQ(result->getUnitValue(Duration::unit_t::MONTH), 2);
@@ -19,32 +19,31 @@ TEST(NaturalLanguageParserTest, ParsesValidInputs) {
     EXPECT_EQ(result->getUnitValue(Duration::unit_t::MINUTE), 6);
 
     result = Duration::fromNaturalLanguage("1y2m3w4d5h6min");
-    ASSERT_TRUE(result.has_value());
+    ASSERT_TRUE(result);
 
     result = Duration::fromNaturalLanguage("1Y 2MoNtHs 3W 4D 5H 6MiN");
-    ASSERT_TRUE(result.has_value());
+    ASSERT_TRUE(result);
 }
 
 TEST(NaturalLanguageParserTest, HandlesFiltering) {
     auto result{Duration::fromNaturalLanguage("!@# 1 year !! 2 months @@")};
-    ASSERT_TRUE(result.has_value());
+    ASSERT_TRUE(result);
 
     EXPECT_EQ(result->getUnitValue(Duration::unit_t::YEAR), 1);
     EXPECT_EQ(result->getUnitValue(Duration::unit_t::MONTH), 2);
 }
-
 TEST(NaturalLanguageParserTest, RejectsInvalidInputs) {
-    EXPECT_FALSE(Duration::fromNaturalLanguage("").has_value());
-    EXPECT_FALSE(Duration::fromNaturalLanguage("hello").has_value());
-    EXPECT_FALSE(Duration::fromNaturalLanguage("1234").has_value());
-    EXPECT_FALSE(Duration::fromNaturalLanguage("!@#$%^&*()").has_value());
+    EXPECT_FALSE(Duration::fromNaturalLanguage(""));
+    EXPECT_FALSE(Duration::fromNaturalLanguage("hello"));
+    EXPECT_FALSE(Duration::fromNaturalLanguage("1234"));
+    EXPECT_FALSE(Duration::fromNaturalLanguage("!@#$%^&*()"));
 
-    EXPECT_FALSE(Duration::fromNaturalLanguage("year").has_value());
-    EXPECT_FALSE(Duration::fromNaturalLanguage("year1").has_value());
-    EXPECT_FALSE(Duration::fromNaturalLanguage("1yesterday").has_value());
+    EXPECT_FALSE(Duration::fromNaturalLanguage("year"));
+    EXPECT_FALSE(Duration::fromNaturalLanguage("year1"));
+    EXPECT_FALSE(Duration::fromNaturalLanguage("1yesterday"));
 
-    EXPECT_FALSE(Duration::fromNaturalLanguage("1.5year").has_value());
-    EXPECT_FALSE(Duration::fromNaturalLanguage("1/5year").has_value());
+    EXPECT_FALSE(Duration::fromNaturalLanguage("1.5year"));
+    EXPECT_FALSE(Duration::fromNaturalLanguage("1/5year"));
 }
 
 TEST(NaturalLanguageParserTest, RejectsDuplicateUnits) {

@@ -32,7 +32,7 @@ class Interval {
         }
     }
 
-  private:
+  public:
     static constexpr auto jsonDurationField{std::string_view{"duration"}};
     static constexpr auto jsonMonthHandlingField{
         std::string_view{"month_handling"}};
@@ -100,11 +100,5 @@ class Interval {
 
     [[nodiscard]] static auto fromJSON(const nlohmann::json &json)
         -> std::expected<Interval, Error>;
-
-  public:
-    [[nodiscard]] static auto fromNaturalLanguage(const std::string &input)
-        -> std::expected<Interval, Error>;
-
-    [[nodiscard]] auto toNaturalLanguage() const -> std::string;
 };
 } // namespace hbt::mods

@@ -57,6 +57,10 @@ auto NaturalLanguageParser::parseUnit(const std::string &unit,
     -> void {
 
     auto res{getBucketOfUnit(unit)};
+    if (!res) {
+        throw std::runtime_error(errorMessage(Error::UnitBucketNotFound));
+    }
+
     auto bucket{res.value()};
     auto unitOfBucket{bucket.getUnit()};
 
@@ -111,8 +115,12 @@ auto NaturalLanguageParser::parseAllUnits(const std::string &filteredInput,
     auto duration{Duration{}};
     auto filteredInput{filterInput(input)};
 
-    parseAllUnits(filteredInput, duration);
-    return duration;
+    try {
+        parseAllUnits(filteredInput, duration);
+        return duration;
+    } catch (std::runtime_error) {
+        return std::unexpected(Error::FailedToParseUnit);
+    }
 }
 
 [[nodiscard]] auto NaturalLanguageParser::formatUnitValuePairToNaturalLanguage(

@@ -72,19 +72,4 @@ auto Interval::setMonthHandling(MonthHandling monthHandling) -> void {
 
     return Interval{durationFromISO8601String.value(), monthHandling};
 }
-
-[[nodiscard]] auto Interval::fromNaturalLanguage(const std::string &input)
-    -> std::expected<Interval, Error> {
-    auto duration{Duration::fromNaturalLanguage(input)};
-
-    if (!duration) {
-        return std::unexpected(Error::NaturalLanguageFailedToParseDuration);
-    }
-
-    return Interval{duration.value()};
-}
-
-[[nodiscard]] auto Interval::toNaturalLanguage() const -> std::string {
-    return duration_.toNaturalLanguage();
-}
 } // namespace hbt::mods

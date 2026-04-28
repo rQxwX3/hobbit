@@ -76,7 +76,7 @@ TEST(IntervalTest, ToFromJSON) {
                                Duration::hours(1) + Duration::minutes(1),
                            Interval::MonthHandling::CUT_OFF}};
 
-    auto json{original.toJSON()};
+    auto json = original.toJSON();
     auto restored{Interval::fromJSON(json)};
 
     ASSERT_TRUE(restored.has_value());
@@ -87,33 +87,10 @@ TEST(IntervalTest, ToFromJSON) {
 
 TEST(IntervalTest, FromJSONInvalid) {
     nlohmann::json json{};
-
-    // missing fields
     EXPECT_FALSE(Interval::fromJSON(json).has_value());
 
-    // invalid duration
-    json = {{"duration", "invalid"}, {"monthHandling", "0"}};
+    json = {{Interval::jsonDurationField, "invalid"},
+            {Interval::jsonMonthHandlingField, "0"}};
     EXPECT_FALSE(Interval::fromJSON(json).has_value());
 }
-
-TEST(IntervalTest, FromNaturalLanguage) {
-    auto result{Interval::fromNaturalLanguage("1year 2months")};
-    ASSERT_TRUE(result.has_value());
-
-    EXPECT_EQ(result->getUnitValue(unit_t::YEAR), 1);
-    EXPECT_EQ(result->getUnitValue(unit_t::MONTH), 2);
-}
-
-TEST(IntervalTest, FromNaturalLanguageInvalid) {
-    EXPECT_FALSE(Interval::fromNaturalLanguage("").has_value());
-    EXPECT_FALSE(Interval::fromNaturalLanguage("hello").has_value());
-}
-
-TEST(IntervalTest, ToNaturalLanguage) {
-    auto interval{Interval{Duration::years(1) + Duration::months(2)}};
-
-    auto result{interval.toNaturalLanguage()};
-    EXPECT_EQ(result, "1year, 2months");
-}
-
 } // namespace test::mods

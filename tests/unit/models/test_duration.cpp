@@ -106,22 +106,20 @@ TEST(DurationTest, ComparisonOperators) {
     // TODO compare 1y with 0y100months
     auto first{Duration{}};
     auto second{Duration{}};
-
+    EXPECT_FALSE(first > second);
+    EXPECT_FALSE(first < second);
     EXPECT_TRUE(first == second);
+    EXPECT_FALSE(first != second);
 
-    first.addUnit(unit_t::DAY, 1);
+    first = Duration::days(1);
     EXPECT_TRUE(first > second);
+    EXPECT_TRUE(second < first);
+    EXPECT_TRUE(second != first);
+    EXPECT_FALSE(second == first);
 
-    second.addUnit(unit_t::DAY, 2);
+    first = Duration::years(1);
+    second = Duration::months(100);
     EXPECT_TRUE(second > first);
-
-    first.addUnit(unit_t::MONTH, 1);
-    EXPECT_TRUE(first > second);
-
-    second.addUnit(unit_t::MONTH, 1);
-    first.addUnit(unit_t::DAY, 1);
-
-    EXPECT_TRUE(first == second);
 }
 
 TEST(DurationTest, OnlyContainsUnit) {
