@@ -13,6 +13,7 @@ add_executable(models_test
 	unit/models/test_recurrence_patterns.cpp
 	unit/models/test_date.cpp
 	unit/models/test_weekdays.cpp
+	unit/models/test_deadline.cpp
 )
 
 target_link_libraries(models_test PRIVATE 
