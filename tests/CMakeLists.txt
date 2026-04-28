@@ -8,6 +8,7 @@ add_executable(models_test
 	unit/models/test_interval.cpp
 	unit/models/test_datetime.cpp
 	unit/models/test_task_data.cpp
+	unit/models/test_singular_task.cpp
 	unit/models/test_time.cpp
 	unit/models/test_date.cpp
 )
