@@ -134,7 +134,24 @@ TEST(DurationTest, IsMultipleOf) {
     auto d2{Duration::days(5)};
     EXPECT_TRUE(d1.isMultipleOf(d2));
 
-    auto d3{Duration::days(6)};
-    EXPECT_FALSE(d3.isMultipleOf(d2));
+    d1 = Duration::weeks(2);
+    d1 = Duration::weeks(3);
+    EXPECT_FALSE(d1.isMultipleOf(d2));
+
+    d1 = Duration{Duration::Units{.years = 2,
+                                  .months = 2,
+                                  .weeks = 2,
+                                  .days = 2,
+                                  .hours = 2,
+                                  .minutes = 2}};
+
+    d2 = Duration{Duration::Units{.years = 1,
+                                  .months = 1,
+                                  .weeks = 1,
+                                  .days = 1,
+                                  .hours = 1,
+                                  .minutes = 1}};
+
+    EXPECT_TRUE(d1.isMultipleOf(d2));
 }
 } // namespace test::mods

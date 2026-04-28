@@ -102,7 +102,7 @@ class Duration {
 
     explicit Duration(const struct_t &unitsStruct);
 
-  private:
+  public:
     [[nodiscard]] auto convertUnitsUpwards() const -> Duration;
 
     [[nodiscard]] auto convertUnitsDownwards() const -> Duration;

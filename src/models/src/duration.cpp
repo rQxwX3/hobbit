@@ -77,8 +77,8 @@ Duration::Duration(const Units &unitsStruct)
 
     auto convertDownwards{
         [&copy](unit_t from, unit_t to, value_t conversionRatio) -> void {
-            assert(from > to);
-            copy.units_[to] = copy.units_[from] * conversionRatio;
+            assert(from < to);
+            copy.units_[to] += copy.units_[from] * conversionRatio;
             copy.units_[from] = 0;
         }};
 
@@ -94,7 +94,7 @@ Duration::Duration(const Units &unitsStruct)
     auto array{array_t{}};
     array[unit] = validateValue(value);
 
-    return Duration{array}.convertUnitsUpwards();
+    return Duration{array};
 }
 
 [[nodiscard]] auto Duration::years(value_t value) -> Duration {
@@ -184,30 +184,22 @@ auto Duration::addUnit(unit_t unit, value_t value) -> void {
 }
 
 [[nodiscard]] auto Duration::isMultipleOf(Duration other) const -> bool {
-    auto convertedThis{this->convertUnitsUpwards()};
-    other.convertUnitsUpwards();
+    auto convertedThis{this->convertUnitsDownwards()};
+    auto convertedOther{other.convertUnitsDownwards()};
 
-    for (auto unitInt{static_cast<size_t>(unit_t::YEAR)};
-         unitInt != unit_t::COUNT_; ++unitInt) {
-        auto unit{static_cast<unit_t>(unitInt)};
+    auto isUnitMultipleOf(
+        [&convertedThis, &convertedOther](unit_t unit) -> bool {
+            auto thisValue{convertedThis.getUnitValue(unit)};
+            auto otherValue{convertedOther.getUnitValue(unit)};
 
-        auto thisValue{thisCopy.getUnitValue(unit)};
-        auto otherValue{other.getUnitValue(unit)};
-
-        if (otherValue == 0) {
-            if (thisValue == 0) {
-                continue;
+            if (otherValue == 0) {
+                return thisValue == 0;
             }
 
-            return false;
-        }
+            return thisValue % otherValue == 0;
+        });
 
-        if ((thisValue % otherValue) != 0) {
-            return false;
-        }
-    }
-
-    return true;
+    return isUnitMultipleOf(unit_t::MONTH) && isUnitMultipleOf(unit_t::MINUTE);
 }
 
 [[nodiscard]] auto Duration::operator+(const Duration &other) const
