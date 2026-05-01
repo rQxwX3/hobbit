@@ -13,36 +13,80 @@ using std::chrono::month;
 using std::chrono::year;
 using std::chrono::year_month_day;
 
-TEST(DateTest, ThrowsOnInvalidYMD) {
+TEST(DateTest, ThrowsOnInvalidChronoYMD) {
     EXPECT_THROW(Date(year_month_day{year{2026}, month{2}, day{29}}),
                  std::invalid_argument); // not a leap year
 
-    EXPECT_THROW(Date(year_month_day{year{-2026}, month{2}, day{29}}),
+    EXPECT_THROW(Date(year_month_day{year{2000}, month{13}, day{10}}),
+                 std::invalid_argument);
+
+    EXPECT_THROW(Date(year_month_day{year{2000}, month{12}, day{32}}),
+                 std::invalid_argument);
+
+    EXPECT_THROW(Date(year_month_day{year{2000}, month{0}, day{28}}),
+                 std::invalid_argument);
+
+    EXPECT_THROW(Date(year_month_day{year{2000}, month{12}, day{0}}),
+                 std::invalid_argument);
+
+    EXPECT_THROW(Date(year_month_day{year{2000}, month{0}, day{0}}),
+                 std::invalid_argument);
+
+    EXPECT_THROW(Date(year_month_day{year{2000}, month{13}, day{32}}),
+                 std::invalid_argument);
+}
+
+TEST(DateTest, ThrowsOnInvalidYMD) {
+    EXPECT_THROW(Date({.year = 2026, .month = 2, .day = 29}),
                  std::invalid_argument); // not a leap year
+                                         //
+    EXPECT_THROW(Date({.year = 2000, .month = 13, .day = 10}),
+                 std::invalid_argument);
+
+    EXPECT_THROW(Date({.year = 2000, .month = 12, .day = 32}),
+                 std::invalid_argument);
+
+    EXPECT_THROW(Date({.year = 2000, .month = 0, .day = 28}),
+                 std::invalid_argument);
+
+    EXPECT_THROW(Date({.year = 2000, .month = 12, .day = 0}),
+                 std::invalid_argument);
+
+    EXPECT_THROW(Date({.year = 2000, .month = 0, .day = 0}),
+                 std::invalid_argument);
+
+    EXPECT_THROW(Date({.year = 2000, .month = 12, .day = 32}),
+                 std::invalid_argument);
 }
 
 TEST(DateTest, ThrowsOnInvalidYearMonthDay) {
-    EXPECT_THROW(Date(year{2026}, month{13}, day{13}), std::invalid_argument);
-
-    EXPECT_THROW(Date(year{2026}, month{12}, day{32}), std::invalid_argument);
-
     EXPECT_THROW(Date(year{2026}, month{2}, day{29}),
                  std::invalid_argument); // not a leap year
+                                         //
+    EXPECT_THROW(Date(year{2000}, month{13}, day{10}), std::invalid_argument);
 
-    EXPECT_THROW(Date(year{2026}, month{13}, day{32}), std::invalid_argument);
+    EXPECT_THROW(Date(year{2000}, month{12}, day{32}), std::invalid_argument);
+
+    EXPECT_THROW(Date(year{2000}, month{0}, day{28}), std::invalid_argument);
+
+    EXPECT_THROW(Date(year{2000}, month{12}, day{0}), std::invalid_argument);
+
+    EXPECT_THROW(Date(year{2000}, month{0}, day{0}), std::invalid_argument);
+
+    EXPECT_THROW(Date(year{2000}, month{12}, day{32}), std::invalid_argument);
 }
 
 TEST(DateTest, Getters) {
-    auto ymd{year_month_day{year{2026}, month{4}, day{27}}};
-    auto d1{Date(ymd)};
-    EXPECT_EQ(d1.getYMD(), ymd);
+    auto chronoYMD{year_month_day{year{2026}, month{4}, day{27}}};
+    auto d1{Date(chronoYMD)};
+    EXPECT_EQ(d1.getChronoYMD(), chronoYMD);
     EXPECT_EQ(d1.getYear(), year(2026));
     EXPECT_EQ(d1.getMonth(), month(4));
     EXPECT_EQ(d1.getDay(), day(27));
     EXPECT_EQ(d1.getWeekday(), Date::weekday_t::MONDAY);
 
     auto d2{Date(year{2026}, month{4}, day{27})};
-    EXPECT_EQ(d2.getYMD(), ymd);
+    EXPECT_EQ(d2.getChronoYMD(), chronoYMD);
     EXPECT_EQ(d2.getYear(), year(2026));
     EXPECT_EQ(d2.getMonth(), month(4));
     EXPECT_EQ(d2.getDay(), day(27));

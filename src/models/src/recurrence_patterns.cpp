@@ -54,10 +54,8 @@ IntervalRecurrencePattern::happensOnDate(mods::DateTime start,
     return false;
 }
 
-[[nodiscard]] auto
-IntervalRecurrencePattern::getFirstOccurrencesOnDate(mods::DateTime start,
-                                                     mods::Date date) const
-    -> std::optional<occurrence_t> {
+[[nodiscard]] auto IntervalRecurrencePattern::getFirstTimeStampOnDate(
+    mods::DateTime start, mods::Date date) const -> std::optional<timestamp_t> {
     for (auto dt{start}; dt.getDate() <= date; dt += interval_) {
         if (dt.getDate() == date) {
             return dt;
@@ -67,18 +65,18 @@ IntervalRecurrencePattern::getFirstOccurrencesOnDate(mods::DateTime start,
     return std::nullopt;
 }
 
-[[nodiscard]] auto IntervalRecurrencePattern::getOccurrencesOnDate(
-    mods::DateTime start, mods::Date date) const -> occurrences_t {
-    auto result{occurrences_t{}};
+[[nodiscard]] auto IntervalRecurrencePattern::getTimeStampsOnDate(
+    mods::DateTime start, mods::Date date) const -> timestamps_t {
+    auto result{timestamps_t{}};
 
-    auto firstOccurrence{getFirstOccurrencesOnDate(start, date)};
-    if (!firstOccurrence.has_value()) {
+    auto firstTimeStamp{getFirstTimeStampOnDate(start, date)};
+    if (!firstTimeStamp.has_value()) {
         return result;
     }
 
     auto endDate{date + mods::Duration::days(1)};
 
-    for (auto dt{firstOccurrence}; dt->getDate() != endDate; *dt += interval_) {
+    for (auto dt{firstTimeStamp}; dt->getDate() != endDate; *dt += interval_) {
         result.push_back(*dt);
     }
 
@@ -116,8 +114,8 @@ WeekdayRecurrencePattern::WeekdayRecurrencePattern(
 }
 
 [[nodiscard]] auto
-WeekdayRecurrencePattern::getDateOfFirstOccurrence(mods::DateTime start) const
-    -> occurrence_t {
+WeekdayRecurrencePattern::getDateOfFirstTimeStamp(mods::DateTime start) const
+    -> timestamp_t {
     for (auto days{0}; days != Duration::daysInWeek; ++days) {
         auto date{start + Duration::days(days)};
 
@@ -137,14 +135,14 @@ WeekdayRecurrencePattern::getDateOfFirstOccurrence(mods::DateTime start) const
     }
 
     auto intervalDuration{interval_.getDuration()};
-    auto firstOccurrenceDate{getDateOfFirstOccurrence(start)};
+    auto firstTimeStampDate{getDateOfFirstTimeStamp(start)};
 
-    return Date::getDiff(date, firstOccurrenceDate.getDate())
+    return Date::getDiff(date, firstTimeStampDate.getDate())
         .isMultipleOf(intervalDuration);
 }
 
-[[nodiscard]] auto WeekdayRecurrencePattern::getOccurrencesOnDate(
-    mods::DateTime start, mods::Date date) const -> occurrences_t {
+[[nodiscard]] auto WeekdayRecurrencePattern::getTimeStampsOnDate(
+    mods::DateTime start, mods::Date date) const -> timestamps_t {
     if (happensOnDate(start, date)) {
         return {mods::DateTime(date)};
     }

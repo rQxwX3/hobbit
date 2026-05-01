@@ -12,8 +12,8 @@
 namespace hbt::mods::util {
 class RecurrencePattern {
   public:
-    using occurrence_t = hbt::mods::DateTime;
-    using occurrences_t = std::vector<occurrence_t>;
+    using timestamp_t = hbt::mods::DateTime;
+    using timestamps_t = std::vector<timestamp_t>;
 
   public:
     RecurrencePattern() = default;
@@ -29,9 +29,9 @@ class RecurrencePattern {
     virtual ~RecurrencePattern() = default;
 
   public:
-    [[nodiscard]] virtual auto getOccurrencesOnDate(mods::DateTime start,
-                                                    mods::Date date) const
-        -> occurrences_t = 0;
+    [[nodiscard]] virtual auto getTimeStampsOnDate(mods::DateTime start,
+                                                   mods::Date date) const
+        -> timestamps_t = 0;
 };
 
 class IntervalRecurrencePattern : public RecurrencePattern {
@@ -75,14 +75,14 @@ class IntervalRecurrencePattern : public RecurrencePattern {
     [[nodiscard]] auto happensOnDate(DateTime start, Date date) const -> bool;
 
   private:
-    [[nodiscard]] auto getFirstOccurrencesOnDate(mods::DateTime start,
-                                                 mods::Date date) const
-        -> std::optional<occurrence_t>;
+    [[nodiscard]] auto getFirstTimeStampOnDate(mods::DateTime start,
+                                               mods::Date date) const
+        -> std::optional<timestamp_t>;
 
   public:
-    [[nodiscard]] auto getOccurrencesOnDate(mods::DateTime start,
-                                            mods::Date date) const
-        -> occurrences_t override;
+    [[nodiscard]] auto getTimeStampsOnDate(mods::DateTime start,
+                                           mods::Date date) const
+        -> timestamps_t override;
 
   public:
     [[nodiscard]] auto toJSON() const -> nlohmann::json;
@@ -150,8 +150,8 @@ class WeekdayRecurrencePattern : public RecurrencePattern {
     Weekdays weekdays_;
 
   private:
-    [[nodiscard]] auto getDateOfFirstOccurrence(DateTime start) const
-        -> occurrence_t;
+    [[nodiscard]] auto getDateOfFirstTimeStamp(DateTime start) const
+        -> timestamp_t;
 
     static auto validateInterval(const Interval &interval) -> Interval;
 
@@ -169,8 +169,8 @@ class WeekdayRecurrencePattern : public RecurrencePattern {
     [[nodiscard]] auto happensOnDate(DateTime start, Date date) const -> bool;
 
   public:
-    [[nodiscard]] auto getOccurrencesOnDate(DateTime start, Date date) const
-        -> occurrences_t override;
+    [[nodiscard]] auto getTimeStampsOnDate(DateTime start, Date date) const
+        -> timestamps_t override;
 
   private:
     [[nodiscard]] auto static containsAllJSONFields(const nlohmann::json &json)

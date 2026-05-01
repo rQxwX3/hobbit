@@ -42,7 +42,8 @@ DateTime::DateTime(year_t year, month_t month, day_t day, hours_t hours,
 }
 
 [[nodiscard]] auto DateTime::toISO8601String() const -> std::string {
-    auto timepoint{std::chrono::sys_days{date_.getYMD()} + time_.getValue()};
+    auto timepoint{std::chrono::sys_days{date_.getChronoYMD()} +
+                   time_.getValue()};
     return std::format("{:%Y-%m-%dT%H:%M}", timepoint);
 }
 

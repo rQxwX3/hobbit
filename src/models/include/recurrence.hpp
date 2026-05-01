@@ -16,7 +16,7 @@ class Recurrence {
     using pattern_t =
         std::variant<IntervalRecurrencePattern, WeekdayRecurrencePattern>;
 
-    using occurrences_t = RecurrencePattern::occurrences_t;
+    using timestamps_t = RecurrencePattern::timestamps_t;
 
   private:
     static constexpr auto jsonPatternTypeField{std::string_view{"type"}};
@@ -89,8 +89,8 @@ class Recurrence {
     [[nodiscard]] auto getWeekdayPattern() const -> WeekdayRecurrencePattern;
 
   public:
-    [[nodiscard]] auto getOccurrencesOnDate(DateTime start, Date date) const
-        -> occurrences_t;
+    [[nodiscard]] auto getTimeStampsOnDate(DateTime start, Date date) const
+        -> timestamps_t;
 
   public:
     [[nodiscard]] auto isForDate(DateTime start, Date date) const -> bool;

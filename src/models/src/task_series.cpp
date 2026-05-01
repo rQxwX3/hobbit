@@ -57,13 +57,13 @@ auto TaskSeries::setRecurrence(util::Recurrence recurrence) -> void {
 [[nodiscard]] auto TaskSeries::generateSingularsForDate(mods::Date date) const
     -> std::vector<hbt::mods::SingularTask> {
     auto results{std::vector<mods::SingularTask>{}};
-    auto occurrences{recurrence_.getOccurrencesOnDate(getStart(), date)};
+    auto timestamps{recurrence_.getTimeStampsOnDate(getStart(), date)};
 
-    for (const auto &dt : occurrences) {
-        // TODO: assert dt.getData() = datetime.getData()
+    for (const auto &ts : timestamps) {
+        // TODO: assert ts.getData() = datetime.getData()
 
         auto taskData{task_};
-        taskData.setDateTime(dt);
+        taskData.setDateTime(ts);
 
         results.emplace_back(std::move(taskData));
     }

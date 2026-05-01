@@ -73,7 +73,7 @@ TEST(IntervalRecurrencePatternTest, GetOccurrencesProducesCorrectSequence) {
     auto pattern = IntervalRecurrencePattern(Interval::days(2));
 
     auto result =
-        pattern.getOccurrencesOnDate(start, Date(year(2025), month(1), day(7)));
+        pattern.getTimeStampsOnDate(start, Date(year(2025), month(1), day(7)));
 
     ASSERT_GE(result.size(), 1u);
 
@@ -89,7 +89,7 @@ TEST(IntervalRecurrencePatternTest, GetOccurrencesEmptyWhenNoMatch) {
     auto pattern = IntervalRecurrencePattern(Interval::days(2));
 
     auto result =
-        pattern.getOccurrencesOnDate(start, Date(year(2025), month(1), day(3)));
+        pattern.getTimeStampsOnDate(start, Date(year(2025), month(1), day(3)));
 
     EXPECT_TRUE(result.empty());
 }
@@ -155,7 +155,7 @@ TEST(WeekdayRecurrencePatternTest, GetOccurrencesSingleMatch) {
     auto pattern = WeekdayRecurrencePattern(Interval::days(7), w);
 
     auto result =
-        pattern.getOccurrencesOnDate(start, Date(year(2025), month(1), day(8)));
+        pattern.getTimeStampsOnDate(start, Date(year(2025), month(1), day(8)));
 
     EXPECT_EQ(result.size(), 1);
     EXPECT_EQ(result.front().getDate(), Date(year(2025), month(1), day(8)));
@@ -168,7 +168,7 @@ TEST(WeekdayRecurrencePatternTest, GetOccurrencesEmptyWhenNoMatch) {
     auto pattern = WeekdayRecurrencePattern(Interval::days(7), w);
 
     auto result =
-        pattern.getOccurrencesOnDate(start, Date(year(2025), month(1), day(7)));
+        pattern.getTimeStampsOnDate(start, Date(year(2025), month(1), day(7)));
 
     EXPECT_TRUE(result.empty());
 }

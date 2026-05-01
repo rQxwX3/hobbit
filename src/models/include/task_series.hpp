@@ -12,7 +12,7 @@
 namespace hbt::mods {
 class TaskSeries {
   public:
-    using occurrences_t = util::RecurrencePattern::occurrences_t;
+    using timestamps_t = util::RecurrencePattern::timestamps_t;
 
     using deadline_t = TaskData::deadline_t;
     using start_t = TaskData::datetime_t;
