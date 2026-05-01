@@ -24,8 +24,8 @@ TaskSeries::TaskSeries(TaskData task, util::Recurrence recurrence, stop_t stop)
     validateDeadline(task_.getDeadline());
 }
 
-// [[nodiscard]] auto
-// TaskSeries::generateFirstSingularOfDate(mods::DateTime datetime)
+// [[nodiscard]] auto TaskSeries::generateFirstSingularOfDate(mods::DateTime
+// datetime)
 //     -> std::optional<hbt::mods::SingularTask> {
 //     if (std::holds_alternative<mods::util::WeekdayRecurrence>(
 //             recurrencePattern_)) {

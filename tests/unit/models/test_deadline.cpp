@@ -19,6 +19,12 @@ using year = std::chrono::year;
 using month = std::chrono::month;
 using day = std::chrono::day;
 
+TEST(DeadlienTest, DefaultCtorCreatesNull) {
+    auto deadline{Deadline()};
+
+    EXPECT_EQ(deadline.getType(), Deadline::Type::Null);
+}
+
 TEST(DeadlineTest, IntervalTypeIsAccepted) {
     auto deadline{Deadline(Interval(Duration::days(7)))};
 
@@ -29,6 +35,12 @@ TEST(DeadlineTest, DateTimeTypeIsAccepted) {
     auto deadline{Deadline(DateTime(Date(year(2025), month(1), day(1))))};
 
     EXPECT_EQ(deadline.getType(), Deadline::Type::DateTime);
+}
+
+TEST(DeadlineTest, NullTypeIsAccepted) {
+    auto deadline{Deadline(std::monostate())};
+
+    EXPECT_EQ(deadline.getType(), Deadline::Type::Null);
 }
 
 TEST(DeadlineTest, GetIntervalReturnsCorrectValue) {

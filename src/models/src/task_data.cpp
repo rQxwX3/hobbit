@@ -103,7 +103,7 @@ auto TaskData::setCompleted(bool completed) -> void { completed_ = completed; }
     }
 
     auto deadline{TaskData::deadlineFromJSON(json[jsonDeadlineField])};
-    if (!deadline) {
+    if (deadline.error()) {
         return std::unexpected(deadline.error());
     }
 

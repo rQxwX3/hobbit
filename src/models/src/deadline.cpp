@@ -1,13 +1,15 @@
 #include <deadline.hpp>
 
 namespace hbt::mods {
+Deadline::Deadline() : type_{std::monostate()} {}
+
 Deadline::Deadline(type_t type)
     : type_{std::move(validateUnderlyingType(std::move(type)))} {}
 
-[[nodiscard]] auto Deadline::validateUnderlyingType(type_t type) const
-    -> type_t {
+[[nodiscard]] auto Deadline::validateUnderlyingType(type_t type) -> type_t {
     if (std::holds_alternative<Interval>(type) ||
-        std::holds_alternative<DateTime>(type)) {
+        std::holds_alternative<DateTime>(type) ||
+        std::holds_alternative<std::monostate>(type)) {
         return type;
     }
 
@@ -22,6 +24,12 @@ Deadline::Deadline(type_t type)
     if (std::holds_alternative<DateTime>(type_)) {
         return Type::DateTime;
     }
+
+    if (std::holds_alternative<std::monostate>(type_)) {
+        return Type::Null;
+    }
+
+    throw std::runtime_error(errorMessage(Error::RTInvalidUnderlyingType));
 }
 
 [[nodiscard]] auto Deadline::getInterval() const -> Interval {
@@ -40,10 +48,13 @@ Deadline::Deadline(type_t type)
                 {jsonIntervalField, intervalJSON}};
     }
 
-    auto datetimeISO8601{std::get<DateTime>(type_).toISO8601String()};
+    if (std::holds_alternative<DateTime>(type_)) {
+        auto datetimeISO8601{std::get<DateTime>(type_).toISO8601String()};
+        return {{jsonTypeField, jsonTypeDateTimeValue},
+                {jsonDateTimeField, datetimeISO8601}};
+    }
 
-    return {{jsonTypeField, jsonTypeDateTimeValue},
-            {jsonDateTimeField, datetimeISO8601}};
+    return {{jsonTypeField, jsonTypeNullValue}};
 }
 
 [[nodiscard]] auto Deadline::fromJSON(const nlohmann::json &json)
@@ -78,6 +89,10 @@ Deadline::Deadline(type_t type)
         }
 
         return Deadline{dateTimeFromJSON.value()};
+    }
+
+    if (json[jsonTypeField] == jsonTypeNullValue) {
+        return Deadline(std::monostate());
     }
 
     return std::unexpected(Error::JSONUnsupportedType);

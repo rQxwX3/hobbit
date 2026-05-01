@@ -15,9 +15,11 @@ class Deadline {
     enum class Type : uint8_t {
         Interval,
         DateTime,
+        Null,
     };
 
-    using type_t = std::variant<hbt::mods::Interval, hbt::mods::DateTime>;
+    using type_t =
+        std::variant<hbt::mods::Interval, hbt::mods::DateTime, std::monostate>;
 
   public:
     enum class Error : uint8_t {
@@ -32,6 +34,7 @@ class Deadline {
         JSONUnsupportedType,
 
         InvalidUnderlyingType,
+        RTInvalidUnderlyingType,
     };
 
   public:
@@ -59,6 +62,9 @@ class Deadline {
         case Error::InvalidUnderlyingType:
             return "Deadline: provided value is not of a valid deadline type";
 
+        case Error::RTInvalidUnderlyingType:
+            return "Deadline: invalid object state (invalid underlying type)";
+
         default:
             return "Deadline: unclassified error";
         }
@@ -72,15 +78,18 @@ class Deadline {
 
     static constexpr auto jsonTypeIntervalValue{std::string_view{"interval"}};
     static constexpr auto jsonTypeDateTimeValue{std::string_view{"datetime"}};
+    static constexpr auto jsonTypeNullValue{std::string_view{"null"}};
 
   private:
     type_t type_;
 
   public:
+    Deadline();
+
     Deadline(type_t type);
 
   private:
-    [[nodiscard]] auto validateUnderlyingType(type_t type) const -> type_t;
+    [[nodiscard]] static auto validateUnderlyingType(type_t type) -> type_t;
 
   public:
     [[nodiscard]] auto getType() const -> Type;
