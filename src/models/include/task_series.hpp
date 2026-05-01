@@ -47,10 +47,10 @@ class TaskSeries {
             return "TaskSeries: failed to parse stop DateTime from JSON";
 
         case Error::InvalidDeadline:
-            return "TaskSeries: only accepts interval-based Deadlines";
+            return "TaskSeries: only interval-based Deadlines are allowed";
 
         case Error::InvalidStop:
-            return "TaskSeries: series' stop can't be before their start";
+            return "TaskSeries: stop can't appear before the start";
 
         default:
             return "TaskSeries: unclassified error";

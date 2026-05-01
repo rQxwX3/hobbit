@@ -94,11 +94,10 @@ TEST(TaskDataTest, ToFromJSON) {
 
     TaskData original{"Test", dt, true, deadline};
 
-    auto json{original.toJSON()};
+    auto json = original.toJSON();
     auto restored{TaskData::fromJSON(json)};
 
-    ASSERT_TRUE(restored.has_value())
-        << TaskData::errorMessage(restored.error()) << '\n';
+    ASSERT_TRUE(restored.has_value());
 
     EXPECT_EQ(restored->getTitle(), original.getTitle());
     EXPECT_EQ(restored->getDateTime(), original.getDateTime());
@@ -113,7 +112,7 @@ TEST(TaskDataTest, ToFromJSONWithNullDeadline) {
 
     TaskData original{"Test", dt, false};
 
-    auto json{original.toJSON()};
+    auto json = original.toJSON();
     auto restored{TaskData::fromJSON(json)};
 
     ASSERT_TRUE(restored.has_value());

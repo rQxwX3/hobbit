@@ -26,7 +26,8 @@ using month = std::chrono::month;
 using day = std::chrono::day;
 
 static auto makeTask(DateTime dt) -> TaskData {
-    return TaskData{"test-task", dt};
+    return TaskData{"test-task", dt, false,
+                    hbt::mods::Deadline(Interval(Duration::days(2)))};
 }
 
 static auto makeDailyRecurrence() -> Recurrence {
@@ -55,7 +56,7 @@ TEST(TaskSeriesTest, GetStartReturnsCorrectValue) {
 
     auto series{TaskSeries(task, recurrence, std::nullopt)};
 
-    EXPECT_EQ(series.getStart().getDate(), start.getDate());
+    EXPECT_EQ(series.getStart().getDate(), start.getDate()) << "motherfucker\n";
 }
 
 TEST(TaskSeriesTest, GetStopReturnsCorrectValue) {

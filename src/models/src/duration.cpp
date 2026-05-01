@@ -121,18 +121,19 @@ Duration::Duration(const Units &unitsStruct)
     return fromUnit(unit_t::MINUTE, value);
 }
 
-[[nodiscard]] auto Duration::getMaxNonZeroUnit() const
-    -> std::optional<unit_t> {
-    auto result{std::optional<unit_t>(std::nullopt)};
-
-    for (const auto unit : Duration::units) {
-        if (!result && units_[unit] != 0) {
-            result = unit;
-        }
-    }
-
-    return result;
-}
+// NOT USED
+// [[nodiscard]] auto Duration::getMaxNonZeroUnit() const
+//     -> std::optional<unit_t> {
+//     auto result{std::optional<unit_t>(std::nullopt)};
+//
+//     for (const auto unit : Duration::units) {
+//         if (!result && units_[unit] != 0) {
+//             result = unit;
+//         }
+//     }
+//
+//     return result;
+// }
 
 [[nodiscard]] auto Duration::getNonZeroUnitValuePairs() const
     -> std::vector<unitValuePair_t> {

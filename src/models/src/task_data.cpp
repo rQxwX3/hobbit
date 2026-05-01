@@ -26,8 +26,8 @@ TaskData::TaskData(std::string title, datetime_t datetime, bool completed,
                    deadline_t deadline)
     : title_{std::move(title)}, datetime_{datetime},
       deadline_{validateDeadline(std::move(deadline))}, completed_{completed} {
-    validateDateTime(
-        datetime_); // cannot validate in list due to circular dependency
+    validateDateTime(datetime_); // cannot validate in initializer list due to
+                                 // circular dependency
 }
 
 [[nodiscard]] auto TaskData::getTitle() const -> std::string_view {
