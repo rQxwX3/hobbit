@@ -39,13 +39,13 @@ TEST(IntervalTest, IsZero) {
     auto interval{Interval{}};
     EXPECT_TRUE(interval.isZero());
 
-    auto nonZero{Interval{Duration::years(1)}};
+    auto nonZero{Interval({.years = 1})};
     EXPECT_FALSE(nonZero.isZero());
 }
 
-TEST(IntervalTest, OperatorPlus) {
-    auto first{Interval{Duration::years(1)}};
-    auto second{Interval{Duration::months(2)}};
+TEST(IntervalTest, OperatorPlusOnSameMonthHandling) {
+    auto first{Interval({.years = 1})};
+    auto second{Interval({.months = 2})};
 
     auto result{first + second};
 
@@ -53,28 +53,28 @@ TEST(IntervalTest, OperatorPlus) {
     EXPECT_EQ(result.getUnitValue(unit_t::MONTH), 2);
 }
 
-TEST(IntervalTest, OperatorPlusResetsMonthHandling) {
-    auto first{Interval{Duration::years(1), Interval::MonthHandling::CUT_OFF}};
-    auto second{
-        Interval{Duration::months(1), Interval::MonthHandling::WRAP_AROUND}};
-
-    auto result{first + second};
-
-    EXPECT_EQ(result.getMonthHandling(), Interval::defaultMonthHandling);
+TEST(IntervalTest, OperatorPlusThrowsOnDifferentMonthHandling) {
+    EXPECT_THROW(
+        Interval({.years = 1}, Interval::MonthHandling::CUT_OFF) +
+            Interval({.days = 2}, Interval::MonthHandling::WRAP_AROUND),
+        std::runtime_error);
 }
 
 TEST(IntervalTest, OnlyContainsUnit) {
-    auto interval{Interval{Duration::days(5)}};
+    auto interval{Interval({.days = 5})};
 
     EXPECT_TRUE(interval.onlyContainsUnit(unit_t::DAY));
     EXPECT_FALSE(interval.onlyContainsUnit(unit_t::MONTH));
 }
 
 TEST(IntervalTest, ToFromJSON) {
-    auto original{Interval{Duration::years(1) + Duration::months(1) +
-                               Duration::weeks(1) + Duration::days(1) +
-                               Duration::hours(1) + Duration::minutes(1),
-                           Interval::MonthHandling::CUT_OFF}};
+    auto original{Interval({.years = 1,
+                            .months = 1,
+                            .weeks = 1,
+                            .days = 1,
+                            .hours = 1,
+                            .minutes = 1},
+                           Interval::MonthHandling::CUT_OFF)};
 
     auto json = original.toJSON();
     auto restored{Interval::fromJSON(json)};
@@ -85,7 +85,7 @@ TEST(IntervalTest, ToFromJSON) {
     EXPECT_EQ(restored->getMonthHandling(), original.getMonthHandling());
 }
 
-TEST(IntervalTest, FromJSONInvalid) {
+TEST(IntervalTest, FromInvalidJSON) {
     nlohmann::json json{};
     EXPECT_FALSE(Interval::fromJSON(json).has_value());
 

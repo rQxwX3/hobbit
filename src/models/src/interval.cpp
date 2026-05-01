@@ -8,9 +8,38 @@ Interval::Interval(hbt::mods::Duration duration, MonthHandling monthHandling)
 
 Interval::Interval(const Interval &other) = default;
 
-Interval::Interval(hbt::mods::Duration::Units units,
-                   MonthHandling monthHandling)
-    : duration_{hbt::mods::Duration{units}}, monthHandling_{monthHandling} {}
+Interval::Interval(struct_t unitStruct, MonthHandling monthHandling)
+    : duration_{Duration{unitStruct}}, monthHandling_{monthHandling} {}
+
+[[nodiscard]] auto Interval::years(value_t value, MonthHandling monthHandling)
+    -> Interval {
+    return Interval{Duration::years(value), monthHandling};
+}
+
+[[nodiscard]] auto Interval::months(value_t value, MonthHandling monthHandling)
+    -> Interval {
+    return Interval{Duration::months(value), monthHandling};
+}
+
+[[nodiscard]] auto Interval::weeks(value_t value, MonthHandling monthHandling)
+    -> Interval {
+    return Interval{Duration::weeks(value), monthHandling};
+}
+
+[[nodiscard]] auto Interval::days(value_t value, MonthHandling monthHandling)
+    -> Interval {
+    return Interval{Duration::days(value), monthHandling};
+}
+
+[[nodiscard]] auto Interval::hours(value_t value, MonthHandling monthHandling)
+    -> Interval {
+    return Interval{Duration::hours(value), monthHandling};
+}
+
+[[nodiscard]] auto Interval::minutes(value_t value, MonthHandling monthHandling)
+    -> Interval {
+    return Interval{Duration::minutes(value), monthHandling};
+}
 
 [[nodiscard]] auto Interval::getUnitValue(unit_t unit) const -> value_t {
     return duration_.getUnitValue(unit);
@@ -30,6 +59,10 @@ auto Interval::setMonthHandling(MonthHandling monthHandling) -> void {
 
 [[nodiscard]] auto Interval::operator+(const Interval &other) const
     -> Interval {
+    if (getMonthHandling() != other.getMonthHandling()) {
+        throw std::runtime_error(errorMessage(Error::FailedToPerformAddition));
+    }
+
     return Interval{this->duration_ + other.duration_};
 }
 

@@ -10,7 +10,6 @@
 #include <chrono>
 
 namespace test::mods::util {
-
 using hbt::mods::Date;
 using year = std::chrono::year;
 using month = std::chrono::month;
@@ -30,7 +29,7 @@ TEST(IntervalRecurrencePatternTest, ZeroIntervalThrows) {
 
 TEST(IntervalRecurrencePatternTest, DailyIntervalHappensSequentially) {
     auto start = DateTime(Date(year(2025), month(1), day(1)));
-    auto pattern = IntervalRecurrencePattern(Interval(Duration::days(1)));
+    auto pattern = IntervalRecurrencePattern(Interval::days(1));
 
     EXPECT_TRUE(
         pattern.happensOnDate(start, Date(year(2025), month(1), day(2))));
@@ -42,7 +41,7 @@ TEST(IntervalRecurrencePatternTest, DailyIntervalHappensSequentially) {
 
 TEST(IntervalRecurrencePatternTest, WeeklyIntervalAlignment) {
     auto start = DateTime(Date(year(2025), month(1), day(1)));
-    auto pattern = IntervalRecurrencePattern(Interval(Duration::days(7)));
+    auto pattern = IntervalRecurrencePattern(Interval::days(7));
 
     EXPECT_TRUE(
         pattern.happensOnDate(start, Date(year(2025), month(1), day(8))));
@@ -57,7 +56,7 @@ TEST(IntervalRecurrencePatternTest, WeeklyIntervalAlignment) {
 TEST(IntervalRecurrencePatternTest, NonAlignedIntervalSkipsCorrectly) {
     auto start = DateTime(Date(year(2025), month(1), day(1)));
 
-    auto pattern = IntervalRecurrencePattern(Interval(Duration::days(3)));
+    auto pattern = IntervalRecurrencePattern(Interval::days(3));
 
     EXPECT_TRUE(
         pattern.happensOnDate(start, Date(year(2025), month(1), day(4))));
@@ -71,7 +70,7 @@ TEST(IntervalRecurrencePatternTest, NonAlignedIntervalSkipsCorrectly) {
 
 TEST(IntervalRecurrencePatternTest, GetOccurrencesProducesCorrectSequence) {
     auto start = DateTime(Date(year(2025), month(1), day(1)));
-    auto pattern = IntervalRecurrencePattern(Interval(Duration::days(2)));
+    auto pattern = IntervalRecurrencePattern(Interval::days(2));
 
     auto result =
         pattern.getOccurrencesOnDate(start, Date(year(2025), month(1), day(7)));
@@ -87,7 +86,7 @@ TEST(IntervalRecurrencePatternTest, GetOccurrencesProducesCorrectSequence) {
 
 TEST(IntervalRecurrencePatternTest, GetOccurrencesEmptyWhenNoMatch) {
     auto start = DateTime(Date(year(2025), month(1), day(1)));
-    auto pattern = IntervalRecurrencePattern(Interval(Duration::days(2)));
+    auto pattern = IntervalRecurrencePattern(Interval::days(2));
 
     auto result =
         pattern.getOccurrencesOnDate(start, Date(year(2025), month(1), day(3)));
@@ -96,7 +95,7 @@ TEST(IntervalRecurrencePatternTest, GetOccurrencesEmptyWhenNoMatch) {
 }
 
 TEST(IntervalRecurrencePatternTest, JSONRoundTripPreservesInterval) {
-    auto pattern = IntervalRecurrencePattern(Interval(Duration::days(5)));
+    auto pattern = IntervalRecurrencePattern(Interval::days(5));
 
     auto json = pattern.toJSON();
     auto restored = IntervalRecurrencePattern::fromJSON(json);
@@ -109,7 +108,7 @@ TEST(IntervalRecurrencePatternTest, JSONRoundTripPreservesInterval) {
 TEST(WeekdayRecurrencePatternTest, EmptyWeekdaysThrows) {
     Weekdays empty{Weekdays::days_t{}};
 
-    EXPECT_THROW(WeekdayRecurrencePattern(Interval(Duration::days(7)), empty),
+    EXPECT_THROW(WeekdayRecurrencePattern(Interval::days(7), empty),
                  std::invalid_argument);
 }
 
@@ -117,7 +116,7 @@ TEST(WeekdayRecurrencePatternTest, MatchesOnlyCorrectWeekday) {
     auto start = DateTime(Date(year(2025), month(1), day(6))); // monday
 
     Weekdays w{{DateTime::weekday_t::WEDNESDAY}};
-    auto pattern = WeekdayRecurrencePattern(Interval(Duration::days(7)), w);
+    auto pattern = WeekdayRecurrencePattern(Interval::days(7), w);
 
     EXPECT_TRUE(
         pattern.happensOnDate(start, Date(year(2025), month(1), day(8))));
@@ -129,7 +128,7 @@ TEST(WeekdayRecurrencePatternTest, IntervalAffectsWeekdayRepetition) {
     auto start = DateTime(Date(year(2025), month(1), day(6)));
 
     Weekdays w{{DateTime::weekday_t::WEDNESDAY}};
-    auto pattern = WeekdayRecurrencePattern(Interval(Duration::days(14)), w);
+    auto pattern = WeekdayRecurrencePattern(Interval::days(14), w);
 
     EXPECT_TRUE(
         pattern.happensOnDate(start, Date(year(2025), month(1), day(8))));
@@ -141,7 +140,7 @@ TEST(WeekdayRecurrencePatternTest, NoFalsePositiveOnWrongWeekday) {
     auto start = DateTime(Date(year(2025), month(1), day(6)));
 
     Weekdays w{{DateTime::weekday_t::WEDNESDAY}};
-    auto pattern = WeekdayRecurrencePattern(Interval(Duration::days(7)), w);
+    auto pattern = WeekdayRecurrencePattern(Interval::days(7), w);
 
     EXPECT_FALSE(
         pattern.happensOnDate(start, Date(year(2025), month(1), day(9))));
@@ -153,7 +152,7 @@ TEST(WeekdayRecurrencePatternTest, GetOccurrencesSingleMatch) {
     auto start = DateTime(Date(year(2025), month(1), day(6)));
 
     Weekdays w{{DateTime::weekday_t::WEDNESDAY}};
-    auto pattern = WeekdayRecurrencePattern(Interval(Duration::days(7)), w);
+    auto pattern = WeekdayRecurrencePattern(Interval::days(7), w);
 
     auto result =
         pattern.getOccurrencesOnDate(start, Date(year(2025), month(1), day(8)));
@@ -166,7 +165,7 @@ TEST(WeekdayRecurrencePatternTest, GetOccurrencesEmptyWhenNoMatch) {
     auto start = DateTime(Date(year(2025), month(1), day(6)));
 
     Weekdays w{{DateTime::weekday_t::WEDNESDAY}};
-    auto pattern = WeekdayRecurrencePattern(Interval(Duration::days(7)), w);
+    auto pattern = WeekdayRecurrencePattern(Interval::days(7), w);
 
     auto result =
         pattern.getOccurrencesOnDate(start, Date(year(2025), month(1), day(7)));
@@ -177,7 +176,7 @@ TEST(WeekdayRecurrencePatternTest, GetOccurrencesEmptyWhenNoMatch) {
 TEST(WeekdayRecurrencePatternTest, JSONRoundTripPreservesState) {
     Weekdays w{{DateTime::weekday_t::WEDNESDAY, DateTime::weekday_t::FRIDAY}};
 
-    auto pattern = WeekdayRecurrencePattern(Interval(Duration::days(7)), w);
+    auto pattern = WeekdayRecurrencePattern(Interval::days(7), w);
 
     auto json = pattern.toJSON();
     auto restored = WeekdayRecurrencePattern::fromJSON(json);

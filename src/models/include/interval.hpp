@@ -15,7 +15,13 @@ class Interval {
         JSONFailedToParseDuration,
 
         NaturalLanguageFailedToParseDuration,
+
+        FailedToPerformAddition,
     };
+
+  public:
+    using struct_t = Duration::struct_t;
+    using array_t = Duration::array_t;
 
   public:
     [[nodiscard]] static constexpr auto errorMessage(Error error)
@@ -29,6 +35,10 @@ class Interval {
 
         case Error::NaturalLanguageFailedToParseDuration:
             return "Interval: failed to parse Duration from natural language";
+
+        case Error::FailedToPerformAddition:
+            return "Interval: cannot add intervals with different month "
+                   "handling patterns";
 
         default:
             return "Interval: unclassified error";
@@ -59,15 +69,37 @@ class Interval {
     MonthHandling monthHandling_;
 
   public:
+    Interval(struct_t unitStruct = struct_t{},
+             MonthHandling monthHandling = defaultMonthHandling);
+
     Interval(hbt::mods::Duration duration,
              MonthHandling monthHandling = defaultMonthHandling);
 
     Interval(const Interval &other);
 
   public:
-    explicit Interval(
-        hbt::mods::Duration::Units units = hbt::mods::Duration::Units{},
-        MonthHandling monthHandling = defaultMonthHandling);
+    [[nodiscard]] static auto
+    years(value_t value, MonthHandling monthHandling = defaultMonthHandling)
+        -> Interval;
+    [[nodiscard]] static auto
+    months(value_t value, MonthHandling monthHandling = defaultMonthHandling)
+        -> Interval;
+
+    [[nodiscard]] static auto
+    weeks(value_t value, MonthHandling monthHandling = defaultMonthHandling)
+        -> Interval;
+
+    [[nodiscard]] static auto
+    days(value_t value, MonthHandling monthHandling = defaultMonthHandling)
+        -> Interval;
+
+    [[nodiscard]] static auto
+    hours(value_t value, MonthHandling monthHandling = defaultMonthHandling)
+        -> Interval;
+
+    [[nodiscard]] static auto
+    minutes(value_t value, MonthHandling monthHandling = defaultMonthHandling)
+        -> Interval;
 
   public:
     [[nodiscard]] auto getUnitValue(unit_t unit) const -> value_t;
