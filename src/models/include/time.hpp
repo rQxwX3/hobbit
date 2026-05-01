@@ -31,6 +31,9 @@ class Time {
 
         case Error::InvalidMinute:
             return "Time: provided minute value is invalid";
+
+        default:
+            return "Time: unclassified error";
         }
     }
 

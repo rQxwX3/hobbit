@@ -43,6 +43,9 @@ class TaskData {
 
         case Error::InvalidDateTime:
             return "TaskData: provided Datetime is after task's Deadline";
+
+        default:
+            return "TaskData: unclassified error";
         }
     }
 

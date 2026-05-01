@@ -53,6 +53,9 @@ class IntervalRecurrencePattern : public RecurrencePattern {
         case Error::InvalidInterval:
             return "IntervalRecurrencePattern: cannot instantiate recurrence "
                    "pattern from zero Interval";
+
+        default:
+            return "IntervalRecurrencePattern: unclassified error";
         }
     }
 
@@ -129,6 +132,9 @@ class WeekdayRecurrencePattern : public RecurrencePattern {
         case Error::EmptyWeekdays:
             return "WeekdayRecurrencePattern: invalid object state (empty "
                    "Weekdays object)";
+
+        default:
+            return "WeekdayRecurrencePattern: unclassified error";
         }
     }
 

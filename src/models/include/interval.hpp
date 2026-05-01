@@ -29,6 +29,9 @@ class Interval {
 
         case Error::NaturalLanguageFailedToParseDuration:
             return "Interval: failed to parse Duration from natural language";
+
+        default:
+            return "Interval: unclassified error";
         }
     }
 

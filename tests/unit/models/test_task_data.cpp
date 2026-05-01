@@ -97,7 +97,8 @@ TEST(TaskDataTest, ToFromJSON) {
     auto json{original.toJSON()};
     auto restored{TaskData::fromJSON(json)};
 
-    ASSERT_TRUE(restored.has_value());
+    ASSERT_TRUE(restored.has_value())
+        << TaskData::errorMessage(restored.error()) << '\n';
 
     EXPECT_EQ(restored->getTitle(), original.getTitle());
     EXPECT_EQ(restored->getDateTime(), original.getDateTime());

@@ -39,6 +39,9 @@ class Duration {
 
         case Error::InvalidStruct:
             return "Duration: provided struct contains invalid value(s)";
+
+        default:
+            return "Duration: unclassified error";
         }
     }
 

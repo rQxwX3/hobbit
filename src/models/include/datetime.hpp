@@ -34,6 +34,9 @@ class DateTime {
 
         case Error::ISO8601UnitNotMatched:
             return "DateTime: provided input doesn't contain one or more units";
+
+        default:
+            return "DateTime: unclassified error";
         }
     }
 

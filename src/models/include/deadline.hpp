@@ -58,6 +58,9 @@ class Deadline {
 
         case Error::InvalidUnderlyingType:
             return "Deadline: provided value is not of a valid deadline type";
+
+        default:
+            return "Deadline: unclassified error";
         }
     }
 

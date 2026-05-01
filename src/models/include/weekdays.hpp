@@ -22,6 +22,9 @@ class Weekdays {
 
         case Error::StringLengthMoreThanWeek:
             return "Weekdays: provided string exceeds maximum length";
+
+        default:
+            return "Weekdays: unclassified error";
         }
     }
 

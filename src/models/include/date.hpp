@@ -36,6 +36,9 @@ class Date {
         switch (error) {
         case Error::InvalidYMD:
             return "Date: provided year-month-day value is not valid";
+
+        default:
+            return "Date: unclassified error";
         }
     }
 

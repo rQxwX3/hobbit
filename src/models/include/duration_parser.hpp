@@ -51,6 +51,9 @@ class NaturalLanguageParser {
 
         case Error::FailedToParseUnit:
             return "NaturalLanguageParser: couldn't parse one or more units";
+
+        default:
+            return "NaturalLanguageParser: unclassified error";
         }
     }
 
@@ -201,6 +204,9 @@ class ISO8601DurationParser {
         switch (error) {
         case Error::RegexMismatch:
             return "ISO8601DurationParser: provided input didn't match regex";
+
+        default:
+            return "ISO8601DurationParser: unclassified error";
         }
     }
 

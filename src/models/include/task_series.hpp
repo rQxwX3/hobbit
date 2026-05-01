@@ -51,6 +51,9 @@ class TaskSeries {
 
         case Error::InvalidStop:
             return "TaskSeries: series' stop can't be before their start";
+
+        default:
+            return "TaskSeries: unclassified error";
         }
     }
 

@@ -26,6 +26,9 @@ class SingularTask {
 
         case Error::JSONFailedToParseTaskData:
             return "SingularTask: failed to parse TaskData from JSON";
+
+        default:
+            return "SingularTask: unclassified error";
         }
     }
 

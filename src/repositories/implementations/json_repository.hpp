@@ -39,6 +39,9 @@ template <JSONSerializable T> class Repository {
         switch (error) {
         case Error::SerializeEmptyString:
             return "Repository: can't serialize empty input";
+
+        default:
+            return "Repository: unclassified error";
         }
     }
 

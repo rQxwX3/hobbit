@@ -63,6 +63,9 @@ class Recurrence {
         case Error::UnsupportedPatternType:
             return "Recurrence: invalid object state (unsupported pattern "
                    "type)";
+
+        default:
+            return "Recurrence: unclassified error";
         }
     }
 
