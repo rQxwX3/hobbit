@@ -40,7 +40,7 @@ auto SingularTask::setCompleted(bool completed) -> void {
 }
 
 [[nodiscard]] auto SingularTask::hasDeadline() const -> bool {
-    return getDeadline().has_value();
+    return !getDeadline().isNull();
 }
 
 [[nodiscard]] auto

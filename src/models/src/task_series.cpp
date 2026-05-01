@@ -2,8 +2,7 @@
 
 namespace hbt::mods {
 auto TaskSeries::validateDeadline(deadline_t deadline) const -> deadline_t {
-    if (deadline.has_value() &&
-        deadline->getType() != Deadline::Type::Interval) {
+    if (deadline.getType() != Deadline::Type::Interval) {
         throw std::invalid_argument(errorMessage(Error::InvalidDeadline));
     }
 

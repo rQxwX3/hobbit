@@ -84,12 +84,15 @@ class Deadline {
     type_t type_;
 
   public:
-    Deadline();
-
     Deadline(type_t type);
 
   private:
     [[nodiscard]] static auto validateUnderlyingType(type_t type) -> type_t;
+
+  public:
+    [[nodiscard]] static auto null() -> Deadline;
+
+    [[nodiscard]] auto isNull() const -> bool;
 
   public:
     [[nodiscard]] auto getType() const -> Type;

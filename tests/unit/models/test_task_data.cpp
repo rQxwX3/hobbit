@@ -11,17 +11,17 @@ using hbt::mods::TaskData;
 TEST(TaskDataTest, ConstructionAndGetters) {
     auto dt{DateTime::fromISO8601String("2025-01-01T10:00:00").value()};
 
-    TaskData task{"Test", dt, false, std::nullopt};
+    auto task{TaskData("Test", dt, false, Deadline::null())};
 
     EXPECT_EQ(task.getTitle(), "Test");
     EXPECT_EQ(task.getDateTime(), dt);
     EXPECT_FALSE(task.isCompleted());
-    EXPECT_FALSE(task.getDeadline().has_value());
+    EXPECT_TRUE(task.getDeadline().isNull());
 }
 
 TEST(TaskDataTest, Setters) {
     auto dt{DateTime::fromISO8601String("2025-01-01T10:00:00").value()};
-    TaskData task{"Test", dt, false, std::nullopt};
+    TaskData task{"Test", dt, false};
 
     task.setTitle("Updated");
     EXPECT_EQ(task.getTitle(), "Updated");
@@ -42,8 +42,8 @@ TEST(TaskDataTest, ValidDeadlineAfterDateTime) {
 
     TaskData task{"Test", dt, false, deadline};
 
-    ASSERT_TRUE(task.getDeadline().has_value());
-    EXPECT_EQ(task.getDeadline()->getDateTime(), deadlineDT);
+    ASSERT_FALSE(task.getDeadline().isNull());
+    EXPECT_EQ(task.getDeadline().getDateTime(), deadlineDT);
 }
 
 TEST(TaskDataTest, RejectsDeadlineBeforeDateTime) {
@@ -78,7 +78,7 @@ TEST(TaskDataTest, SetDateTimeValidation) {
 
 TEST(TaskDataTest, SetDeadlineValidation) {
     auto dt{DateTime::fromISO8601String("2025-01-02T10:00:00").value()};
-    TaskData task{"Test", dt, false, std::nullopt};
+    TaskData task{"Test", dt, false};
 
     auto invalidDeadlineDT{
         DateTime::fromISO8601String("2025-01-01T10:00:00").value()};
@@ -103,21 +103,21 @@ TEST(TaskDataTest, ToFromJSON) {
     EXPECT_EQ(restored->getTitle(), original.getTitle());
     EXPECT_EQ(restored->getDateTime(), original.getDateTime());
     EXPECT_EQ(restored->isCompleted(), original.isCompleted());
-    ASSERT_TRUE(restored->getDeadline().has_value());
-    EXPECT_EQ(restored->getDeadline()->getDateTime(),
-              original.getDeadline()->getDateTime());
+    ASSERT_FALSE(restored->getDeadline().isNull());
+    EXPECT_EQ(restored->getDeadline().getDateTime(),
+              original.getDeadline().getDateTime());
 }
 
 TEST(TaskDataTest, ToFromJSONWithNullDeadline) {
     auto dt{DateTime::fromISO8601String("2025-01-01T10:00:00").value()};
 
-    TaskData original{"Test", dt, false, std::nullopt};
+    TaskData original{"Test", dt, false};
 
     auto json{original.toJSON()};
     auto restored{TaskData::fromJSON(json)};
 
     ASSERT_TRUE(restored.has_value());
-    EXPECT_FALSE(restored->getDeadline().has_value());
+    EXPECT_TRUE(restored->getDeadline().isNull());
 }
 
 TEST(TaskDataTest, FromJSONInvalid) {

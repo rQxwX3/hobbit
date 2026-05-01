@@ -1,10 +1,8 @@
 #include <deadline.hpp>
 
 namespace hbt::mods {
-Deadline::Deadline() : type_{std::monostate()} {}
-
 Deadline::Deadline(type_t type)
-    : type_{std::move(validateUnderlyingType(std::move(type)))} {}
+    : type_{validateUnderlyingType(std::move(type))} {}
 
 [[nodiscard]] auto Deadline::validateUnderlyingType(type_t type) -> type_t {
     if (std::holds_alternative<Interval>(type) ||
@@ -14,6 +12,12 @@ Deadline::Deadline(type_t type)
     }
 
     throw std::invalid_argument(errorMessage(Error::InvalidUnderlyingType));
+}
+
+[[nodiscard]] auto Deadline::null() -> Deadline { return {std::monostate()}; }
+
+[[nodiscard]] auto Deadline::isNull() const -> bool {
+    return std::holds_alternative<std::monostate>(type_);
 }
 
 [[nodiscard]] auto Deadline::getType() const -> Type {

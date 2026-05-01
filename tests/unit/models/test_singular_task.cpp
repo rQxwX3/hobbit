@@ -12,7 +12,7 @@ using hbt::mods::TaskData;
 
 TEST(SingularTaskTest, ConstructionAndGetters) {
     auto dt{DateTime::fromISO8601String("2025-01-01T10:00:00").value()};
-    TaskData data{"Test", dt, false, std::nullopt};
+    TaskData data{"Test", dt, false};
 
     SingularTask task{data};
 
@@ -24,7 +24,7 @@ TEST(SingularTaskTest, ConstructionAndGetters) {
 
 TEST(SingularTaskTest, Setters) {
     auto dt{DateTime::fromISO8601String("2025-01-01T10:00:00").value()};
-    TaskData data{"Test", dt, false, std::nullopt};
+    TaskData data{"Test", dt, false};
 
     SingularTask task{data};
 
@@ -48,12 +48,12 @@ TEST(SingularTaskTest, DeadlineHandling) {
     SingularTask task{data};
 
     EXPECT_TRUE(task.hasDeadline());
-    EXPECT_EQ(task.getDeadline()->getDateTime(), deadlineDT);
+    EXPECT_EQ(task.getDeadline().getDateTime(), deadlineDT);
 }
 
 TEST(SingularTaskTest, IsForDate) {
     auto dt{DateTime::fromISO8601String("2025-01-01T10:00:00").value()};
-    TaskData data{"Test", dt, false, std::nullopt};
+    TaskData data{"Test", dt, false};
 
     SingularTask task{data};
 
@@ -81,13 +81,13 @@ TEST(SingularTaskTest, ToFromJSON) {
     EXPECT_EQ(restored->getDateTime(), original.getDateTime());
     EXPECT_EQ(restored->isCompleted(), original.isCompleted());
     ASSERT_TRUE(restored->hasDeadline());
-    EXPECT_EQ(restored->getDeadline()->getDateTime(),
-              original.getDeadline()->getDateTime());
+    EXPECT_EQ(restored->getDeadline().getDateTime(),
+              original.getDeadline().getDateTime());
 }
 
 TEST(SingularTaskTest, ToFromJSONWithoutDeadline) {
     auto dt{DateTime::fromISO8601String("2025-01-01T10:00:00").value()};
-    TaskData data{"Test", dt, false, std::nullopt};
+    TaskData data{"Test", dt, false};
 
     SingularTask original{data};
 

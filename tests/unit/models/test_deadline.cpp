@@ -19,10 +19,18 @@ using year = std::chrono::year;
 using month = std::chrono::month;
 using day = std::chrono::day;
 
-TEST(DeadlienTest, DefaultCtorCreatesNull) {
-    auto deadline{Deadline()};
+TEST(DeadlineTest, NullFactoryCreatesNull) {
+    EXPECT_EQ(Deadline::null().getType(), Deadline::Type::Null);
+}
 
-    EXPECT_EQ(deadline.getType(), Deadline::Type::Null);
+TEST(DeadlineTest, IsNullReturnsTrueOnNull) {
+    EXPECT_TRUE(Deadline::null().isNull());
+}
+
+TEST(DeadlineTest, IsNullReturnsFalseOnNotNull) {
+    EXPECT_FALSE(Deadline(Interval(Duration::days(7))).isNull());
+
+    EXPECT_FALSE(Deadline(DateTime::now()).isNull());
 }
 
 TEST(DeadlineTest, IntervalTypeIsAccepted) {

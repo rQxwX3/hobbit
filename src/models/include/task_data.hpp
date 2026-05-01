@@ -5,13 +5,12 @@
 
 #include <array>
 #include <expected>
-#include <optional>
 #include <string>
 
 namespace hbt::mods {
 class TaskData {
   public:
-    using deadline_t = std::optional<Deadline>;
+    using deadline_t = Deadline;
     using datetime_t = DateTime;
 
   private:
@@ -59,8 +58,6 @@ class TaskData {
         std::array<std::string_view, 4>{jsonTitleField, jsonDateTimeField,
                                         jsonDeadlineField, jsonCompletedField}};
 
-    static constexpr auto jsonNullDeadlineValue{std::string_view{"none"}};
-
   private:
     std::string title_;
 
@@ -76,7 +73,7 @@ class TaskData {
 
   public:
     TaskData(std::string title, datetime_t datetime, bool completed = false,
-             deadline_t deadline = std::nullopt);
+             deadline_t deadline = Deadline::null());
 
   public:
     [[nodiscard]] auto getTitle() const -> std::string_view;
@@ -97,9 +94,6 @@ class TaskData {
     auto setCompleted(bool completed) -> void;
 
   private:
-    [[nodiscard]] static auto deadlineFromJSON(const nlohmann::json &json)
-        -> std::expected<deadline_t, Error>;
-
     [[nodiscard]] static auto containsAllJSONFields(const nlohmann::json &json)
         -> bool;
 
