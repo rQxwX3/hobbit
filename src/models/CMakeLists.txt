@@ -13,6 +13,8 @@ add_library(models_lib STATIC
 	src/recurrence.cpp
 	src/recurrence_patterns.cpp
 	src/weekdays.cpp
+	src/ymd.cpp
+	src/date_calculator.cpp
 	# src/task_override.cpp NOT TO BE ADDED IN ALPHA
 )
 
