@@ -54,10 +54,10 @@ class Interval {
         jsonDurationField, jsonMonthHandlingField}};
 
   public:
-    enum class MonthHandling : char { CUT_OFF, WRAP_AROUND };
+    enum class MonthHandling : char { CLAMP_TO_END, RESOLVE_OVERFLOW };
 
   public:
-    constexpr static auto defaultMonthHandling{MonthHandling::WRAP_AROUND};
+    constexpr static auto defaultMonthHandling{MonthHandling::RESOLVE_OVERFLOW};
 
   public:
     using value_t = hbt::mods::Duration::value_t;

@@ -137,13 +137,13 @@ TEST(DateTest, OperatorPlus) {
 
     auto cutOffInterval{
         hbt::mods::Interval(hbt::mods::Duration::Units{.days{5}},
-                            hbt::mods::Interval::MonthHandling::CUT_OFF)};
+                            hbt::mods::Interval::MonthHandling::CLAMP_TO_END)};
     EXPECT_EQ(date + cutOffInterval,
               Date{year_month_day(year{2026}, month{4}, day{30})});
 
-    auto wrapAroundInterval{
-        hbt::mods::Interval(hbt::mods::Duration::Units{.days{5}},
-                            hbt::mods::Interval::MonthHandling::WRAP_AROUND)};
+    auto wrapAroundInterval{hbt::mods::Interval(
+        hbt::mods::Duration::Units{.days{5}},
+        hbt::mods::Interval::MonthHandling::RESOLVE_OVERFLOW)};
     EXPECT_EQ(date + wrapAroundInterval,
               Date{year_month_day(year{2026}, month{5}, day{1})});
 }

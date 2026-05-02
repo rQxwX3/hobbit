@@ -214,7 +214,7 @@ TEST(TestDateTime, OperatorPlusMonthHandling) {
     auto wrapAroundInterval{hbt::mods::Interval(
         hbt::mods::Duration::Units{
             .years = 0, .months = 1, .days = 0, .hours = 0, .minutes = 0},
-        mods::Interval::MonthHandling::WRAP_AROUND)};
+        mods::Interval::MonthHandling::RESOLVE_OVERFLOW)};
 
     auto res1{dt + wrapAroundInterval};
 
@@ -224,7 +224,7 @@ TEST(TestDateTime, OperatorPlusMonthHandling) {
     auto cutOffInterval{hbt::mods::Interval(
         hbt::mods::Duration::Units{
             .years = 0, .months = 1, .days = 0, .hours = 0, .minutes = 0},
-        mods::Interval::MonthHandling::CUT_OFF)};
+        mods::Interval::MonthHandling::CLAMP_TO_END)};
 
     auto res2{dt + cutOffInterval};
 

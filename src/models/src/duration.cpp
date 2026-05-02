@@ -163,6 +163,10 @@ auto Duration::addUnit(unit_t unit, value_t value) -> void {
     return units_[unit];
 }
 
+[[nodiscard]] auto Duration::getUnits() const -> Units {
+    return Units::fromArray(units_);
+}
+
 [[nodiscard]] auto Duration::isZero() const -> bool {
     return std::ranges::all_of(units_.begin(), units_.end(),
                                [](auto value) -> bool { return value == 0; });

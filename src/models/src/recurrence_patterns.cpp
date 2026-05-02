@@ -69,15 +69,15 @@ IntervalRecurrencePattern::happensOnDate(mods::DateTime start,
     mods::DateTime start, mods::Date date) const -> timestamps_t {
     auto result{timestamps_t{}};
 
-    auto firstTimeStamp{getFirstTimeStampOnDate(start, date)};
-    if (!firstTimeStamp.has_value()) {
+    auto firstTS{getFirstTimeStampOnDate(start, date)};
+    if (!firstTS.has_value()) {
         return result;
     }
 
-    auto endDate{date + mods::Duration::days(1)};
+    auto endDate{date + mods::Interval::days(1)};
 
-    for (auto dt{firstTimeStamp}; dt->getDate() != endDate; *dt += interval_) {
-        result.push_back(*dt);
+    for (auto ts{firstTS}; ts->getDate() != endDate; *ts += interval_) {
+        result.push_back(*ts);
     }
 
     return result;

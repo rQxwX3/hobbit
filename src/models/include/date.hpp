@@ -60,6 +60,51 @@ class Date {
     }
 
   private:
+    static inline auto clampToMonthEnd{[](chrono_ymd_t chronoYMD) -> auto {
+        using namespace std::chrono;
+
+        if (chronoYMD.ok()) {
+            return chronoYMD;
+        }
+
+        return year_month_day{year_month_day_last{
+            chronoYMD.year(), month_day_last{chronoYMD.month()}}};
+    }};
+
+    enum class ResolveMonthOverflowDirection : uint8_t {
+        Forward,
+        Backward,
+    };
+
+    static inline auto resolveMonthOverflow{
+        [](chrono_ymd_t chronoYMD,
+           ResolveMonthOverflowDirection direction =
+               ResolveMonthOverflowDirection::Forward) -> auto {
+            using namespace std::chrono;
+
+            if (chronoYMD.ok()) {
+                return chronoYMD;
+            }
+
+            auto lastDay{year_month_day_last{
+                chronoYMD.year(), month_day_last{chronoYMD.month()}}};
+
+            auto overflow{static_cast<int>(unsigned(chronoYMD.day())) -
+                          static_cast<int>(unsigned(lastDay.day()))};
+
+            switch (direction) {
+            case ResolveMonthOverflowDirection::Forward:
+                return year_month_day{sys_days{lastDay} + days{overflow}};
+
+            case ResolveMonthOverflowDirection::Backward:
+                return year_month_day{sys_days{lastDay} - days{overflow}};
+
+            default:
+                std::unreachable();
+            }
+        }};
+
+  private:
     chrono_ymd_t chronoYMD_;
 
   private:

@@ -55,8 +55,8 @@ TEST(IntervalTest, OperatorPlusOnSameMonthHandling) {
 
 TEST(IntervalTest, OperatorPlusThrowsOnDifferentMonthHandling) {
     EXPECT_THROW(
-        Interval({.years = 1}, Interval::MonthHandling::CUT_OFF) +
-            Interval({.days = 2}, Interval::MonthHandling::WRAP_AROUND),
+        Interval({.years = 1}, Interval::MonthHandling::CLAMP_TO_END) +
+            Interval({.days = 2}, Interval::MonthHandling::RESOLVE_OVERFLOW),
         std::runtime_error);
 }
 
@@ -74,7 +74,7 @@ TEST(IntervalTest, ToFromJSON) {
                             .days = 1,
                             .hours = 1,
                             .minutes = 1},
-                           Interval::MonthHandling::CUT_OFF)};
+                           Interval::MonthHandling::CLAMP_TO_END)};
 
     auto json = original.toJSON();
     auto restored{Interval::fromJSON(json)};

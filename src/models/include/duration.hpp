@@ -72,6 +72,15 @@ class Duration {
         [[nodiscard]] auto toArray() const -> array_t {
             return array_t{years, months, weeks, days, hours, minutes};
         }
+
+        [[nodiscard]] static auto fromArray(const array_t &array) -> Units {
+            return {.years = array[unit_t::YEAR],
+                    .months = array[unit_t::MONTH],
+                    .weeks = array[unit_t::WEEK],
+                    .days = array[unit_t::DAY],
+                    .hours = array[unit_t::HOUR],
+                    .minutes = array[unit_t::MINUTE]};
+        }
     };
 
     using struct_t = Units;
@@ -136,6 +145,8 @@ class Duration {
 
   public:
     [[nodiscard]] auto getUnitValue(unit_t unit) const -> value_t;
+
+    [[nodiscard]] auto getUnits() const -> Units;
 
     [[nodiscard]] auto getNonZeroUnitValuePairs() const
         -> std::vector<unitValuePair_t>;
