@@ -72,10 +72,15 @@ Date::Date(year_t year, month_t month, day_t day)
     -> std::strong_ordering = default;
 
 [[nodiscard]] auto Date::operator+(const Interval &interval) const -> Date {
+    using namespace std::chrono;
+
     auto units{interval.getDuration().getUnits()};
 
-    auto newChronoYMD{chronoYMD_ + std::chrono::years(units.years) +
-                      std::chrono::months(units.months)};
+    // adding all units except months
+    auto sysdays{sys_days{chronoYMD_ + years(units.years)} +
+                 days(units.weeks * Duration::daysInWeek) + days(units.days)};
+
+    auto newChronoYMD{chrono_ymd_t(sysdays) + months(units.months)};
 
     switch (interval.getMonthHandling()) {
     case Interval::MonthHandling::CLAMP_TO_END:
@@ -87,18 +92,19 @@ Date::Date(year_t year, month_t month, day_t day)
         break;
     }
 
-    auto sysdays{std::chrono::sys_days{newChronoYMD} +
-                 std::chrono::days(units.weeks * Duration::daysInWeek) +
-                 std::chrono::days(units.days)};
-
-    return {chrono_ymd_t(sysdays)};
+    return {newChronoYMD};
 }
 
 [[nodiscard]] auto Date::operator-(const Interval &interval) const -> Date {
+    using namespace std::chrono;
+
     auto units{interval.getDuration().getUnits()};
 
-    auto newChronoYMD{chronoYMD_ - std::chrono::years(units.years) -
-                      std::chrono::months(units.months)};
+    // subtracting all units except months
+    auto sysdays{sys_days(chronoYMD_ - years(units.years)) -
+                 days(units.weeks * Duration::daysInWeek) - days(units.days)};
+
+    auto newChronoYMD{chrono_ymd_t(sysdays) - months(units.months)};
 
     switch (interval.getMonthHandling()) {
     case Interval::MonthHandling::CLAMP_TO_END:
@@ -110,11 +116,7 @@ Date::Date(year_t year, month_t month, day_t day)
         break;
     }
 
-    auto sysdays{std::chrono::sys_days(newChronoYMD) -
-                 std::chrono::days(units.weeks * Duration::daysInWeek) -
-                 std::chrono::days(units.days)};
-
-    return {chrono_ymd_t(sysdays)};
+    return {newChronoYMD};
 }
 
 auto Date::operator+=(const Interval &interval) -> Date & {
