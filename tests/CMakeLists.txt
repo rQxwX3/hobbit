@@ -2,6 +2,7 @@ include(GoogleTest)
 
 # test models
 add_executable(models_test 
+	unit/models/test_ymd.cpp
 	unit/models/test_user.cpp
 	unit/models/test_duration.cpp
 	unit/models/test_duration_parser.cpp
