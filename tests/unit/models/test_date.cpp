@@ -184,7 +184,7 @@ TEST(DateTest, OperatorMinusSubtractsMonthIntervals) {
 
     auto resolveInterval{hbt::mods::Interval(
         {.months = 1}, hbt::mods::Interval::MonthHandling::RESOLVE_OVERFLOW)};
-    EXPECT_EQ(date - resolveInterval, Date({2026, 2, 26}));
+    EXPECT_EQ(date - resolveInterval, Date({2026, 3, 2}));
 }
 
 TEST(DateTest, OperatorMinusSubtractsNonMonthIntervals) {
@@ -196,7 +196,7 @@ TEST(DateTest, OperatorMinusSubtractsNonMonthIntervals) {
 }
 
 TEST(DateTest, OperatorMinusSubtractsMixedIntervals) {
-    auto date{Date({2026, 3, 30})}; // not a leap year, 31 days in January
+    auto date{Date({2026, 3, 30})}; // not a leap year
 
     auto resolveNoOverflow{hbt::mods::Interval(
         {.years = 1, .months = 1, .weeks = 1, .days = 1},
@@ -205,7 +205,7 @@ TEST(DateTest, OperatorMinusSubtractsMixedIntervals) {
 
     auto resolveOverflow{
         hbt::mods::Interval({.years = 1, .months = 1, .days = 1})};
-    EXPECT_EQ(date - resolveOverflow, Date({2025, 2, 27}));
+    EXPECT_EQ(date - resolveOverflow, Date({2025, 3, 1}));
 
     auto clampNoClamp{
         hbt::mods::Interval({.years = 1, .months = 1, .weeks = 1, .days = 1},
@@ -215,7 +215,7 @@ TEST(DateTest, OperatorMinusSubtractsMixedIntervals) {
     auto clampClamp{
         hbt::mods::Interval({.years = 1, .months = 1, .days = 1},
                             hbt::mods::Interval::MonthHandling::CLAMP_TO_END)};
-    EXPECT_EQ(date + clampClamp, Date({2025, 2, 27}));
+    EXPECT_EQ(date + clampClamp, Date({2025, 2, 28}));
 }
 
 TEST(DateTest, GetDiff) {

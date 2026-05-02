@@ -71,38 +71,21 @@ class Date {
             chronoYMD.year(), month_day_last{chronoYMD.month()}}};
     }};
 
-    enum class ResolveMonthOverflowDirection : uint8_t {
-        Forward,
-        Backward,
-    };
+    static inline auto resolveMonthOverflow{[](chrono_ymd_t chronoYMD) -> auto {
+        using namespace std::chrono;
 
-    static inline auto resolveMonthOverflow{
-        [](chrono_ymd_t chronoYMD,
-           ResolveMonthOverflowDirection direction =
-               ResolveMonthOverflowDirection::Forward) -> auto {
-            using namespace std::chrono;
+        if (chronoYMD.ok()) {
+            return chronoYMD;
+        }
 
-            if (chronoYMD.ok()) {
-                return chronoYMD;
-            }
+        auto lastDay{year_month_day_last{chronoYMD.year(),
+                                         month_day_last{chronoYMD.month()}}};
 
-            auto lastDay{year_month_day_last{
-                chronoYMD.year(), month_day_last{chronoYMD.month()}}};
+        auto overflow{static_cast<int>(unsigned(chronoYMD.day())) -
+                      static_cast<int>(unsigned(lastDay.day()))};
 
-            auto overflow{static_cast<int>(unsigned(chronoYMD.day())) -
-                          static_cast<int>(unsigned(lastDay.day()))};
-
-            switch (direction) {
-            case ResolveMonthOverflowDirection::Forward:
-                return year_month_day{sys_days{lastDay} + days{overflow}};
-
-            case ResolveMonthOverflowDirection::Backward:
-                return year_month_day{sys_days{lastDay} - days{overflow}};
-
-            default:
-                std::unreachable();
-            }
-        }};
+        return year_month_day{sys_days{lastDay} + days{overflow}};
+    }};
 
   private:
     chrono_ymd_t chronoYMD_;
