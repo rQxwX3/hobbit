@@ -40,7 +40,7 @@ TEST(DeadlineTest, IntervalTypeIsAccepted) {
 }
 
 TEST(DeadlineTest, DateTimeTypeIsAccepted) {
-    auto deadline{Deadline(DateTime(Date(year(2025), month(1), day(1))))};
+    auto deadline{Deadline(DateTime(Date(2025, 1, 1)))};
 
     EXPECT_EQ(deadline.getType(), Deadline::Type::DateTime);
 }
@@ -59,7 +59,7 @@ TEST(DeadlineTest, GetIntervalReturnsCorrectValue) {
 }
 
 TEST(DeadlineTest, GetDateTimeReturnsCorrectValue) {
-    auto dt{DateTime(Date(year(2025), month(2), day(3)))};
+    auto dt{DateTime(Date(2025, 2, 3))};
     auto deadline{Deadline(dt)};
 
     EXPECT_EQ(deadline.getDateTime().getDate(), dt.getDate());
@@ -96,7 +96,7 @@ TEST(DeadlineTest, IntervalJSONMissingFieldFails) {
 }
 
 TEST(DeadlineTest, DateTimeToJSONHasCorrectShape) {
-    auto dt{DateTime(Date(year(2025), month(3), day(10)))};
+    auto dt{DateTime(Date(2025, 3, 10))};
     auto deadline{Deadline(dt)};
 
     auto json{deadline.toJSON()};
@@ -106,7 +106,7 @@ TEST(DeadlineTest, DateTimeToJSONHasCorrectShape) {
 }
 
 TEST(DeadlineTest, DateTimeJSONRoundTrip) {
-    auto dt{DateTime(Date(year(2025), month(4), day(20)))};
+    auto dt{DateTime(Date(2025, 4, 20))};
     auto original{Deadline(dt)};
 
     auto json{original.toJSON()};

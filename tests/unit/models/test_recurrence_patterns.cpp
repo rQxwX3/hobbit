@@ -28,56 +28,44 @@ TEST(IntervalRecurrencePatternTest, ZeroIntervalThrows) {
 }
 
 TEST(IntervalRecurrencePatternTest, DailyIntervalHappensSequentially) {
-    auto start = DateTime(Date(year(2025), month(1), day(1)));
+    auto start = DateTime(Date(2025, 1, 1));
     auto pattern = IntervalRecurrencePattern(Interval::days(1));
 
-    EXPECT_TRUE(
-        pattern.happensOnDate(start, Date(year(2025), month(1), day(2))));
-    EXPECT_TRUE(
-        pattern.happensOnDate(start, Date(year(2025), month(1), day(3))));
-    EXPECT_TRUE(
-        pattern.happensOnDate(start, Date(year(2025), month(1), day(10))));
+    EXPECT_TRUE(pattern.happensOnDate(start, Date(2025, 1, 2)));
+    EXPECT_TRUE(pattern.happensOnDate(start, Date(2025, 1, 3)));
+    EXPECT_TRUE(pattern.happensOnDate(start, Date(2025, 1, 10)));
 }
 
 TEST(IntervalRecurrencePatternTest, WeeklyIntervalAlignment) {
-    auto start = DateTime(Date(year(2025), month(1), day(1)));
+    auto start = DateTime(Date(2025, 1, 1));
     auto pattern = IntervalRecurrencePattern(Interval::days(7));
 
-    EXPECT_TRUE(
-        pattern.happensOnDate(start, Date(year(2025), month(1), day(8))));
-    EXPECT_TRUE(
-        pattern.happensOnDate(start, Date(year(2025), month(1), day(15))));
-    EXPECT_FALSE(
-        pattern.happensOnDate(start, Date(year(2025), month(1), day(9))));
-    EXPECT_FALSE(
-        pattern.happensOnDate(start, Date(year(2025), month(1), day(14))));
+    EXPECT_TRUE(pattern.happensOnDate(start, Date(2025, 1, 8)));
+    EXPECT_TRUE(pattern.happensOnDate(start, Date(2025, 1, 15)));
+    EXPECT_FALSE(pattern.happensOnDate(start, Date(2025, 1, 9)));
+    EXPECT_FALSE(pattern.happensOnDate(start, Date(2025, 1, 14)));
 }
 
 TEST(IntervalRecurrencePatternTest, NonAlignedIntervalSkipsCorrectly) {
-    auto start = DateTime(Date(year(2025), month(1), day(1)));
+    auto start = DateTime(Date(2025, 1, 1));
 
     auto pattern = IntervalRecurrencePattern(Interval::days(3));
 
-    EXPECT_TRUE(
-        pattern.happensOnDate(start, Date(year(2025), month(1), day(4))));
-    EXPECT_TRUE(
-        pattern.happensOnDate(start, Date(year(2025), month(1), day(7))));
-    EXPECT_FALSE(
-        pattern.happensOnDate(start, Date(year(2025), month(1), day(5))));
-    EXPECT_FALSE(
-        pattern.happensOnDate(start, Date(year(2025), month(1), day(6))));
+    EXPECT_TRUE(pattern.happensOnDate(start, Date(2025, 1, 4)));
+    EXPECT_TRUE(pattern.happensOnDate(start, Date(2025, 1, 7)));
+    EXPECT_FALSE(pattern.happensOnDate(start, Date(2025, 1, 5)));
+    EXPECT_FALSE(pattern.happensOnDate(start, Date(2025, 1, 6)));
 }
 
 TEST(IntervalRecurrencePatternTest, GetOccurrencesProducesCorrectSequence) {
-    auto start = DateTime(Date(year(2025), month(1), day(1)));
+    auto start = DateTime(Date(2025, 1, 1));
     auto pattern = IntervalRecurrencePattern(Interval::days(2));
 
-    auto result =
-        pattern.getTimeStampsOnDate(start, Date(year(2025), month(1), day(7)));
+    auto result = pattern.getTimeStampsOnDate(start, Date(2025, 1, 7));
 
     ASSERT_GE(result.size(), 1u);
 
-    EXPECT_EQ(result[0].getDate(), Date(year(2025), month(1), day(7)));
+    EXPECT_EQ(result[0].getDate(), Date(2025, 1, 7));
 
     for (size_t i = 1; i < result.size(); ++i) {
         EXPECT_LT(result[i - 1].getDate(), result[i].getDate());
@@ -85,11 +73,10 @@ TEST(IntervalRecurrencePatternTest, GetOccurrencesProducesCorrectSequence) {
 }
 
 TEST(IntervalRecurrencePatternTest, GetOccurrencesEmptyWhenNoMatch) {
-    auto start = DateTime(Date(year(2025), month(1), day(1)));
+    auto start = DateTime(Date(2025, 1, 1));
     auto pattern = IntervalRecurrencePattern(Interval::days(2));
 
-    auto result =
-        pattern.getTimeStampsOnDate(start, Date(year(2025), month(1), day(3)));
+    auto result = pattern.getTimeStampsOnDate(start, Date(2025, 1, 3));
 
     EXPECT_TRUE(result.empty());
 }
@@ -113,62 +100,54 @@ TEST(WeekdayRecurrencePatternTest, EmptyWeekdaysThrows) {
 }
 
 TEST(WeekdayRecurrencePatternTest, MatchesOnlyCorrectWeekday) {
-    auto start = DateTime(Date(year(2025), month(1), day(6))); // monday
+    auto start = DateTime(Date(2025, 1, 6)); // monday
 
     Weekdays w{{DateTime::weekday_t::WEDNESDAY}};
     auto pattern = WeekdayRecurrencePattern(Interval::days(7), w);
 
-    EXPECT_TRUE(
-        pattern.happensOnDate(start, Date(year(2025), month(1), day(8))));
-    EXPECT_FALSE(
-        pattern.happensOnDate(start, Date(year(2025), month(1), day(7))));
+    EXPECT_TRUE(pattern.happensOnDate(start, Date(2025, 1, 8)));
+    EXPECT_FALSE(pattern.happensOnDate(start, Date(2025, 1, 7)));
 }
 
 TEST(WeekdayRecurrencePatternTest, IntervalAffectsWeekdayRepetition) {
-    auto start = DateTime(Date(year(2025), month(1), day(6)));
+    auto start = DateTime(Date(2025, 1, 6));
 
     Weekdays w{{DateTime::weekday_t::WEDNESDAY}};
     auto pattern = WeekdayRecurrencePattern(Interval::days(14), w);
 
-    EXPECT_TRUE(
-        pattern.happensOnDate(start, Date(year(2025), month(1), day(8))));
-    EXPECT_TRUE(
-        pattern.happensOnDate(start, Date(year(2025), month(1), day(22))));
+    EXPECT_TRUE(pattern.happensOnDate(start, Date(2025, 1, 8)));
+    EXPECT_TRUE(pattern.happensOnDate(start, Date((2025), 1, 22)));
 }
 
 TEST(WeekdayRecurrencePatternTest, NoFalsePositiveOnWrongWeekday) {
-    auto start = DateTime(Date(year(2025), month(1), day(6)));
+    auto start = DateTime(Date(2025, 1, 6));
 
     Weekdays w{{DateTime::weekday_t::WEDNESDAY}};
     auto pattern = WeekdayRecurrencePattern(Interval::days(7), w);
 
-    EXPECT_FALSE(
-        pattern.happensOnDate(start, Date(year(2025), month(1), day(9))));
-    EXPECT_FALSE(
-        pattern.happensOnDate(start, Date(year(2025), month(1), day(10))));
+    EXPECT_FALSE(pattern.happensOnDate(start, Date(2025, 1, 9)));
+    EXPECT_FALSE(pattern.happensOnDate(start, Date(2025, 1, 10)));
 }
 
 TEST(WeekdayRecurrencePatternTest, GetOccurrencesSingleMatch) {
-    auto start = DateTime(Date(year(2025), month(1), day(6)));
+    auto start = DateTime(Date(2025, 1, 6));
 
     Weekdays w{{DateTime::weekday_t::WEDNESDAY}};
     auto pattern = WeekdayRecurrencePattern(Interval::days(7), w);
 
-    auto result =
-        pattern.getTimeStampsOnDate(start, Date(year(2025), month(1), day(8)));
+    auto result = pattern.getTimeStampsOnDate(start, Date(2025, 1, 8));
 
     EXPECT_EQ(result.size(), 1);
-    EXPECT_EQ(result.front().getDate(), Date(year(2025), month(1), day(8)));
+    EXPECT_EQ(result.front().getDate(), Date(2025, 1, 8));
 }
 
 TEST(WeekdayRecurrencePatternTest, GetOccurrencesEmptyWhenNoMatch) {
-    auto start = DateTime(Date(year(2025), month(1), day(6)));
+    auto start = DateTime(Date(2025, 1, 6));
 
     Weekdays w{{DateTime::weekday_t::WEDNESDAY}};
     auto pattern = WeekdayRecurrencePattern(Interval::days(7), w);
 
-    auto result =
-        pattern.getTimeStampsOnDate(start, Date(year(2025), month(1), day(7)));
+    auto result = pattern.getTimeStampsOnDate(start, Date(2025, 1, 7));
 
     EXPECT_TRUE(result.empty());
 }

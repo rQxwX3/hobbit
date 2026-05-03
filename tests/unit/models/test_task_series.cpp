@@ -10,7 +10,6 @@
 #include <chrono>
 
 namespace test::mods {
-
 using hbt::mods::TaskData;
 using hbt::mods::TaskSeries;
 
@@ -31,16 +30,16 @@ static auto makeTask(DateTime dt) -> TaskData {
 }
 
 static auto makeDailyRecurrence() -> Recurrence {
-    return Recurrence{Interval(Duration::days(1))};
+    return Recurrence{Interval({.days = 1})};
 }
 
 static auto makeTwoDayRecurrence() -> Recurrence {
-    return Recurrence{Interval(Duration::days(2))};
+    return Recurrence{Interval({.days = 2})};
 }
 
 TEST(TaskSeriesTest, StopBeforeStartThrows) {
-    auto start{DateTime(Date(year(2025), month(1), day(10)))};
-    auto stop{DateTime(Date(year(2025), month(1), day(5)))};
+    auto start{DateTime(Date(2025, 1, 10))};
+    auto stop{DateTime(Date(2025, 1, 5))};
 
     auto task{makeTask(start)};
     auto recurrence{makeDailyRecurrence()};
@@ -49,19 +48,19 @@ TEST(TaskSeriesTest, StopBeforeStartThrows) {
 }
 
 TEST(TaskSeriesTest, GetStartReturnsCorrectValue) {
-    auto start{DateTime(Date(year(2025), month(1), day(1)))};
+    auto start{DateTime(Date(2025, 1, 1))};
 
     auto task{makeTask(start)};
     auto recurrence{makeDailyRecurrence()};
 
     auto series{TaskSeries(task, recurrence, std::nullopt)};
 
-    EXPECT_EQ(series.getStart().getDate(), start.getDate()) << "motherfucker\n";
+    EXPECT_EQ(series.getStart().getDate(), start.getDate());
 }
 
 TEST(TaskSeriesTest, GetStopReturnsCorrectValue) {
-    auto start{DateTime(Date(year(2025), month(1), day(1)))};
-    auto stop{DateTime(Date(year(2025), month(1), day(10)))};
+    auto start{DateTime(Date(2025, 1, 1))};
+    auto stop{DateTime(Date(2025, 1, 10))};
 
     auto task{makeTask(start)};
     auto recurrence{makeDailyRecurrence()};
@@ -72,74 +71,71 @@ TEST(TaskSeriesTest, GetStopReturnsCorrectValue) {
 }
 
 TEST(TaskSeriesTest, IsForDateRespectsStartBoundary) {
-    auto start{DateTime(Date(year(2025), month(1), day(5)))};
+    auto start{DateTime(Date(2025, 1, 5))};
 
     auto task{makeTask(start)};
     auto recurrence{makeDailyRecurrence()};
 
     auto series{TaskSeries(task, recurrence, std::nullopt)};
 
-    EXPECT_FALSE(series.isForDate(Date(year(2025), month(1), day(1))));
-    EXPECT_TRUE(series.isForDate(Date(year(2025), month(1), day(5))));
+    EXPECT_FALSE(series.isForDate(Date(2025, 1, 1)));
+    EXPECT_TRUE(series.isForDate(Date(2025, 1, 5)));
 }
 
 TEST(TaskSeriesTest, IsForDateRespectsStopBoundary) {
-    auto start{DateTime(Date(year(2025), month(1), day(1)))};
-    auto stop{DateTime(Date(year(2025), month(1), day(10)))};
+    auto start{DateTime(Date(2025, 1, 1))};
+    auto stop{DateTime(Date(2025, 1, 10))};
 
     auto task{makeTask(start)};
     auto recurrence{makeDailyRecurrence()};
 
     auto series{TaskSeries(task, recurrence, stop)};
 
-    EXPECT_TRUE(series.isForDate(Date(year(2025), month(1), day(5))));
-    EXPECT_FALSE(series.isForDate(Date(year(2025), month(1), day(11))));
+    EXPECT_TRUE(series.isForDate(Date(2025, 1, 5)));
+    EXPECT_FALSE(series.isForDate(Date(2025, 1, 11)));
 }
 
 TEST(TaskSeriesTest, IsForDateRespectsRecurrenceGap) {
-    auto start{DateTime(Date(year(2025), month(1), day(1)))};
+    auto start{DateTime(Date(2025, 1, 1))};
 
     auto task{makeTask(start)};
     auto recurrence{makeTwoDayRecurrence()};
 
     auto series{TaskSeries(task, recurrence, std::nullopt)};
 
-    EXPECT_TRUE(series.isForDate(Date(year(2025), month(1), day(3))));
-    EXPECT_FALSE(series.isForDate(Date(year(2025), month(1), day(2))));
+    EXPECT_TRUE(series.isForDate(Date(2025, 1, 3)));
+    EXPECT_FALSE(series.isForDate(Date(2025, 1, 2)));
 }
 
 TEST(TaskSeriesTest, GenerateSingularsReturnsTasksForDate) {
-    auto start{DateTime(Date(year(2025), month(1), day(1)))};
+    auto start{DateTime(Date(2025, 1, 1))};
 
     auto task{makeTask(start)};
     auto recurrence{makeDailyRecurrence()};
 
     auto series{TaskSeries(task, recurrence, std::nullopt)};
 
-    auto result{
-        series.generateSingularsForDate(Date(year(2025), month(1), day(3)))};
+    auto result{series.generateSingularsForDate(Date(2025, 1, 3))};
 
     EXPECT_FALSE(result.empty());
-    EXPECT_EQ(result.front().getDateTime().getDate(),
-              Date(year(2025), month(1), day(3)));
+    EXPECT_EQ(result.front().getDateTime().getDate(), Date(2025, 1, 3));
 }
 
 TEST(TaskSeriesTest, GenerateSingularsEmptyWhenNoMatch) {
-    auto start{DateTime(Date(year(2025), month(1), day(1)))};
+    auto start{DateTime(Date(2025, 1, 1))};
 
     auto task{makeTask(start)};
     auto recurrence{makeTwoDayRecurrence()};
 
     auto series{TaskSeries(task, recurrence, std::nullopt)};
 
-    auto result{
-        series.generateSingularsForDate(Date(year(2025), month(1), day(3)))};
+    auto result{series.generateSingularsForDate(Date(2025, 1, 3))};
 
     EXPECT_TRUE(result.empty());
 }
 
 TEST(TaskSeriesTest, SetRecurrenceUpdatesBehavior) {
-    auto start{DateTime(Date(year(2025), month(1), day(1)))};
+    auto start{DateTime(Date(2025, 1, 1))};
 
     auto task{makeTask(start)};
     auto recurrence1{makeDailyRecurrence()};
@@ -148,14 +144,14 @@ TEST(TaskSeriesTest, SetRecurrenceUpdatesBehavior) {
     auto series{TaskSeries(task, recurrence1, std::nullopt)};
     series.setRecurrence(recurrence2);
 
-    EXPECT_TRUE(series.isForDate(Date(year(2025), month(1), day(3))));
-    EXPECT_FALSE(series.isForDate(Date(year(2025), month(1), day(2))));
+    EXPECT_TRUE(series.isForDate(Date(2025, 1, 3)));
+    EXPECT_FALSE(series.isForDate(Date(2025, 1, 2)));
 }
 
 TEST(TaskSeriesTest, SetStopUpdatesValue) {
-    auto start{DateTime(Date(year(2025), month(1), day(1)))};
-    auto stop1{DateTime(Date(year(2025), month(1), day(10)))};
-    auto stop2{DateTime(Date(year(2025), month(1), day(20)))};
+    auto start{DateTime(Date(2025, 1, 1))};
+    auto stop1{DateTime(Date(2025, 1, 10))};
+    auto stop2{DateTime(Date(2025, 1, 20))};
 
     auto task{makeTask(start)};
     auto recurrence{makeDailyRecurrence()};
@@ -167,8 +163,8 @@ TEST(TaskSeriesTest, SetStopUpdatesValue) {
 }
 
 TEST(TaskSeriesTest, FromJSONRoundTrip) {
-    auto start{DateTime(Date(year(2025), month(1), day(1)))};
-    auto stop{DateTime(Date(year(2025), month(1), day(10)))};
+    auto start{DateTime(Date(2025, 1, 1))};
+    auto stop{DateTime(Date(2025, 1, 10))};
 
     auto task{makeTask(start)};
     auto recurrence{makeDailyRecurrence()};
