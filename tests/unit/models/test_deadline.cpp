@@ -2,7 +2,6 @@
 
 #include <datetime.hpp>
 #include <deadline.hpp>
-#include <duration.hpp>
 #include <interval.hpp>
 
 #include <chrono>
@@ -27,13 +26,13 @@ TEST(DeadlineTest, IsNullReturnsTrueOnNull) {
 }
 
 TEST(DeadlineTest, IsNullReturnsFalseOnNotNull) {
-    EXPECT_FALSE(Deadline(Interval(Duration::days(7))).isNull());
+    EXPECT_FALSE(Deadline(Interval::days(7)).isNull());
 
     EXPECT_FALSE(Deadline(DateTime::now()).isNull());
 }
 
 TEST(DeadlineTest, IntervalTypeIsAccepted) {
-    auto deadline{Deadline(Interval(Duration::days(7)))};
+    auto deadline{Deadline(Interval::days(7))};
 
     EXPECT_EQ(deadline.getType(), Deadline::Type::Interval);
 }
@@ -51,10 +50,10 @@ TEST(DeadlineTest, NullTypeIsAccepted) {
 }
 
 TEST(DeadlineTest, GetIntervalReturnsCorrectValue) {
-    auto interval{Interval(Duration::days(10))};
+    auto interval{Interval::days(10)};
     auto deadline{Deadline(interval)};
 
-    EXPECT_EQ(deadline.getInterval().getDuration(), interval.getDuration());
+    EXPECT_EQ(deadline.getInterval(), interval);
 }
 
 TEST(DeadlineTest, GetDateTimeReturnsCorrectValue) {
@@ -65,7 +64,7 @@ TEST(DeadlineTest, GetDateTimeReturnsCorrectValue) {
 }
 
 TEST(DeadlineTest, IntervalToJSONHasCorrectShape) {
-    auto deadline{Deadline(Interval(Duration::days(5)))};
+    auto deadline{Deadline(Interval::days(5))};
 
     auto json{deadline.toJSON()};
 
@@ -74,7 +73,7 @@ TEST(DeadlineTest, IntervalToJSONHasCorrectShape) {
 }
 
 TEST(DeadlineTest, IntervalJSONRoundTrip) {
-    auto original{Deadline(Interval(Duration::days(9)))};
+    auto original{Deadline(Interval::days(9))};
 
     auto json{original.toJSON()};
     auto restored{Deadline::fromJSON(json)};
@@ -82,8 +81,7 @@ TEST(DeadlineTest, IntervalJSONRoundTrip) {
     ASSERT_TRUE(restored.has_value());
 
     EXPECT_EQ(restored->getType(), Deadline::Type::Interval);
-    EXPECT_EQ(restored->getInterval().getDuration(),
-              original.getInterval().getDuration());
+    EXPECT_EQ(restored->getInterval(), original.getInterval());
 }
 
 TEST(DeadlineTest, IntervalJSONMissingFieldFails) {

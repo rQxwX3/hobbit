@@ -46,7 +46,7 @@ Deadline::Deadline(type_t type)
 
 [[nodiscard]] auto Deadline::toJSON() const -> nlohmann::json {
     if (std::holds_alternative<Interval>(type_)) {
-        auto intervalJSON{std::get<Interval>(type_).toJSON()};
+        auto intervalJSON{std::get<Interval>(type_).toISO8601String()};
 
         return {{jsonTypeField, jsonTypeIntervalValue},
                 {jsonIntervalField, intervalJSON}};
@@ -72,13 +72,13 @@ Deadline::Deadline(type_t type)
             return std::unexpected(Error::JSONMissingRequiredIntervalField);
         }
 
-        auto intervalFromJSON{
-            hbt::mods::Interval::fromJSON(json[jsonIntervalField])};
-        if (!intervalFromJSON) {
+        auto intervalFromISO8601{hbt::mods::Interval::fromISO8601String(
+            json[jsonIntervalField].get<std::string>())};
+        if (!intervalFromISO8601) {
             return std::unexpected(Error::JSONFailedToParseInterval);
         }
 
-        return Deadline{intervalFromJSON.value()};
+        return Deadline{intervalFromISO8601.value()};
     }
 
     if (json[jsonTypeField] == jsonTypeDateTimeValue) {

@@ -5,16 +5,13 @@ add_library(models_lib STATIC
 	src/date.cpp
 	src/time.cpp
 	src/interval.cpp
-	src/duration.cpp
-	src/duration_parser.cpp
+	src/interval_parser.cpp
 	src/task_series.cpp
 	src/singular_task.cpp
 	src/task_data.cpp
 	src/recurrence.cpp
 	src/recurrence_patterns.cpp
 	src/weekdays.cpp
-	src/ymd.cpp
-	src/date_calculator.cpp
 	# src/task_override.cpp NOT TO BE ADDED IN ALPHA
 )
 

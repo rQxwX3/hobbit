@@ -1,7 +1,7 @@
 #pragma once
 
 #include <datetime.hpp>
-#include <duration.hpp>
+#include <interval.hpp>
 #include <task_data.hpp>
 
 #include <vector>

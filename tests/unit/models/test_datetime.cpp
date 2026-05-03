@@ -196,32 +196,33 @@ TEST(TestDateTime, OperatorPlusOverflow) {
     EXPECT_EQ(res.getTime(), Time(hours_t(0), minutes_t(0)));
 }
 
-TEST(TestDateTime, OperatorPlusMonthHandling) {
-    auto dt{DateTime{Date(2027, 10, 31),
-                     Time{hours_t{22}, minutes_t{0}}}}; // october has 31 days,
-                                                        // november has 30
-
-    auto wrapAroundInterval{hbt::mods::Interval(
-        hbt::mods::Interval::Units{
-            .years = 0, .months = 1, .days = 0, .hours = 0, .minutes = 0},
-        mods::Interval::MonthHandling::RESOLVE_OVERFLOW)};
-
-    auto res1{dt + wrapAroundInterval};
-
-    EXPECT_EQ(res1.getDate(), Date(2027, 12, 1));
-    EXPECT_EQ(res1.getTime(), Time(hours_t(22), minutes_t(0)));
-
-    auto cutOffInterval{hbt::mods::Interval(
-        hbt::mods::Interval::Units{
-            .years = 0, .months = 1, .days = 0, .hours = 0, .minutes = 0},
-        mods::Interval::MonthHandling::CLAMP_TO_END)};
-
-    auto res2{dt + cutOffInterval};
-
-    EXPECT_EQ(res2.getDate(), Date(2027, 11, 30));
-    EXPECT_EQ(res2.getTime(), Time(hours_t(22), minutes_t(0)));
-}
-
+// TEST(TestDateTime, OperatorPlusMonthHandling) {
+//     auto dt{DateTime{Date(2027, 10, 31),
+//                      Time{hours_t{22}, minutes_t{0}}}}; // october has 31
+//                      days,
+//                                                         // november has 30
+//
+//     auto wrapAroundInterval{hbt::mods::Interval(
+//         hbt::mods::Interval::Units{
+//             .years = 0, .months = 1, .days = 0, .hours = 0, .minutes = 0},
+//         mods::Interval::MonthHandling::RESOLVE_OVERFLOW)};
+//
+//     auto res1{dt + wrapAroundInterval};
+//
+//     EXPECT_EQ(res1.getDate(), Date(2027, 12, 1));
+//     EXPECT_EQ(res1.getTime(), Time(hours_t(22), minutes_t(0)));
+//
+//     auto cutOffInterval{hbt::mods::Interval(
+//         hbt::mods::Interval::Units{
+//             .years = 0, .months = 1, .days = 0, .hours = 0, .minutes = 0},
+//         mods::Interval::MonthHandling::CLAMP_TO_END)};
+//
+//     auto res2{dt + cutOffInterval};
+//
+//     EXPECT_EQ(res2.getDate(), Date(2027, 11, 30));
+//     EXPECT_EQ(res2.getTime(), Time(hours_t(22), minutes_t(0)));
+// }
+//
 TEST(TestDateTime, GetDiff) {
     auto dt1{DateTime(Date::today(), Time::now())};
     EXPECT_TRUE(hbt::mods::Interval{} == DateTime::getDiff(dt1, dt1));

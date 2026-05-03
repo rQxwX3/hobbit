@@ -89,6 +89,8 @@ class Interval {
     static constexpr auto maxValue{value_t{999}};
 
   public:
+    static constexpr auto daysInWeek{value_t{7}};
+    static constexpr auto monthsInYear{value_t{12}};
     static constexpr auto minutesInHour{value_t{60}};
     static constexpr auto hoursInDay{value_t{24}};
 

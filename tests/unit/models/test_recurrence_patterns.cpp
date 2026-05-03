@@ -2,7 +2,6 @@
 
 #include <date.hpp>
 #include <datetime.hpp>
-#include <duration.hpp>
 #include <interval.hpp>
 #include <recurrence_patterns.hpp>
 #include <weekdays.hpp>
@@ -87,8 +86,7 @@ TEST(IntervalRecurrencePatternTest, JSONRoundTripPreservesInterval) {
     auto restored = IntervalRecurrencePattern::fromJSON(json);
 
     ASSERT_TRUE(restored.has_value());
-    EXPECT_EQ(restored->getInterval().getDuration(),
-              pattern.getInterval().getDuration());
+    EXPECT_EQ(restored->getInterval(), pattern.getInterval());
 }
 
 TEST(WeekdayRecurrencePatternTest, EmptyWeekdaysThrows) {
@@ -161,8 +159,7 @@ TEST(WeekdayRecurrencePatternTest, JSONRoundTripPreservesState) {
 
     ASSERT_TRUE(restored.has_value());
 
-    EXPECT_EQ(restored->getInterval().getDuration(),
-              pattern.getInterval().getDuration());
+    EXPECT_EQ(restored->getInterval(), pattern.getInterval());
 
     EXPECT_EQ(restored->getWeekdays().getDays(),
               pattern.getWeekdays().getDays());

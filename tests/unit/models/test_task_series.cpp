@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 
 #include <datetime.hpp>
-#include <duration.hpp>
 #include <interval.hpp>
 #include <recurrence.hpp>
 #include <task_data.hpp>
@@ -25,7 +24,7 @@ using day = std::chrono::day;
 
 static auto makeTask(DateTime dt) -> TaskData {
     return TaskData{"test-task", dt, false,
-                    hbt::mods::Deadline(Interval(Duration::days(2)))};
+                    hbt::mods::Deadline(Interval::days(2))};
 }
 
 static auto makeDailyRecurrence() -> Recurrence {

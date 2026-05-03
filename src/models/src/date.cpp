@@ -6,7 +6,7 @@
 namespace hbt::mods {
 [[nodiscard]] auto Date::valueYMDValidator(value_t year, value_t month,
                                            value_t day) -> ymd_t {
-    if (month < 1 || monthsInYear < month) {
+    if (month < 1 || Interval::monthsInYear < month) {
         throw std::invalid_argument(errorMessage(Error::InvalidMonth));
     }
 
@@ -71,7 +71,8 @@ Date::Date(value_t year, value_t month, value_t day)
 
     auto resSD{sys_days(resYMD)};
 
-    resSD += days{interval.getUnitValue(Interval::unit_t::WEEK) * daysInWeek};
+    resSD += days{interval.getUnitValue(Interval::unit_t::WEEK) *
+                  Interval::daysInWeek};
     resSD += days{interval.getUnitValue(Interval::unit_t::DAY)};
 
     auto res{Date(ymd_t{resSD})};

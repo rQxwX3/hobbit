@@ -14,18 +14,19 @@ IntervalRecurrencePattern::IntervalRecurrencePattern(const Interval &interval)
     : interval_{validateInterval(interval)} {}
 
 [[nodiscard]] auto IntervalRecurrencePattern::toJSON() const -> nlohmann::json {
-    return interval_.toJSON();
+    return interval_.toISO8601String();
 };
 
 [[nodiscard]] auto
 IntervalRecurrencePattern::fromJSON(const nlohmann::json &json)
     -> std::expected<IntervalRecurrencePattern, Error> {
-    auto intervalFromJSON{Interval::fromJSON(json)};
-    if (!intervalFromJSON) {
+    auto intervalFromISO8601{
+        Interval::fromISO8601String(json.get<std::string>())};
+    if (!intervalFromISO8601) {
         return std::unexpected(Error::JSONFailedToParseInterval);
     }
 
-    return IntervalRecurrencePattern(intervalFromJSON.value());
+    return IntervalRecurrencePattern(intervalFromISO8601.value());
 }
 
 [[nodiscard]] auto IntervalRecurrencePattern::getInterval() const -> Interval {
@@ -39,7 +40,7 @@ IntervalRecurrencePattern::happensOnDate(mods::DateTime start,
         return start.getDate() == date;
     }
 
-    if (interval_.getDuration() < Interval::days(1)) {
+    if (interval_ < Interval::days(1)) {
         return true;
     }
 
@@ -134,11 +135,10 @@ WeekdayRecurrencePattern::getDateOfFirstTimeStamp(mods::DateTime start) const
         return false;
     }
 
-    auto intervalDuration{interval_.getDuration()};
     auto firstTimeStampDate{getDateOfFirstTimeStamp(start)};
 
     return Date::daysBetween(date, firstTimeStampDate.getDate())
-        .isMultipleOf(intervalDuration);
+        .isMultipleOf(interval_);
 }
 
 [[nodiscard]] auto WeekdayRecurrencePattern::getTimeStampsOnDate(
@@ -151,7 +151,7 @@ WeekdayRecurrencePattern::getDateOfFirstTimeStamp(mods::DateTime start) const
 }
 
 [[nodiscard]] auto WeekdayRecurrencePattern::toJSON() const -> nlohmann::json {
-    return {{jsonIntervalField, interval_.toJSON()},
+    return {{jsonIntervalField, interval_.toISO8601String()},
             {jsonWeekdaysField, weekdays_.toJSON()}};
 }
 
@@ -170,8 +170,9 @@ WeekdayRecurrencePattern::fromJSON(const nlohmann::json &json)
         return std::unexpected(Error::JSONMissingRequiredField);
     }
 
-    auto intervalFromJSON{Interval::fromJSON(json[jsonIntervalField])};
-    if (!intervalFromJSON) {
+    auto intervalFromISO8601{Interval::fromISO8601String(
+        json[jsonIntervalField].get<std::string>())};
+    if (!intervalFromISO8601) {
         return std::unexpected(Error::JSONFailedToParseInterval);
     }
 
@@ -180,7 +181,7 @@ WeekdayRecurrencePattern::fromJSON(const nlohmann::json &json)
         return std::unexpected(Error::JSONFailedToParseWeekdays);
     }
 
-    return WeekdayRecurrencePattern{intervalFromJSON.value(),
+    return WeekdayRecurrencePattern{intervalFromISO8601.value(),
                                     weekdaysFromJSON.value()};
 }
 } // namespace hbt::mods::util

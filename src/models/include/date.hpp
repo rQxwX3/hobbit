@@ -23,6 +23,7 @@ class Date {
         THURSDAY,
         FRIDAY,
         SATURDAY,
+        COUNT_,
     };
 
     enum class Month : uint8_t {
@@ -43,15 +44,12 @@ class Date {
     using weekday_t = Week;
 
   public:
-    static constexpr auto daysInWeek{value_t{7}};
-    static constexpr auto monthsInYear{value_t{12}};
-
-    static constexpr auto monthDays{std::array<value_t, monthsInYear>{
+    static constexpr auto monthDays{std::array<value_t, Interval::monthsInYear>{
         31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}};
 
     [[nodiscard]] static auto getDaysInMonth(value_t month, value_t year)
         -> value_t {
-        if (month < 1 || monthsInYear < month) {
+        if (month < 1 || Interval::monthsInYear < month) {
             throw std::runtime_error(errorMessage(Error::InvalidMonth));
         }
 
