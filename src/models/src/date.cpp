@@ -1,3 +1,4 @@
+#include <date_calculator.hpp>
 #include <datetime.hpp>
 
 #include <chrono>
@@ -5,95 +6,107 @@
 namespace hbt::mods {
 using std::chrono::floor, std::chrono::system_clock, std::chrono::duration_cast;
 
-[[nodiscard]] auto Date::chronoYMDValidator(chrono_ymd_t chronoYMD)
-    -> chrono_ymd_t {
-    if (!chronoYMD.ok()) {
-        throw std::invalid_argument(errorMessage(Error::InvalidChronoYMD));
-    }
-
-    return chronoYMD;
-}
-
-[[nodiscard]] auto Date::ymdValidator(YMD ymd) -> chrono_ymd_t {
-    auto chronoYMD{std::chrono::year_month_day{std::chrono::year(ymd.year),
-                                               std::chrono::month(ymd.month),
-                                               std::chrono::day(ymd.day)}};
-
-    if (!chronoYMD.ok()) {
+[[nodiscard]] auto Date::ymdValidator(YMD ymd) -> ymd_t {
+    if (!ymd.ok()) {
         throw std::invalid_argument(errorMessage(Error::InvalidYMD));
     }
 
-    return chronoYMD;
+    return ymd;
 }
 
-Date::Date(chrono_ymd_t chronoYMD)
-    : chronoYMD_{chronoYMDValidator(chronoYMD)} {}
+Date::Date() : YMD_{Date::today().getYMD()} {}
 
-Date::Date(YMD ymd) : chronoYMD_{ymdValidator(ymd)} {}
+Date::Date(ymd_t ymd) : YMD_{ymdValidator(ymd)} {}
 
 Date::Date(year_t year, month_t month, day_t day)
-    : chronoYMD_{chronoYMDValidator({year, month, day})} {}
+    : YMD_{ymdValidator({year, month, day})} {}
 
-[[nodiscard]] auto Date::getChronoYMD() const -> chrono_ymd_t {
-    return chronoYMD_;
+[[nodiscard]] auto Date::getYMD() const -> ymd_t { return YMD_; }
+
+[[nodiscard]] auto Date::getChronoYMD() const -> std::chrono::year_month_day {
+    return YMD_.toChrono();
 }
 
 [[nodiscard]] auto Date::getWeekday() const -> weekday_t {
-    return static_cast<weekday_t>(
-        std::chrono::weekday{chronoYMD_}.c_encoding());
+    return YMD_.getWeekday();
 }
 
-[[nodiscard]] auto Date::getYear() const -> year_t { return chronoYMD_.year(); }
+[[nodiscard]] auto Date::getYear() const -> year_t { return YMD_.getYear(); }
 
-[[nodiscard]] auto Date::getMonth() const -> month_t {
-    return chronoYMD_.month();
-}
+[[nodiscard]] auto Date::getMonth() const -> month_t { return YMD_.getMonth(); }
 
-[[nodiscard]] auto Date::getDay() const -> day_t { return chronoYMD_.day(); }
+[[nodiscard]] auto Date::getDay() const -> day_t { return YMD_.getDay(); }
 
-[[nodiscard]] auto Date::today() -> Date {
-    using namespace std::chrono;
-
-    auto now{system_clock::now()};
-    auto today{floor<days>(now)};
-
-    return {chrono_ymd_t(today)};
-}
+[[nodiscard]] auto Date::today() -> Date { return {YMD::today()}; }
 
 [[nodiscard]] auto Date::isToday() const -> bool {
-    return chronoYMD_ == today().getChronoYMD();
+    return YMD_ == today().getYMD();
 }
+
+[[nodiscard]] auto Date::operator<=>(const Date &other) const
+    -> std::strong_ordering = default;
 
 [[nodiscard]] auto Date::operator==(const Date &other) const -> bool = default;
 
 [[nodiscard]] auto Date::operator!=(const Date &other) const -> bool = default;
-
-[[nodiscard]] auto Date::operator<=>(const Date &other) const
-    -> std::strong_ordering = default;
 
 [[nodiscard]] auto Date::operator+(const Interval &interval) const -> Date {
     using namespace std::chrono;
 
     auto units{interval.getDuration().getUnits()};
 
-    // adding all units except months
-    auto sysdays{sys_days{chronoYMD_ + years(units.years)} +
-                 days(units.weeks * Duration::daysInWeek) + days(units.days)};
+    auto base{sys_days{YMD_.toChrono()}};
 
-    auto newChronoYMD{chrono_ymd_t(sysdays) + months(units.months)};
+    // adding all concrete calendar-agnostic units
+    auto shifted{base + days(units.weeks * Duration::daysInWeek) +
+                 days(units.days)};
+
+    auto shiftedChronoYMD{std::chrono::year_month_day{shifted}};
+    assert(shiftedChronoYMD.ok());
+
+    auto newChronoYMD{shiftedChronoYMD + months(units.months) +
+                      years(units.years)};
 
     switch (interval.getMonthHandling()) {
     case Interval::MonthHandling::CLAMP_TO_END:
-        newChronoYMD = clampToMonthEnd(newChronoYMD);
+        // newChronoYMD = clampToMonthEnd(newChronoYMD);
         break;
 
     case Interval::MonthHandling::RESOLVE_OVERFLOW:
-        newChronoYMD = resolveMonthOverflow(newChronoYMD);
+        // newChronoYMD = resolveMonthOverflow(newChronoYMD);
         break;
     }
 
-    return {newChronoYMD};
+    // return {newChronoYMD};
+    return {};
 }
+
+// [[nodiscard]] auto Date::operator+(const Interval &interval) const -> Date {
+//     using namespace std::chrono;
+//
+//     auto units{interval.getDuration().getUnits()};
+//     auto resYMD{getYMD()};
+//
+//     resYMD.year += interval.getUnitValue(Interval::unit_t::YEAR);
+//     resYMD.day +=
+//         interval.getUnitValue(Interval::unit_t::WEEK) * Duration::daysInWeek
+//         + interval.getUnitValue(Interval::unit_t::DAY);
+//
+//     auto newChronoYMD{shiftedChronoYMD + months(units.months) +
+//                       years(units.years)};
+//
+//     switch (interval.getMonthHandling()) {
+//     case Interval::MonthHandling::CLAMP_TO_END:
+//         newChronoYMD = clampToMonthEnd(newChronoYMD);
+//         break;
+//
+//     case Interval::MonthHandling::RESOLVE_OVERFLOW:
+//         newChronoYMD = resolveMonthOverflow(newChronoYMD);
+//         break;
+//     }
+//
+//     return {newChronoYMD};
+// }
 
 [[nodiscard]] auto Date::operator-(const Interval &interval) const -> Date {
     using namespace std::chrono;
@@ -101,22 +114,24 @@ Date::Date(year_t year, month_t month, day_t day)
     auto units{interval.getDuration().getUnits()};
 
     // subtracting all units except months
-    auto sysdays{sys_days(chronoYMD_ - years(units.years)) -
+    auto sysdays{sys_days(YMD_.toChrono() - years(units.years)) -
                  days(units.weeks * Duration::daysInWeek) - days(units.days)};
 
-    auto newChronoYMD{chrono_ymd_t(sysdays) - months(units.months)};
+    auto newChronoYMD{std::chrono::year_month_day(sysdays) -
+                      months(units.months)};
 
     switch (interval.getMonthHandling()) {
     case Interval::MonthHandling::CLAMP_TO_END:
-        newChronoYMD = clampToMonthEnd(newChronoYMD);
+        // newChronoYMD = clampToMonthEnd(newChronoYMD);
         break;
 
     case Interval::MonthHandling::RESOLVE_OVERFLOW:
-        newChronoYMD = resolveMonthOverflow(newChronoYMD);
+        // newChronoYMD = resolveMonthOverflow(newChronoYMD);
         break;
     }
 
-    return {newChronoYMD};
+    return {};
+    // return {newChronoYMD};
 }
 
 auto Date::operator+=(const Interval &interval) -> Date & {
@@ -125,21 +140,14 @@ auto Date::operator+=(const Interval &interval) -> Date & {
     return *this;
 }
 
-[[nodiscard]] auto Date::getDiff(const Date &d1, const Date &d2) -> Duration {
-    auto getDateDiff([](const Date &d1, const Date &d2) -> Duration {
-        auto d1ChronoYMD{d1.getChronoYMD()};
-        auto d2ChronoYMD{d2.getChronoYMD()};
+auto Date::operator-=(const Interval &interval) -> Date & {
+    *this = *this - interval;
 
-        return Duration(Duration::Units{
-            .years = static_cast<Duration::value_t>(
-                (d1ChronoYMD.year() - d2ChronoYMD.year()).count()),
-            .months = static_cast<Duration::value_t>(
-                (d1ChronoYMD.month() - d2ChronoYMD.month()).count()),
-            .days = static_cast<Duration::value_t>(
-                (d1ChronoYMD.day() - d2ChronoYMD.day()).count()),
-        });
-    });
+    return *this;
+}
 
-    return (d1 > d2) ? getDateDiff(d1, d2) : getDateDiff(d2, d1);
+[[nodiscard]] auto Date::diff(const Date &first, const Date &second)
+    -> Duration {
+    return util::DateCalculator::difference(first, second);
 }
 } // namespace hbt::mods
