@@ -1,44 +1,44 @@
 #pragma once
 
-#include <nlohmann/json.hpp>
-
-#include <duration.hpp>
-
 #include <array>
+#include <cstdint>
 #include <expected>
+#include <optional>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace hbt::mods {
 class Interval {
   private:
     enum class Error : uint8_t {
-        JSONMissingRequiredField,
-        JSONFailedToParseDuration,
+        ISO8601FailedToParse,
+        NaturalLanguageFailedToParse,
 
-        NaturalLanguageFailedToParseDuration,
-
-        FailedToPerformAddition,
+        InvalidValue,
+        InvalidArray,
+        InvalidStruct,
     };
-
-  public:
-    using struct_t = Duration::struct_t;
-    using array_t = Duration::array_t;
 
   public:
     [[nodiscard]] static constexpr auto errorMessage(Error error)
         -> std::string {
         switch (error) {
-        case Error::JSONMissingRequiredField:
-            return "Interval: missing required field(s) in JSON";
+        case Error::ISO8601FailedToParse:
+            return "Interval: failed to parse from JSON";
 
-        case Error::JSONFailedToParseDuration:
-            return "Interval: failed to parse Duration from JSON";
+        case Error::NaturalLanguageFailedToParse:
+            return "Interval: failed to parse from natural language";
 
-        case Error::NaturalLanguageFailedToParseDuration:
-            return "Interval: failed to parse Duration from natural language";
+        case Error::InvalidValue:
+            return "Interval: provided value is too high (possible sign "
+                   "overflow)";
 
-        case Error::FailedToPerformAddition:
-            return "Interval: cannot add intervals with different month "
-                   "handling patterns";
+        case Error::InvalidArray:
+            return "Interval: provided array contains invalid value(s)";
+
+        case Error::InvalidStruct:
+            return "Interval: provided struct contains invalid value(s)";
 
         default:
             return "Interval: unclassified error";
@@ -46,94 +46,136 @@ class Interval {
     }
 
   public:
-    static constexpr auto jsonDurationField{std::string_view{"duration"}};
-    static constexpr auto jsonMonthHandlingField{
-        std::string_view{"month_handling"}};
+    using unit_t = enum : uint8_t {
+        YEAR,
+        MONTH,
+        WEEK,
+        DAY,
+        HOUR,
+        MINUTE,
+        COUNT_,
+    };
 
-    static constexpr auto jsonFields{std::array<std::string_view, 2>{
-        jsonDurationField, jsonMonthHandlingField}};
+    using value_t = std::size_t;
+    using unitValuePair_t = std::pair<unit_t, value_t>;
+
+    using array_t = std::array<value_t, unit_t::COUNT_>;
+
+    struct Units {
+        value_t years{0};
+        value_t months{0};
+        value_t weeks{0};
+        value_t days{0};
+        value_t hours{0};
+        value_t minutes{0};
+
+        [[nodiscard]] auto toArray() const -> array_t {
+            return array_t{years, months, weeks, days, hours, minutes};
+        }
+
+        [[nodiscard]] static auto fromArray(const array_t &array) -> Units {
+            return {.years = array[unit_t::YEAR],
+                    .months = array[unit_t::MONTH],
+                    .weeks = array[unit_t::WEEK],
+                    .days = array[unit_t::DAY],
+                    .hours = array[unit_t::HOUR],
+                    .minutes = array[unit_t::MINUTE]};
+        }
+    };
+
+    using struct_t = Units;
 
   public:
-    enum class MonthHandling : char { CLAMP_TO_END, RESOLVE_OVERFLOW };
+    static constexpr auto maxValue{value_t{999}};
 
   public:
-    constexpr static auto defaultMonthHandling{MonthHandling::RESOLVE_OVERFLOW};
+    static constexpr auto minutesInHour{value_t{60}};
+    static constexpr auto hoursInDay{value_t{24}};
 
   public:
-    using value_t = hbt::mods::Duration::value_t;
-    using unit_t = hbt::mods::Duration::unit_t;
+    static constexpr auto units{std::array<unit_t, unit_t::COUNT_>{
+        unit_t::YEAR, unit_t::MONTH, unit_t::WEEK, unit_t::DAY, unit_t::HOUR,
+        unit_t::MINUTE}};
 
   private:
+    array_t units_;
+
   private:
-    hbt::mods::Duration duration_;
-    MonthHandling monthHandling_;
+    [[nodiscard]] auto getMaxNonZeroUnit() const -> std::optional<unit_t>;
+
+  private:
+    static auto validateValue(value_t value) -> value_t;
+
+    static auto validateArray(array_t array) -> array_t;
+
+    [[nodiscard]] static auto validateStruct(struct_t unitsStruct) -> struct_t;
 
   public:
-    Interval(struct_t unitStruct = struct_t{},
-             MonthHandling monthHandling = defaultMonthHandling);
+    Interval();
 
-    Interval(hbt::mods::Duration duration,
-             MonthHandling monthHandling = defaultMonthHandling);
+    explicit Interval(array_t unitsArray);
 
-    Interval(const Interval &other);
+    explicit Interval(const struct_t &unitsStruct);
 
   public:
-    [[nodiscard]] static auto
-    years(value_t value, MonthHandling monthHandling = defaultMonthHandling)
-        -> Interval;
-    [[nodiscard]] static auto
-    months(value_t value, MonthHandling monthHandling = defaultMonthHandling)
-        -> Interval;
+    [[nodiscard]] auto convertUnitsUpwards() const -> Interval;
 
-    [[nodiscard]] static auto
-    weeks(value_t value, MonthHandling monthHandling = defaultMonthHandling)
-        -> Interval;
+    [[nodiscard]] auto convertUnitsDownwards() const -> Interval;
 
-    [[nodiscard]] static auto
-    days(value_t value, MonthHandling monthHandling = defaultMonthHandling)
-        -> Interval;
+  public:
+    [[nodiscard]] static auto fromUnit(unit_t unit, value_t value) -> Interval;
 
-    [[nodiscard]] static auto
-    hours(value_t value, MonthHandling monthHandling = defaultMonthHandling)
-        -> Interval;
+  public:
+    [[nodiscard]] static auto years(value_t value) -> Interval;
 
-    [[nodiscard]] static auto
-    minutes(value_t value, MonthHandling monthHandling = defaultMonthHandling)
-        -> Interval;
+    [[nodiscard]] static auto months(value_t value) -> Interval;
+
+    [[nodiscard]] static auto weeks(value_t value) -> Interval;
+
+    [[nodiscard]] static auto days(value_t value) -> Interval;
+
+    [[nodiscard]] static auto hours(value_t value) -> Interval;
+
+    [[nodiscard]] static auto minutes(value_t value) -> Interval;
+
+  public:
+    auto addUnit(unit_t unit, value_t value) -> void;
 
   public:
     [[nodiscard]] auto getUnitValue(unit_t unit) const -> value_t;
 
-  public:
-    [[nodiscard]] auto getMonthHandling() const -> MonthHandling;
+    [[nodiscard]] auto getUnits() const -> Units;
 
-    [[nodiscard]] auto getDuration() const -> Duration;
+    [[nodiscard]] auto getNonZeroUnitValuePairs() const
+        -> std::vector<unitValuePair_t>;
 
   public:
-    auto setMonthHandling(MonthHandling monthHandling) -> void;
+    [[nodiscard]] auto isZero() const -> bool;
+
+    [[nodiscard]] auto onlyContainsUnit(unit_t onlyUnit) const -> bool;
+
+    [[nodiscard]] auto isMultipleOf(Interval other) const -> bool;
+
+    [[nodiscard]] static auto isValidValue(value_t value) -> bool;
 
   public:
     [[nodiscard]] auto operator+(const Interval &other) const -> Interval;
 
     [[nodiscard]] auto operator<=>(const Interval &other) const
-        -> std::strong_ordering = default;
+        -> std::strong_ordering;
 
-    [[nodiscard]] auto operator==(const Interval &other) const
-        -> bool = default;
-
-  public:
-    [[nodiscard]] auto isZero() const -> bool;
-
-    [[nodiscard]] auto onlyContainsUnit(unit_t unit) const -> bool;
-
-  private:
-    [[nodiscard]] auto static containsAllJSONFields(const nlohmann::json &json)
-        -> bool;
+    [[nodiscard]] auto operator==(const Interval &other) const -> bool;
 
   public:
-    [[nodiscard]] auto toJSON() const -> nlohmann::json;
+    [[nodiscard]] auto toISO8601String() const -> std::string;
 
-    [[nodiscard]] static auto fromJSON(const nlohmann::json &json)
+    [[nodiscard]] static auto fromISO8601String(const std::string &string)
         -> std::expected<Interval, Error>;
+
+  public:
+    [[nodiscard]] static auto fromNaturalLanguage(const std::string &input)
+        -> std::expected<Interval, Error>;
+
+    [[nodiscard]] auto toNaturalLanguage() const -> std::string;
 };
 } // namespace hbt::mods

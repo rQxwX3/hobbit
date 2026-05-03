@@ -42,8 +42,7 @@ DateTime::DateTime(year_t year, month_t month, day_t day, hours_t hours,
 }
 
 [[nodiscard]] auto DateTime::toISO8601String() const -> std::string {
-    auto timepoint{std::chrono::sys_days{date_.getChronoYMD()} +
-                   time_.getValue()};
+    auto timepoint{std::chrono::sys_days{date_.getYMD()} + time_.getValue()};
     return std::format("{:%Y-%m-%dT%H:%M}", timepoint);
 }
 
@@ -100,7 +99,7 @@ DateTime::DateTime(year_t year, month_t month, day_t day, hours_t hours,
     -> DateTime {
     auto [newTime, overflow]{getTime() + interval};
     auto newDate{getDate() +
-                 ((overflow) ? interval + Duration::days(1) : interval)};
+                 ((overflow) ? interval + Interval::days(1) : interval)};
 
     return DateTime{newDate, newTime};
 }
@@ -111,7 +110,7 @@ auto DateTime::operator+=(const Interval &interval) -> DateTime & {
 }
 
 [[nodiscard]] auto DateTime::getDiff(const DateTime &dt1, const DateTime &dt2)
-    -> Duration {
+    -> Interval {
     auto dateDiff{Date::daysBetween(dt1.getDate(), dt2.getDate())};
     auto timeDiff{Time::getDiff(dt1.getTime(), dt2.getTime())};
 

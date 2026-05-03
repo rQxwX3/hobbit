@@ -175,7 +175,7 @@ TEST(TestDateTime, ComparisonOperators) {
 TEST(TestDateTime, OperatorPlusNoOverflow) {
     auto dt{DateTime{Date(2027, 10, 11), Time{hours_t{12}, minutes_t{12}}}};
 
-    auto interval{hbt::mods::Interval(hbt::mods::Duration::Units{
+    auto interval{hbt::mods::Interval(hbt::mods::Interval::Units{
         .years = 1, .months = 1, .days = 1, .hours = 1, .minutes = 1})};
 
     auto res{dt + interval};
@@ -187,7 +187,7 @@ TEST(TestDateTime, OperatorPlusNoOverflow) {
 TEST(TestDateTime, OperatorPlusOverflow) {
     auto dt{DateTime{Date(2027, 10, 11), Time{hours_t{22}, minutes_t{50}}}};
 
-    auto interval{hbt::mods::Interval(hbt::mods::Duration::Units{
+    auto interval{hbt::mods::Interval(hbt::mods::Interval::Units{
         .years = 1, .months = 1, .days = 1, .hours = 1, .minutes = 10})};
 
     auto res{dt + interval};
@@ -202,7 +202,7 @@ TEST(TestDateTime, OperatorPlusMonthHandling) {
                                                         // november has 30
 
     auto wrapAroundInterval{hbt::mods::Interval(
-        hbt::mods::Duration::Units{
+        hbt::mods::Interval::Units{
             .years = 0, .months = 1, .days = 0, .hours = 0, .minutes = 0},
         mods::Interval::MonthHandling::RESOLVE_OVERFLOW)};
 
@@ -212,7 +212,7 @@ TEST(TestDateTime, OperatorPlusMonthHandling) {
     EXPECT_EQ(res1.getTime(), Time(hours_t(22), minutes_t(0)));
 
     auto cutOffInterval{hbt::mods::Interval(
-        hbt::mods::Duration::Units{
+        hbt::mods::Interval::Units{
             .years = 0, .months = 1, .days = 0, .hours = 0, .minutes = 0},
         mods::Interval::MonthHandling::CLAMP_TO_END)};
 
@@ -224,33 +224,33 @@ TEST(TestDateTime, OperatorPlusMonthHandling) {
 
 TEST(TestDateTime, GetDiff) {
     auto dt1{DateTime(Date::today(), Time::now())};
-    EXPECT_TRUE(hbt::mods::Duration{} == DateTime::getDiff(dt1, dt1));
+    EXPECT_TRUE(hbt::mods::Interval{} == DateTime::getDiff(dt1, dt1));
 
     auto dt2{DateTime(Date::today(), Time(hours_t(12), minutes_t(12)))};
     auto dt3{DateTime(Date::today(), Time(hours_t(13), minutes_t(13)))};
-    EXPECT_TRUE(hbt::mods::Duration(hbt::mods::Duration::Units{
+    EXPECT_TRUE(hbt::mods::Interval(hbt::mods::Interval::Units{
                     .hours = 1, .minutes = 1}) == DateTime::getDiff(dt2, dt3));
-    EXPECT_TRUE(hbt::mods::Duration(hbt::mods::Duration::Units{
+    EXPECT_TRUE(hbt::mods::Interval(hbt::mods::Interval::Units{
                     .hours = 1, .minutes = 1}) == DateTime::getDiff(dt3, dt2));
 
     auto dt4{DateTime(Date(2025, 11, 10), Time::now())};
     auto dt5{DateTime(Date(2026, 12, 11), Time::now())};
-    EXPECT_TRUE(hbt::mods::Duration(hbt::mods::Duration::Units{
+    EXPECT_TRUE(hbt::mods::Interval(hbt::mods::Interval::Units{
                     .years = 1, .months = 1, .days = 1}) ==
                 DateTime::getDiff(dt4, dt5))
         << DateTime::getDiff(dt4, dt5).toISO8601String() << '\n';
-    EXPECT_TRUE(hbt::mods::Duration(hbt::mods::Duration::Units{
+    EXPECT_TRUE(hbt::mods::Interval(hbt::mods::Interval::Units{
                     .years = 1, .months = 1, .days = 1}) ==
                 DateTime::getDiff(dt5, dt4));
 
     auto dt6{DateTime(Date(2025, 11, 10), Time(hours_t(12), minutes_t(12)))};
     auto dt7{DateTime(Date(2026, 12, 11), Time(hours_t(13), minutes_t(13)))};
     EXPECT_TRUE(
-        hbt::mods::Duration(hbt::mods::Duration::Units{
+        hbt::mods::Interval(hbt::mods::Interval::Units{
             .years = 1, .months = 1, .days = 1, .hours = 1, .minutes = 1}) ==
         DateTime::getDiff(dt6, dt7));
     EXPECT_TRUE(
-        hbt::mods::Duration(hbt::mods::Duration::Units{
+        hbt::mods::Interval(hbt::mods::Interval::Units{
             .years = 1, .months = 1, .days = 1, .hours = 1, .minutes = 1}) ==
         DateTime::getDiff(dt7, dt6));
 }

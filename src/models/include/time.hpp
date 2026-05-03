@@ -1,6 +1,5 @@
 #pragma once
 
-#include <duration.hpp>
 #include <interval.hpp>
 
 #include <chrono>
@@ -39,8 +38,8 @@ class Time {
 
   public:
     static constexpr value_t timeInMinute{1};
-    static constexpr value_t timeInHour{timeInMinute * Duration::minutesInHour};
-    static constexpr value_t timeInDay{timeInHour * Duration::hoursInDay};
+    static constexpr value_t timeInHour{timeInMinute * Interval::minutesInHour};
+    static constexpr value_t timeInDay{timeInHour * Interval::hoursInDay};
 
   private:
     value_t value_;
@@ -79,6 +78,6 @@ class Time {
 
   public:
     [[nodiscard]] static auto getDiff(const Time &t1, const Time &t2)
-        -> Duration;
+        -> Interval;
 };
 } // namespace hbt::mods

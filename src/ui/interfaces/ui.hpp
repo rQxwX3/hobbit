@@ -13,7 +13,7 @@ class UI {
         std::function<void(std::string, hbt::mods::Interval)>;
 
   public:
-    using IntervalUnits = hbt::mods::Duration::unit_t;
+    using IntervalUnits = hbt::mods::Interval::unit_t;
 
   public:
     enum class Screen : uint8_t {

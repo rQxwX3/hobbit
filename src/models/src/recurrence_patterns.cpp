@@ -39,7 +39,7 @@ IntervalRecurrencePattern::happensOnDate(mods::DateTime start,
         return start.getDate() == date;
     }
 
-    if (interval_.getDuration() < Duration::days(1)) {
+    if (interval_.getDuration() < Interval::days(1)) {
         return true;
     }
 
@@ -116,8 +116,8 @@ WeekdayRecurrencePattern::WeekdayRecurrencePattern(
 [[nodiscard]] auto
 WeekdayRecurrencePattern::getDateOfFirstTimeStamp(mods::DateTime start) const
     -> timestamp_t {
-    for (auto days{0}; days != Duration::daysInWeek; ++days) {
-        auto date{start + Duration::days(days)};
+    for (auto days{0}; days != Interval::daysInWeek; ++days) {
+        auto date{start + Interval::days(days)};
 
         if (weekdays_.containsWeekday(date.getDate().getWeekday())) {
             return date;

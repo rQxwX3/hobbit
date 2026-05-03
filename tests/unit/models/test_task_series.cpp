@@ -15,7 +15,6 @@ using hbt::mods::TaskSeries;
 
 using hbt::mods::Date;
 using hbt::mods::DateTime;
-using hbt::mods::Duration;
 using hbt::mods::Interval;
 
 using hbt::mods::util::Recurrence;

@@ -1,4 +1,4 @@
-#include <duration_parser.hpp>
+#include <interval_parser.hpp>
 
 #include <algorithm>
 #include <ranges>
@@ -51,8 +51,8 @@ NaturalLanguageParser::getBucketOfUnit(const std::string &unitString)
 }
 
 auto NaturalLanguageParser::parseUnit(const std::string &unit,
-                                      Duration::value_t value,
-                                      Duration &duration,
+                                      Interval::value_t value,
+                                      Interval &interval,
                                       matchedBuckets_t &matchedBuckets)
     -> void {
 
@@ -69,11 +69,11 @@ auto NaturalLanguageParser::parseUnit(const std::string &unit,
     }
 
     matchedBuckets.set(unitOfBucket);
-    bucket.addUnit(duration, value);
+    bucket.addUnit(interval, value);
 }
 
 auto NaturalLanguageParser::parseAllUnits(const std::string &filteredInput,
-                                          Duration &duration) -> void {
+                                          Interval &interval) -> void {
     auto matchedBuckets{matchedBuckets_t{}};
 
     for (auto it(std::sregex_iterator{filteredInput.begin(),
@@ -84,12 +84,12 @@ auto NaturalLanguageParser::parseAllUnits(const std::string &filteredInput,
         auto value{std::stoi(match[pairRegexPatternValueGroup].str())};
         auto unit{match[pairRegexPatternUnitGroup].str()};
 
-        if (!Duration::isValidValue(value)) {
+        if (!Interval::isValidValue(value)) {
             throw std::runtime_error(errorMessage(Error::InvalidUnitValue));
         }
 
         try {
-            parseUnit(unit, value, duration, matchedBuckets);
+            parseUnit(unit, value, interval, matchedBuckets);
         } catch (std::runtime_error) {
             throw std::runtime_error(errorMessage(Error::FailedToParseUnit));
         }
@@ -107,24 +107,24 @@ auto NaturalLanguageParser::parseAllUnits(const std::string &filteredInput,
 }
 
 [[nodiscard]] auto NaturalLanguageParser::parse(const std::string &input)
-    -> std::expected<Duration, Error> {
+    -> std::expected<Interval, Error> {
     if (!std::regex_match(input, fullRegexPattern)) {
         return std::unexpected(Error::RegexMismatch);
     }
 
-    auto duration{Duration{}};
+    auto interval{Interval{}};
     auto filteredInput{filterInput(input)};
 
     try {
-        parseAllUnits(filteredInput, duration);
-        return duration;
+        parseAllUnits(filteredInput, interval);
+        return interval;
     } catch (std::runtime_error) {
         return std::unexpected(Error::FailedToParseUnit);
     }
 }
 
 [[nodiscard]] auto NaturalLanguageParser::formatUnitValuePairToNaturalLanguage(
-    Duration::unitValuePair_t pair) -> std::string {
+    Interval::unitValuePair_t pair) -> std::string {
     auto unit{pair.first};
     auto value{pair.second};
 
@@ -138,10 +138,10 @@ auto NaturalLanguageParser::parseAllUnits(const std::string &filteredInput,
     return valueString + unitString;
 }
 
-[[nodiscard]] auto NaturalLanguageParser::format(const Duration &duration)
+[[nodiscard]] auto NaturalLanguageParser::format(const Interval &interval)
     -> std::string {
     auto result{std::string{}};
-    auto unitValuePairs{duration.getNonZeroUnitValuePairs()};
+    auto unitValuePairs{interval.getNonZeroUnitValuePairs()};
 
     for (const auto pair : unitValuePairs) {
         result += formatUnitValuePairToNaturalLanguage(pair) + ", ";
@@ -155,14 +155,14 @@ auto NaturalLanguageParser::parseAllUnits(const std::string &filteredInput,
     return result;
 }
 
-[[nodiscard]] auto ISO8601DurationParser::parse(const std::string &input)
-    -> std::expected<Duration, Error> {
+[[nodiscard]] auto ISO8601IntervalParser::parse(const std::string &input)
+    -> std::expected<Interval, Error> {
     std::smatch matches;
     if (!std::regex_match(input, matches, pattern)) {
         return std::unexpected(Error::RegexMismatch);
     }
 
-    Duration result{};
+    Interval result{};
 
     auto parseGroup{[&matches, &result](unit_t unit) -> void {
         auto unitGroup{patternUnitGroups[unit]};
@@ -172,7 +172,7 @@ auto NaturalLanguageParser::parseAllUnits(const std::string &filteredInput,
 
             groupString.pop_back(); // remove trailing 'Y', 'M', etc.
             result.addUnit(
-                unit, static_cast<Duration::value_t>(std::stoll(groupString)));
+                unit, static_cast<Interval::value_t>(std::stoll(groupString)));
         }
     }};
 
@@ -184,25 +184,25 @@ auto NaturalLanguageParser::parseAllUnits(const std::string &filteredInput,
     return result;
 }
 
-[[nodiscard]] auto ISO8601DurationParser::format(const Duration &duration)
+[[nodiscard]] auto ISO8601IntervalParser::format(const Interval &interval)
     -> std::string {
-    if (duration.isZero()) {
+    if (interval.isZero()) {
         return zeroValueFormat;
     }
 
     auto result{std::string{formatPrefix}};
     auto timeSectionStarted{false};
 
-    auto formatDateGroup{[&duration, &result](unit_t unit) -> void {
-        if (const auto value{duration.getUnitValue(unit)}; value) {
+    auto formatDateGroup{[&interval, &result](unit_t unit) -> void {
+        if (const auto value{interval.getUnitValue(unit)}; value) {
             result += std::to_string(value);
             result += unitSeparators[unit];
         }
     }};
 
     auto formatTimeGroup{
-        [&timeSectionStarted, &duration, &result](unit_t unit) -> void {
-            if (const auto value{duration.getUnitValue(unit)}; value) {
+        [&timeSectionStarted, &interval, &result](unit_t unit) -> void {
+            if (const auto value{interval.getUnitValue(unit)}; value) {
                 if (!timeSectionStarted) {
                     result += timeSectionSeparator;
                     timeSectionStarted = true;

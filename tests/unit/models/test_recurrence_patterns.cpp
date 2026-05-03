@@ -16,7 +16,6 @@ using month = std::chrono::month;
 using day = std::chrono::day;
 
 using hbt::mods::DateTime;
-using hbt::mods::Duration;
 using hbt::mods::Interval;
 using hbt::mods::Weekdays;
 

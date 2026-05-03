@@ -69,25 +69,25 @@ TEST(TimeTest, OperatorPlus) {
     auto t{Time{hours_t{0}, minutes_t{0}}};
 
     auto res1 = t + hbt::mods::Interval{
-                        hbt::mods::Duration::Units{.hours{1}, .minutes{1}}};
+                        hbt::mods::Interval::Units{.hours{1}, .minutes{1}}};
     EXPECT_EQ(res1.first.getHour(), value_t{1});
     EXPECT_EQ(res1.first.getMinute(), value_t{1});
     EXPECT_EQ(res1.second, false);
 
     auto res2 = t + hbt::mods::Interval{
-                        hbt::mods::Duration::Units{.hours{24}, .minutes{0}}};
+                        hbt::mods::Interval::Units{.hours{24}, .minutes{0}}};
     EXPECT_EQ(res2.first.getHour(), value_t{0});
     EXPECT_EQ(res2.first.getMinute(), value_t{0});
     EXPECT_EQ(res2.second, true);
 
-    auto res3 = t + hbt::mods::Interval{hbt::mods::Duration::Units{
+    auto res3 = t + hbt::mods::Interval{hbt::mods::Interval::Units{
                         .hours{0}, .minutes{Time::timeInDay.count()}}};
     EXPECT_EQ(res3.first.getHour(), value_t{0});
     EXPECT_EQ(res3.first.getMinute(), value_t{0});
     EXPECT_EQ(res3.second, true);
 
     auto res4 = t + hbt::mods::Interval{
-                        hbt::mods::Duration::Units{.hours{24}, .minutes{1}}};
+                        hbt::mods::Interval::Units{.hours{24}, .minutes{1}}};
     EXPECT_EQ(res4.first.getHour(), value_t{0});
     EXPECT_EQ(res4.first.getMinute(), value_t{1});
     EXPECT_EQ(res4.second, true);
@@ -96,16 +96,16 @@ TEST(TimeTest, OperatorPlus) {
 TEST(TimeTest, GetDiff) {
     auto t1{Time{hours_t{0}, minutes_t{0}}};
     auto t2{Time{hours_t{0}, minutes_t{0}}};
-    EXPECT_EQ(Time::getDiff(t1, t2), hbt::mods::Duration{});
-    EXPECT_EQ(Time::getDiff(t2, t1), hbt::mods::Duration{});
+    EXPECT_EQ(Time::getDiff(t1, t2), hbt::mods::Interval{});
+    EXPECT_EQ(Time::getDiff(t2, t1), hbt::mods::Interval{});
 
     auto t3{Time{hours_t{1}, minutes_t{1}}};
     auto t4{Time{hours_t{0}, minutes_t{0}}};
     EXPECT_EQ(Time::getDiff(t3, t4),
-              hbt::mods::Duration(
-                  hbt::mods::Duration::Units{.hours{1}, .minutes{1}}));
+              hbt::mods::Interval(
+                  hbt::mods::Interval::Units{.hours{1}, .minutes{1}}));
     EXPECT_EQ(Time::getDiff(t4, t3),
-              hbt::mods::Duration(
-                  hbt::mods::Duration::Units{.hours{1}, .minutes{1}}));
+              hbt::mods::Interval(
+                  hbt::mods::Interval::Units{.hours{1}, .minutes{1}}));
 }
 } // namespace test::mods

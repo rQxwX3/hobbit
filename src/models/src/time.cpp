@@ -10,7 +10,7 @@ namespace hbt::mods {
 }
 
 [[nodiscard]] auto Time::hourValidator(hours_t hour) -> hours_t {
-    if (auto count{hour.count()}; count < 0 || count >= Duration::hoursInDay) {
+    if (auto count{hour.count()}; count < 0 || count >= Interval::hoursInDay) {
         throw std::invalid_argument(errorMessage(Error::InvalidHour));
     }
 
@@ -19,7 +19,7 @@ namespace hbt::mods {
 
 [[nodiscard]] auto Time::minuteValidator(minutes_t minute) -> minutes_t {
     if (auto count{minute.count()};
-        count < 0 || count >= Duration::minutesInHour) {
+        count < 0 || count >= Interval::minutesInHour) {
         throw std::invalid_argument(errorMessage(Error::InvalidMinute));
     }
 
@@ -72,10 +72,10 @@ Time::Time(hours_t hours, minutes_t minutes)
     return {Time(result % timeInDay), result / timeInDay != 0};
 }
 
-[[nodiscard]] auto Time::getDiff(const Time &t1, const Time &t2) -> Duration {
+[[nodiscard]] auto Time::getDiff(const Time &t1, const Time &t2) -> Interval {
     auto diff{(t1 > t2) ? t1.getValue() - t2.getValue()
                         : t2.getValue() - t1.getValue()};
 
-    return Duration::fromUnit(Duration::unit_t::MINUTE, diff.count());
+    return Interval::fromUnit(Interval::unit_t::MINUTE, diff.count());
 }
 } // namespace hbt::mods

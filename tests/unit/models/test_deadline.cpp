@@ -12,7 +12,6 @@ namespace test::mods {
 using hbt::mods::Date;
 using hbt::mods::DateTime;
 using hbt::mods::Deadline;
-using hbt::mods::Duration;
 using hbt::mods::Interval;
 
 using year = std::chrono::year;
