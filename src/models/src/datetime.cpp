@@ -74,19 +74,20 @@ DateTime::DateTime(year_t year, month_t month, day_t day, hours_t hours,
         return std::unexpected(Error::ISO8601UnitNotMatched);
     }
 
-    const auto getGroupValue([&matches](size_t group) -> auto {
-        return std::stoi(matches[group].str());
-    });
+    auto yearValue{std::stoi(matches[yearGroup].str())};
+    auto monthValue{std::stoi(matches[monthGroup].str())};
+    auto dayValue{std::stoi(matches[dayGroup].str())};
+    auto hourValue{std::stoi(matches[hourGroup].str())};
+    auto minuteValue{std::stoi(matches[minuteGroup].str())};
 
-    const auto date{Date(static_cast<Date::year_t>(getGroupValue(yearGroup)),
-                         static_cast<Date::month_t>(getGroupValue(monthGroup)),
-                         static_cast<Date::day_t>(getGroupValue(dayGroup)))};
+    try {
+        auto date{Date(yearValue, monthValue, dayValue)};
+        auto time{Time(hourValue, minuteValue)};
 
-    const auto time{
-        duration_cast<time_value_t>(hours_t{getGroupValue(hourGroup)}) +
-        minutes_t{getGroupValue(minuteGroup)}};
-
-    return DateTime{date, time};
+        return DateTime(date, time);
+    } catch (std::invalid_argument) {
+        return std::unexpected(Error::ISO8601InvalidDateTime);
+    }
 }
 
 [[nodiscard]] auto DateTime::operator<=>(const DateTime &other) const
@@ -109,10 +110,10 @@ auto DateTime::operator+=(const Interval &interval) -> DateTime & {
     return *this;
 }
 
-[[nodiscard]] auto DateTime::getDiff(const DateTime &dt1, const DateTime &dt2)
+[[nodiscard]] auto DateTime::diff(const DateTime &dt1, const DateTime &dt2)
     -> Interval {
     auto dateDiff{Date::daysBetween(dt1.getDate(), dt2.getDate())};
-    auto timeDiff{Time::getDiff(dt1.getTime(), dt2.getTime())};
+    auto timeDiff{Time::minutesBetween(dt1.getTime(), dt2.getTime())};
 
     return dateDiff + timeDiff;
 }

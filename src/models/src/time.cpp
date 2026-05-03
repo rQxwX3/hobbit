@@ -10,7 +10,9 @@ namespace hbt::mods {
 }
 
 [[nodiscard]] auto Time::hourValidator(hours_t hour) -> hours_t {
-    if (auto count{hour.count()}; count < 0 || count >= Interval::hoursInDay) {
+    auto count{static_cast<int64_t>(hour.count())};
+
+    if (count < minHourValue || maxHourValue < count) {
         throw std::invalid_argument(errorMessage(Error::InvalidHour));
     }
 
@@ -18,8 +20,25 @@ namespace hbt::mods {
 }
 
 [[nodiscard]] auto Time::minuteValidator(minutes_t minute) -> minutes_t {
-    if (auto count{minute.count()};
-        count < 0 || count >= Interval::minutesInHour) {
+    auto count{static_cast<int64_t>(minute.count())};
+
+    if (count < minMinuteValue || maxMinuteValue < count) {
+        throw std::invalid_argument(errorMessage(Error::InvalidMinute));
+    }
+
+    return minute;
+}
+
+[[nodiscard]] auto Time::valueHourValidator(int8_t hour) -> int8_t {
+    if (hour < minHourValue || maxHourValue < hour) {
+        throw std::invalid_argument(errorMessage(Error::InvalidHour));
+    }
+
+    return hour;
+}
+
+[[nodiscard]] auto Time::valueMinuteValidator(int8_t minute) -> int8_t {
+    if (minute < minMinuteValue || maxMinuteValue < minute) {
         throw std::invalid_argument(errorMessage(Error::InvalidMinute));
     }
 
@@ -31,6 +50,10 @@ Time::Time(value_t value) : value_{valueValidator(value)} {}
 Time::Time(hours_t hours, minutes_t minutes)
     : value_{duration_cast<minutes_t>(hourValidator(hours)) +
              minuteValidator(minutes)} {}
+
+Time::Time(int8_t hours, int8_t minutes)
+    : value_{valueMinuteValidator(minutes) +
+             (valueHourValidator(hours) * Interval::minutesInHour)} {}
 
 [[nodiscard]] auto Time::now() -> Time {
     using namespace std::chrono;
@@ -72,10 +95,11 @@ Time::Time(hours_t hours, minutes_t minutes)
     return {Time(result % timeInDay), result / timeInDay != 0};
 }
 
-[[nodiscard]] auto Time::getDiff(const Time &t1, const Time &t2) -> Interval {
+[[nodiscard]] auto Time::minutesBetween(const Time &t1, const Time &t2)
+    -> Interval {
     auto diff{(t1 > t2) ? t1.getValue() - t2.getValue()
                         : t2.getValue() - t1.getValue()};
 
-    return Interval::fromUnit(Interval::unit_t::MINUTE, diff.count());
+    return Interval::minutes(diff.count());
 }
 } // namespace hbt::mods

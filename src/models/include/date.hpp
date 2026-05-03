@@ -14,6 +14,18 @@ class Date {
 
     using value_t = int16_t;
 
+    /* https://en.cppreference.com/cpp/chrono/year */
+    static constexpr value_t minYearValue{-32767};
+    static constexpr value_t maxYearValue{32767};
+
+    /* https://en.cppreference.com/cpp/chrono/month */
+    static constexpr value_t minMonthValue{1};
+    static constexpr value_t maxMonthValue{12};
+
+    /* https://en.cppreference.com/cpp/chrono/day */
+    static constexpr value_t minDayValue{1};
+    static constexpr value_t maxDayValue{31};
+
   public:
     enum class Week : uint8_t {
         SUNDAY,

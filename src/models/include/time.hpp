@@ -18,6 +18,12 @@ class Time {
         InvalidMinute,
     };
 
+    static constexpr int64_t minHourValue{0};
+    static constexpr int64_t maxHourValue{23};
+
+    static constexpr int64_t minMinuteValue{0};
+    static constexpr int64_t maxMinuteValue{59};
+
   public:
     [[nodiscard]] static constexpr auto errorMessage(Error error)
         -> std::string {
@@ -51,10 +57,16 @@ class Time {
 
     [[nodiscard]] static auto minuteValidator(minutes_t minute) -> minutes_t;
 
+    [[nodiscard]] static auto valueHourValidator(int8_t hour) -> int8_t;
+
+    [[nodiscard]] static auto valueMinuteValidator(int8_t minute) -> int8_t;
+
   public:
     Time(value_t value);
 
     Time(hours_t hours, minutes_t minutes);
+
+    Time(int8_t hours, int8_t minutes);
 
   public:
     [[nodiscard]] static auto now() -> Time;
@@ -77,7 +89,7 @@ class Time {
         -> std::pair<Time, bool>;
 
   public:
-    [[nodiscard]] static auto getDiff(const Time &t1, const Time &t2)
+    [[nodiscard]] static auto minutesBetween(const Time &t1, const Time &t2)
         -> Interval;
 };
 } // namespace hbt::mods

@@ -23,6 +23,8 @@ class DateTime {
     enum class Error : uint8_t {
         ISO8601RegexMismatch,
         ISO8601UnitNotMatched,
+
+        ISO8601InvalidDateTime,
     };
 
   public:
@@ -33,10 +35,15 @@ class DateTime {
             return "DateTime: can't create Time object with negative value";
 
         case Error::ISO8601UnitNotMatched:
-            return "DateTime: provided input doesn't contain one or more units";
+            return "DateTime: provided input doesn't contain one or more "
+                   "required units";
+
+        case Error::ISO8601InvalidDateTime:
+            return "DateTime: provided input contains invalid Date and/or "
+                   "invalid Time";
 
         default:
-            return "DateTime: unclassified error";
+            std::unreachable();
         }
     }
 
@@ -86,7 +93,7 @@ class DateTime {
     auto operator+=(const Interval &interval) -> DateTime &;
 
   public:
-    [[nodiscard]] static auto getDiff(const DateTime &dt1, const DateTime &dt2)
+    [[nodiscard]] static auto diff(const DateTime &dt1, const DateTime &dt2)
         -> Interval;
 };
 } // namespace hbt::mods
