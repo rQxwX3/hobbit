@@ -7,7 +7,7 @@ namespace hbt::mods {
 using std::chrono::system_clock;
 
 DateTime::DateTime()
-    : date_{floor<std::chrono::days>(system_clock::now())},
+    : date_{Date()},
 
       time_{[]() -> time_value_t {
           auto now{system_clock::now()};
@@ -79,10 +79,9 @@ DateTime::DateTime(year_t year, month_t month, day_t day, hours_t hours,
         return std::stoi(matches[group].str());
     });
 
-    const auto date{
-        mods::Date(year_t{getGroupValue(yearGroup)},
-                   month_t{static_cast<unsigned>(getGroupValue(monthGroup))},
-                   day_t{static_cast<unsigned>(getGroupValue(dayGroup))})};
+    const auto date{Date(static_cast<Date::year_t>(getGroupValue(yearGroup)),
+                         static_cast<Date::month_t>(getGroupValue(monthGroup)),
+                         static_cast<Date::day_t>(getGroupValue(dayGroup)))};
 
     const auto time{
         duration_cast<time_value_t>(hours_t{getGroupValue(hourGroup)}) +
@@ -113,7 +112,7 @@ auto DateTime::operator+=(const Interval &interval) -> DateTime & {
 
 [[nodiscard]] auto DateTime::getDiff(const DateTime &dt1, const DateTime &dt2)
     -> Duration {
-    auto dateDiff{Date::getDiff(dt1.getDate(), dt2.getDate())};
+    auto dateDiff{Date::daysBetween(dt1.getDate(), dt2.getDate())};
     auto timeDiff{Time::getDiff(dt1.getTime(), dt2.getTime())};
 
     return dateDiff + timeDiff;

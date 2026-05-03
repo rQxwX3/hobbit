@@ -233,8 +233,8 @@ auto Duration::addUnit(unit_t unit, value_t value) -> void {
 }
 
 [[nodiscard]] auto Duration::operator==(const Duration &other) const -> bool {
-    auto convertedThis(this->convertUnitsUpwards());
-    auto convertedOther(other.convertUnitsUpwards());
+    auto convertedThis(this->convertUnitsDownwards());
+    auto convertedOther(other.convertUnitsDownwards());
 
     for (const auto unit : Duration::units) {
         if (convertedOther.units_[unit] != convertedThis.units_[unit]) {

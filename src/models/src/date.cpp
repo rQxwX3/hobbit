@@ -146,8 +146,9 @@ auto Date::operator-=(const Interval &interval) -> Date & {
     return *this;
 }
 
-[[nodiscard]] auto Date::diff(const Date &first, const Date &second)
+[[nodiscard]] auto Date::daysBetween(const Date &first, const Date &second)
     -> Duration {
-    return util::DateCalculator::difference(first, second);
+    return Duration::fromUnit(Duration::unit_t::DAY,
+                              util::DateCalculator::daysBetween(first, second));
 }
 } // namespace hbt::mods

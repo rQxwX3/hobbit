@@ -43,7 +43,7 @@ IntervalRecurrencePattern::happensOnDate(mods::DateTime start,
         return true;
     }
 
-    // TODO: for day-based intervals use math instead of loop
+    // TODO: for day-based intervals use math instead of a loop
 
     for (auto dt{start}; dt.getDate() <= date; dt += interval_) {
         if (dt.getDate() == date) {
@@ -137,7 +137,7 @@ WeekdayRecurrencePattern::getDateOfFirstTimeStamp(mods::DateTime start) const
     auto intervalDuration{interval_.getDuration()};
     auto firstTimeStampDate{getDateOfFirstTimeStamp(start)};
 
-    return Date::getDiff(date, firstTimeStampDate.getDate())
+    return Date::daysBetween(date, firstTimeStampDate.getDate())
         .isMultipleOf(intervalDuration);
 }
 

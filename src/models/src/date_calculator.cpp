@@ -1,7 +1,6 @@
 #include <date_calculator.hpp>
 
 namespace hbt::mods::util {
-
 [[nodiscard]] constexpr auto DateCalculator::MonthDays::get(Date::month_t month)
     -> Date::day_t {
     assert(month >= 1 && month <= Duration::monthsInYear);
@@ -30,53 +29,46 @@ namespace hbt::mods::util {
     return daysInMonth;
 }
 
-[[nodiscard]] auto DateCalculator::getDateDifference(const Date &later,
-                                                     const Date &earlier)
-    -> DateDifference {
-    assert(later > earlier);
+[[nodiscard]] auto DateCalculator::daysBetween(const Date &first,
+                                               const Date &second)
+    -> day_diff_t {
+    const auto &later{(first > second) ? first : second};
+    const auto &earlier{(first > second) ? second : first};
 
-    return DateDifference{.years = later.getYear() - earlier.getYear(),
-                          .months = later.getMonth() - earlier.getMonth(),
-                          .days = later.getDay() - earlier.getDay()};
+    auto laterSysDays{std::chrono::sys_days(later.getChronoYMD())};
+    auto earlierSysDays{std::chrono::sys_days(earlier.getChronoYMD())};
+
+    return (laterSysDays - earlierSysDays).count();
 }
 
-[[nodiscard]] auto DateCalculator::getBorrowMonthYear(const Date &later)
-    -> std::pair<Date::month_t, Date::year_t> {
-    auto borrowMonth{later.getMonth()};
-    auto borrowYear{later.getYear()};
-
-    if (borrowMonth == static_cast<YMD::month_t>(months_t::JANUARY)) {
-        return {static_cast<YMD::month_t>(months_t::DECEMBER), --borrowYear};
-    }
-
-    return {--borrowMonth, borrowYear};
-}
-
-[[nodiscard]] auto DateCalculator::difference(const Date &d1, const Date &d2)
-    -> Duration {
-    const auto &earlier{(d1 < d2) ? d1 : d2};
-    const auto &later{(d1 < d2) ? d2 : d1};
-
-    auto dateDiff{getDateDifference(later, earlier)};
-
-    if (dateDiff.days < 0) {
-        dateDiff.months -= 1;
-
-        auto borrowMonthYear{getBorrowMonthYear(later)};
-
-        dateDiff.days +=
-            getMonthDays(borrowMonthYear.first, borrowMonthYear.second);
-    }
-
-    if (dateDiff.months < 0) {
-        dateDiff.years -= 1;
-        dateDiff.months += Duration::monthsInYear;
-    }
-
-    assert(dateDiff.years >= 0 && dateDiff.months >= 0 && dateDiff.days >= 0);
-
-    return Duration({.years = static_cast<Duration::value_t>(dateDiff.years),
-                     .months = static_cast<Duration::value_t>(dateDiff.months),
-                     .days = static_cast<Duration::value_t>(dateDiff.days)});
-}
+// [[nodiscard]] auto DateCalculator::getSignedDateDiff(const Date &later,
+//                                                      const Date &earlier)
+//     -> SignedDateDiff {
+//     assert(later >= earlier);
+//
+//     return SignedDateDiff{.years = later.getYear() - earlier.getYear(),
+//                           .months = later.getMonth() - earlier.getMonth(),
+//                           .days = later.getDay() - earlier.getDay()};
+// }
+//
+// [[nodiscard]] auto
+// DateCalculator::getBorrowMonthYear(Date::month_t currentMonth,
+//                                    Date::year_t currentYear)
+//     -> std::pair<Date::month_t, Date::year_t> {
+//     auto borrowMonth{currentMonth};
+//     auto borrowYear{currentYear};
+//
+//     if (borrowMonth == static_cast<YMD::month_t>(months_t::JANUARY)) {
+//         return {static_cast<YMD::month_t>(months_t::DECEMBER), --borrowYear};
+//     }
+//
+//     return {--borrowMonth, borrowYear};
+// }
+//
+// [[nodiscard]] auto DateCalculator::differenceCalendar(const Date &first,
+//                                                       const Date &second)
+//     -> Duration {
+//     const auto &later{(first > second) ? first : second};
+//     const auto &earlier{(first > second) ? second : first};
+// }
 } // namespace hbt::mods::util

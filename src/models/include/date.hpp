@@ -128,7 +128,7 @@ class Date {
     auto operator-=(const Interval &interval) -> Date &;
 
   public:
-    [[nodiscard]] static auto diff(const Date &first, const Date &second)
+    [[nodiscard]] static auto daysBetween(const Date &first, const Date &second)
         -> Duration;
 };
 } // namespace hbt::mods

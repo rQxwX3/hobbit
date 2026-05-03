@@ -44,25 +44,34 @@ class DateCalculator {
                                                      Date::year_t year)
         -> Date::day_t;
 
-  private:
-    using diff_t = int;
-
-  private:
-    struct DateDifference {
-        diff_t years{0};
-        diff_t months{0};
-        diff_t days{0};
-    };
-
-    [[nodiscard]] static auto getDateDifference(const Date &later,
-                                                const Date &earlier)
-        -> DateDifference;
-
-    [[nodiscard]] static auto getBorrowMonthYear(const Date &later)
-        -> std::pair<Date::month_t, Date::year_t>;
+  public:
+    using day_diff_t = size_t;
 
   public:
-    [[nodiscard]] static auto difference(const Date &d1, const Date &d2)
-        -> Duration;
+    [[nodiscard]] static auto daysBetween(const Date &first, const Date &second)
+        -> day_diff_t;
+    // private:
+    //   using diff_t = int;
+    //
+    // private:
+    //   struct SignedDateDiff {
+    //       diff_t years{0};
+    //       diff_t months{0};
+    //       diff_t days{0};
+    //   };
+    //
+    //   [[nodiscard]] static auto getSignedDateDiff(const Date &later,
+    //                                               const Date &earlier)
+    //       -> SignedDateDiff;
+    //
+    //   [[nodiscard]] static auto getBorrowMonthYear(Date::month_t
+    //   currentMonth,
+    //                                                Date::year_t currentYear)
+    //       -> std::pair<Date::month_t, Date::year_t>;
+    //
+    // public:
+    //   [[nodiscard]] static auto differenceCalendar(const Date &first,
+    //                                                const Date &second)
+    //       -> Duration;
 };
 } // namespace hbt::mods::util
