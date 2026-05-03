@@ -3,6 +3,29 @@
 #include <cassert>
 
 namespace hbt::mods {
+[[nodiscard]] constexpr auto YMD::MonthDays::get(month_t month) -> day_t {
+    assert(month >= 1 && month <= Duration::monthsInYear);
+    return array[month - 1];
+}
+
+[[nodiscard]] constexpr auto YMD::MonthDays::get(months_t month) -> day_t {
+    return array[static_cast<size_t>(month) - 1];
+}
+
+[[nodiscard]] constexpr auto YMD::isLeapYear(year_t year) -> bool {
+    return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;
+}
+
+[[nodiscard]] constexpr auto YMD::getMonthDays(month_t month, year_t year)
+    -> day_t {
+    auto daysInMonth{MonthDays::get(month)};
+
+    if (static_cast<months_t>(month) == months_t::FEBRUARY) {
+        return (isLeapYear(year)) ? daysInMonth + 1 : daysInMonth;
+    }
+
+    return daysInMonth;
+}
 [[nodiscard]] auto YMD::toChrono() const -> std::chrono::year_month_day {
     using namespace std::chrono;
 
@@ -70,4 +93,39 @@ auto YMD::today() -> YMD {
 
     return static_cast<weekday_t>(std::chrono::weekday{chrono}.c_encoding());
 }
+
+auto YMD::addYears(value_t years) -> void { year_ += years; }
+
+auto YMD::addMonths(value_t months) -> void {
+    addYears(months / Duration::monthsInYear);
+
+    months %= Duration::monthsInYear;
+
+    if (month_ + months > Duration::monthsInYear) {
+        addYears(1);
+
+        month_ = static_cast<month_t>(months_t::DECEMBER) + months;
+    }
+}
+
+auto YMD::addWeeks(value_t weeks) -> void {
+    addDays(weeks * Duration::daysInWeek);
+}
+
+auto YMD::addDays(value_t days) -> void {
+    for (auto monthDays{MonthDays::get(getMonth())}; days > monthDays;
+         days -= monthDays) {
+        addMonths(1);
+    }
+
+    if (auto currentMonthDays{MonthDays::get(getMonth())};
+        days + day_ > currentMonthDays) {
+        addMonths(1);
+        days -= currentMonthDays;
+    }
+
+    day_ += days;
+}
+
+auto YMD::addDuration(const Duration &duraion) -> void {}
 }; // namespace hbt::mods

@@ -1,32 +1,91 @@
 #pragma once
 
 #include <interval.hpp>
-#include <ymd.hpp>
 
 #include <chrono>
 
 namespace hbt::mods {
 class Date {
   public:
-    using ymd_t = hbt::mods::YMD;
+    using ymd_t = std::chrono::year_month_day;
+    using year_t = std::chrono::year;
+    using month_t = std::chrono::month;
+    using day_t = std::chrono::day;
 
-    using year_t = ymd_t::year_t;
-    using month_t = ymd_t::month_t;
-    using day_t = ymd_t::day_t;
+    using value_t = int16_t;
 
-    using weekday_t = ymd_t::weekday_t;
+  public:
+    enum class Week : uint8_t {
+        SUNDAY,
+        MONDAY,
+        TUESDAY,
+        WEDNESDAY,
+        THURSDAY,
+        FRIDAY,
+        SATURDAY,
+    };
+
+    enum class Month : uint8_t {
+        JANUARY = 1,
+        FEBRUARY,
+        MARCH,
+        APRIL,
+        MAY,
+        JUNE,
+        JULY,
+        AUGUST,
+        SEPTEMBER,
+        OCTOBER,
+        NOVEMBER,
+        DECEMBER,
+    };
+
+    using weekday_t = Week;
+
+  public:
+    static constexpr auto daysInWeek{value_t{7}};
+    static constexpr auto monthsInYear{value_t{12}};
+
+    static constexpr auto monthDays{std::array<value_t, monthsInYear>{
+        31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}};
+
+    [[nodiscard]] static auto getDaysInMonth(value_t month, value_t year)
+        -> value_t {
+        if (month < 1 || monthsInYear < month) {
+            throw std::runtime_error(errorMessage(Error::InvalidMonth));
+        }
+
+        const bool isLeapYear{(year % 4 == 0 && year % 100 != 0) ||
+                              (year % 400 == 0)};
+
+        auto daysInMonth{monthDays[month - 1]};
+
+        if (month == static_cast<value_t>(Month::FEBRUARY)) {
+            return (isLeapYear) ? daysInMonth + 1 : daysInMonth;
+        }
+
+        return daysInMonth;
+    }
 
   public:
     enum class Error : uint8_t {
-        InvalidYMD,
+        InvalidYear,
+        InvalidMonth,
+        InvalidDay,
     };
 
   public:
     [[nodiscard]] static constexpr auto errorMessage(Error error)
         -> std::string {
         switch (error) {
-        case Error::InvalidYMD:
-            return "Date: provided YMD value is not valid";
+        case Error::InvalidYear:
+            return "Date: provided year value is not valid";
+
+        case Error::InvalidMonth:
+            return "Date: provided month value is not valid";
+
+        case Error::InvalidDay:
+            return "Date: provided day value is not valid";
 
         default:
             std::unreachable();
@@ -34,56 +93,11 @@ class Date {
     }
 
   private:
-    static inline auto clampToMonthEnd{[](ymd_t ymd) -> auto {
-        using namespace std::chrono;
-
-        if (ymd.ok()) {
-            return ymd;
-        }
-
-        auto ymdToChrono{ymd.toChrono()};
-
-        auto res{year_month_day{year_month_day_last{
-            ymdToChrono.year(), month_day_last{ymdToChrono.month()}}}};
-        assert(res.ok());
-
-        auto ymdFromChrono{YMD::fromChrono(res)};
-        assert(ymdFromChrono);
-        assert(ymdFromChrono->ok());
-
-        return ymdFromChrono.value();
-    }};
-
-    static inline auto resolveMonthOverflow{[](ymd_t ymd) -> auto {
-        using namespace std::chrono;
-
-        if (ymd.ok()) {
-            return ymd;
-        }
-
-        auto ymdToChrono{ymd.toChrono()};
-
-        auto lastDay{year_month_day_last{ymdToChrono.year(),
-                                         month_day_last{ymdToChrono.month()}}};
-
-        auto overflow{static_cast<int>(unsigned(ymdToChrono.day())) -
-                      static_cast<int>(unsigned(lastDay.day()))};
-
-        auto res{year_month_day{sys_days{lastDay} + days{overflow}}};
-        assert(res.ok());
-
-        auto ymdFromChrono{YMD::fromChrono(res)};
-        assert(ymdFromChrono);
-        assert(ymdFromChrono->ok());
-
-        return ymdFromChrono.value();
-    }};
+    ymd_t ymd_;
 
   private:
-    ymd_t YMD_;
-
-  private:
-    [[nodiscard]] static auto ymdValidator(YMD ymd) -> ymd_t;
+    [[nodiscard]] static auto valueYMDValidator(value_t year, value_t month,
+                                                value_t day) -> ymd_t;
 
   public:
     Date();
@@ -92,12 +106,10 @@ class Date {
 
     Date(year_t year, month_t month, day_t day);
 
+    Date(value_t year, value_t month, value_t day);
+
   public:
     [[nodiscard]] auto getYMD() const -> ymd_t;
-
-    [[nodiscard]] auto getChronoYMD() const -> std::chrono::year_month_day;
-
-    [[nodiscard]] auto getWeekday() const -> weekday_t;
 
     [[nodiscard]] auto getYear() const -> year_t;
 
@@ -105,11 +117,15 @@ class Date {
 
     [[nodiscard]] auto getDay() const -> day_t;
 
+    [[nodiscard]] auto getWeekday() const -> weekday_t;
+
   public:
     [[nodiscard]] static auto today() -> Date;
 
   public:
     [[nodiscard]] auto isToday() const -> bool;
+
+    [[nodiscard]] auto ok() const -> bool;
 
   public:
     [[nodiscard]] auto operator<=>(const Date &other) const
@@ -121,14 +137,10 @@ class Date {
 
     [[nodiscard]] auto operator+(const Interval &interval) const -> Date;
 
-    [[nodiscard]] auto operator-(const Interval &interval) const -> Date;
-
     auto operator+=(const Interval &interval) -> Date &;
-
-    auto operator-=(const Interval &interval) -> Date &;
 
   public:
     [[nodiscard]] static auto daysBetween(const Date &first, const Date &second)
-        -> Duration;
+        -> Interval;
 };
 } // namespace hbt::mods
