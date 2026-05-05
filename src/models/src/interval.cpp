@@ -245,6 +245,10 @@ auto Interval::addUnit(unit_t unit, value_t value) -> void {
     return true;
 }
 
+[[nodiscard]] auto Interval::operator[](unit_t unit) const -> value_t {
+    return units_[unit];
+}
+
 [[nodiscard]] auto Interval::fromISO8601String(const std::string &string)
     -> std::expected<Interval, Error> {
     auto interval{

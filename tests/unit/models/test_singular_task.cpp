@@ -57,11 +57,11 @@ TEST(SingularTaskTest, IsForDate) {
 
     SingularTask task{data};
 
-    auto sameDate{dt.getDate()};
+    auto sameDate{dt.getDaysSinceEpoch()};
     EXPECT_TRUE(task.isForDate(sameDate));
 
     auto otherDate{DateTime::fromISO8601String("2025-01-02T10:00:00").value()};
-    EXPECT_FALSE(task.isForDate(otherDate.getDate()));
+    EXPECT_FALSE(task.isForDate(otherDate.getDaysSinceEpoch()));
 }
 
 TEST(SingularTaskTest, ToFromJSON) {

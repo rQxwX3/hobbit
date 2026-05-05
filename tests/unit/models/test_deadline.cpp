@@ -60,7 +60,7 @@ TEST(DeadlineTest, GetDateTimeReturnsCorrectValue) {
     auto dt{DateTime(Date(2025, 2, 3))};
     auto deadline{Deadline(dt)};
 
-    EXPECT_EQ(deadline.getDateTime().getDate(), dt.getDate());
+    EXPECT_EQ(deadline.getDateTime().getDays(), dt.getDays());
 }
 
 TEST(DeadlineTest, IntervalToJSONHasCorrectShape) {
@@ -112,8 +112,8 @@ TEST(DeadlineTest, DateTimeJSONRoundTrip) {
     ASSERT_TRUE(restored.has_value());
 
     EXPECT_EQ(restored->getType(), Deadline::Type::DateTime);
-    EXPECT_EQ(restored->getDateTime().getDate(),
-              original.getDateTime().getDate());
+    EXPECT_EQ(restored->getDateTime().getDays(),
+              original.getDateTime().getDays());
 }
 
 TEST(DeadlineTest, DateTimeJSONMissingFieldFails) {

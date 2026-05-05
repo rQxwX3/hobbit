@@ -86,13 +86,15 @@ class Interval {
     using struct_t = Units;
 
   public:
-    static constexpr auto maxValue{value_t{999}};
-
-  public:
     static constexpr auto daysInWeek{value_t{7}};
     static constexpr auto monthsInYear{value_t{12}};
     static constexpr auto minutesInHour{value_t{60}};
     static constexpr auto hoursInDay{value_t{24}};
+
+    static constexpr auto minutesInDay{minutesInHour * hoursInDay};
+
+  public:
+    static constexpr auto maxValue{value_t{minutesInDay}};
 
   public:
     static constexpr auto units{std::array<unit_t, unit_t::COUNT_>{
@@ -167,6 +169,8 @@ class Interval {
         -> std::strong_ordering;
 
     [[nodiscard]] auto operator==(const Interval &other) const -> bool;
+
+    [[nodiscard]] auto operator[](unit_t unit) const -> value_t;
 
   public:
     [[nodiscard]] auto toISO8601String() const -> std::string;

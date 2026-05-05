@@ -37,7 +37,7 @@ IntervalRecurrencePattern::fromJSON(const nlohmann::json &json)
 IntervalRecurrencePattern::happensOnDate(mods::DateTime start,
                                          mods::Date date) const -> bool {
     if (interval_.isZero()) {
-        return start.getDate() == date;
+        return start.getDaysSinceEpoch() == date;
     }
 
     if (interval_ < Interval::days(1)) {
@@ -46,8 +46,8 @@ IntervalRecurrencePattern::happensOnDate(mods::DateTime start,
 
     // TODO: for day-based intervals use math instead of a loop
 
-    for (auto dt{start}; dt.getDate() <= date; dt += interval_) {
-        if (dt.getDate() == date) {
+    for (auto dt{start}; dt.getDaysSinceEpoch() <= date; dt += interval_) {
+        if (dt.getDaysSinceEpoch() == date) {
             return true;
         }
     }
@@ -57,8 +57,8 @@ IntervalRecurrencePattern::happensOnDate(mods::DateTime start,
 
 [[nodiscard]] auto IntervalRecurrencePattern::getFirstTimeStampOnDate(
     mods::DateTime start, mods::Date date) const -> std::optional<timestamp_t> {
-    for (auto dt{start}; dt.getDate() <= date; dt += interval_) {
-        if (dt.getDate() == date) {
+    for (auto dt{start}; dt.getDaysSinceEpoch() <= date; dt += interval_) {
+        if (dt.getDaysSinceEpoch() == date) {
             return dt;
         }
     }
@@ -77,7 +77,7 @@ IntervalRecurrencePattern::happensOnDate(mods::DateTime start,
 
     auto endDate{date + mods::Interval::days(1)};
 
-    for (auto ts{firstTS}; ts->getDate() != endDate; *ts += interval_) {
+    for (auto ts{firstTS}; ts->getDays() != endDate; *ts += interval_) {
         result.push_back(*ts);
     }
 
@@ -120,7 +120,7 @@ WeekdayRecurrencePattern::getDateOfFirstTimeStamp(mods::DateTime start) const
     for (auto days{0}; days != Interval::daysInWeek; ++days) {
         auto date{start + Interval::days(days)};
 
-        if (weekdays_.containsWeekday(date.getDate().getWeekday())) {
+        if (weekdays_.containsWeekday(date.getDaysSinceEpoch().getWeekday())) {
             return date;
         }
     }
@@ -137,7 +137,7 @@ WeekdayRecurrencePattern::getDateOfFirstTimeStamp(mods::DateTime start) const
 
     auto firstTimeStampDate{getDateOfFirstTimeStamp(start)};
 
-    return Date::daysBetween(date, firstTimeStampDate.getDate())
+    return Date::daysBetween(date, firstTimeStampDate.getDays())
         .isMultipleOf(interval_);
 }
 

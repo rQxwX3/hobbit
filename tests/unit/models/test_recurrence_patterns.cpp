@@ -63,10 +63,10 @@ TEST(IntervalRecurrencePatternTest, GetOccurrencesProducesCorrectSequence) {
 
     ASSERT_GE(result.size(), 1u);
 
-    EXPECT_EQ(result[0].getDate(), Date(2025, 1, 7));
+    EXPECT_EQ(result[0].getDays(), Date(2025, 1, 7));
 
     for (size_t i = 1; i < result.size(); ++i) {
-        EXPECT_LT(result[i - 1].getDate(), result[i].getDate());
+        EXPECT_LT(result[i - 1].getDays(), result[i].getDays());
     }
 }
 
@@ -135,7 +135,7 @@ TEST(WeekdayRecurrencePatternTest, GetOccurrencesSingleMatch) {
     auto result = pattern.getTimeStampsOnDate(start, Date(2025, 1, 8));
 
     EXPECT_EQ(result.size(), 1);
-    EXPECT_EQ(result.front().getDate(), Date(2025, 1, 8));
+    EXPECT_EQ(result.front().getDays(), Date(2025, 1, 8));
 }
 
 TEST(WeekdayRecurrencePatternTest, GetOccurrencesEmptyWhenNoMatch) {

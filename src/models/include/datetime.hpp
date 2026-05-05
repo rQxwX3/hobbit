@@ -1,46 +1,127 @@
 #pragma once
 
-#include <date.hpp>
 #include <interval.hpp>
-#include <time.hpp>
 
 #include <nlohmann/json.hpp>
 
+#include <chrono>
 #include <expected>
 
 namespace hbt::mods {
 class DateTime {
   public:
-    using year_t = Date::year_t;
-    using month_t = Date::month_t;
-    using day_t = Date::day_t;
-    using weekday_t = Date::weekday_t;
+    enum class Week : uint8_t {
+        SUNDAY,
+        MONDAY,
+        TUESDAY,
+        WEDNESDAY,
+        THURSDAY,
+        FRIDAY,
+        SATURDAY,
+    };
 
-    using time_value_t = Time::value_t;
-    using hours_t = Time::hours_t;
-    using minutes_t = Time::minutes_t;
+  private:
+    using duration_t = std::chrono::minutes;
+    using value_t = std::chrono::sys_time<duration_t>;
 
+    using weekday_t = Week;
+
+  private:
+    struct Date {
+      public:
+        using year_t = int16_t;
+        using month_t = uint8_t;
+        using day_t = uint8_t;
+
+        using duration_t = std::chrono::days;
+
+      public:
+        year_t year;
+        month_t month;
+        day_t day;
+
+      public:
+        [[nodiscard]] auto ok() const -> bool {
+            auto ymd{std::chrono::year_month_day(std::chrono::year(year),
+                                                 std::chrono::month(month),
+                                                 std::chrono::day(day))};
+
+            return ymd.ok();
+        }
+
+        [[nodiscard]] auto toDuration() const -> duration_t {
+            auto ymd{std::chrono::year_month_day(std::chrono::year(year),
+                                                 std::chrono::month(month),
+                                                 std::chrono::day(day))};
+
+            return std::chrono::sys_days(ymd).time_since_epoch();
+        }
+    };
+
+    struct Time {
+      public:
+        using hour_t = uint8_t;
+        using minute_t = uint8_t;
+
+        using duration_t = std::chrono::minutes;
+
+      private:
+        static constexpr hour_t minHourValue{0};
+        static constexpr hour_t maxHourValue{23};
+
+        static constexpr minute_t minMinuteValue{0};
+        static constexpr minute_t maxMinuteValue{59};
+
+      public:
+        hour_t hour;
+        minute_t minute;
+
+      public:
+        [[nodiscard]] auto ok() const -> bool {
+            return (minHourValue <= hour && hour <= maxHourValue) &&
+                   (minMinuteValue <= minute && minute <= maxMinuteValue);
+        }
+
+        [[nodiscard]] auto toDuration() const -> duration_t {
+            return duration_t((hour * Interval::minutesInHour) + minute);
+        }
+    };
+
+  private:
+  public:
     enum class Error : uint8_t {
+        InvalidDate,
+        InvalidTime,
+
         ISO8601RegexMismatch,
         ISO8601UnitNotMatched,
 
-        ISO8601InvalidDateTime,
+        ISO8601InvalidDate,
+        ISO8601InvalidTime,
     };
 
   public:
     [[nodiscard]] static constexpr auto errorMessage(Error error)
         -> std::string {
         switch (error) {
+        case Error::InvalidDate:
+            return "DateTime provided date is invalid";
+
+        case Error::InvalidTime:
+            return "DateTime provided time is invalid";
+
         case Error::ISO8601RegexMismatch:
-            return "DateTime: can't create Time object with negative value";
+            return "DateTime: provided input didn't match regex";
 
         case Error::ISO8601UnitNotMatched:
-            return "DateTime: provided input doesn't contain one or more "
-                   "required units";
+            return "DateTime: provided input doesn't contain "
+                   "required unit(s)";
 
-        case Error::ISO8601InvalidDateTime:
-            return "DateTime: provided input contains invalid Date and/or "
-                   "invalid Time";
+        case Error::ISO8601InvalidDate:
+            return "DateTime: provided input contains invalid date";
+
+        case Error::ISO8601InvalidTime:
+            return "DateTime: provided input contains invalid time";
 
         default:
             std::unreachable();
@@ -48,28 +129,28 @@ class DateTime {
     }
 
   private:
-    mods::Date date_;
-    mods::Time time_;
+    value_t value_;
+
+  private:
+    DateTime(value_t value);
+
+  private:
+    [[nodiscard]] auto getDaysSinceEpoch() const -> Date::duration_t;
+
+    [[nodiscard]] auto getMinutesSinceMidnight() const -> Time::duration_t;
 
   public:
     DateTime();
 
-    explicit DateTime(mods::Date date, mods::Time time);
-
-    explicit DateTime(mods::Date date,
-                      time_value_t timeValue = time_value_t{0});
-
-    explicit DateTime(year_t year, month_t month, day_t day,
-                      hours_t hours = hours_t{0},
-                      minutes_t minutes = minutes_t{0});
+    DateTime(Date date, Time time = {.hour = 0, .minute = 0});
 
   public:
     [[nodiscard]] static auto now() -> DateTime;
 
   public:
-    [[nodiscard]] auto getDate() const -> mods::Date;
+    [[nodiscard]] auto getDate() const -> Date;
 
-    [[nodiscard]] auto getTime() const -> mods::Time;
+    [[nodiscard]] auto getTime() const -> Time;
 
   public:
     [[nodiscard]] static auto equalDate(DateTime dt1, DateTime dt2) -> bool;

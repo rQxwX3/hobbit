@@ -72,8 +72,8 @@ auto TaskSeries::setRecurrence(util::Recurrence recurrence) -> void {
 }
 
 [[nodiscard]] auto TaskSeries::isForDate(Date date) const -> bool {
-    if (date < getStart().getDate() ||
-        (stop_.has_value() && date > stop_->getDate())) {
+    if (date < getStart().getDaysSinceEpoch() ||
+        (stop_.has_value() && date > stop_->getDaysSinceEpoch())) {
         return false;
     }
 

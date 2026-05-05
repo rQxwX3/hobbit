@@ -53,7 +53,7 @@ TEST(TaskSeriesTest, GetStartReturnsCorrectValue) {
 
     auto series{TaskSeries(task, recurrence, std::nullopt)};
 
-    EXPECT_EQ(series.getStart().getDate(), start.getDate());
+    EXPECT_EQ(series.getStart().getDays(), start.getDays());
 }
 
 TEST(TaskSeriesTest, GetStopReturnsCorrectValue) {
@@ -65,7 +65,7 @@ TEST(TaskSeriesTest, GetStopReturnsCorrectValue) {
 
     auto series{TaskSeries(task, recurrence, stop)};
 
-    EXPECT_EQ(series.getStop()->getDate(), stop.getDate());
+    EXPECT_EQ(series.getStop()->getDays(), stop.getDays());
 }
 
 TEST(TaskSeriesTest, IsForDateRespectsStartBoundary) {
@@ -116,7 +116,7 @@ TEST(TaskSeriesTest, GenerateSingularsReturnsTasksForDate) {
     auto result{series.generateSingularsForDate(Date(2025, 1, 3))};
 
     EXPECT_FALSE(result.empty());
-    EXPECT_EQ(result.front().getDateTime().getDate(), Date(2025, 1, 3));
+    EXPECT_EQ(result.front().getDateTime().getDays(), Date(2025, 1, 3));
 }
 
 TEST(TaskSeriesTest, GenerateSingularsEmptyWhenNoMatch) {
@@ -157,7 +157,7 @@ TEST(TaskSeriesTest, SetStopUpdatesValue) {
     auto series{TaskSeries(task, recurrence, stop1)};
     series.setStop(stop2);
 
-    EXPECT_EQ(series.getStop()->getDate(), stop2.getDate());
+    EXPECT_EQ(series.getStop()->getDays(), stop2.getDays());
 }
 
 TEST(TaskSeriesTest, FromJSONRoundTrip) {
@@ -174,9 +174,9 @@ TEST(TaskSeriesTest, FromJSONRoundTrip) {
 
     ASSERT_TRUE(restored.has_value());
 
-    EXPECT_EQ(restored->getStart().getDate(), original.getStart().getDate());
+    EXPECT_EQ(restored->getStart().getDays(), original.getStart().getDays());
 
-    EXPECT_EQ(restored->getStop()->getDate(), original.getStop()->getDate());
+    EXPECT_EQ(restored->getStop()->getDays(), original.getStop()->getDays());
 }
 
 TEST(TaskSeriesTest, FromJSONMissingFieldFails) {
