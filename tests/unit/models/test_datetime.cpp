@@ -222,10 +222,14 @@ TEST(TestDateTime, AddSimpleDateIntervals) {
     /* add days */
     EXPECT_EQ(datetime + Interval::days(1), DateTime({2026, 5, 6}, {19, 59}));
     EXPECT_EQ(datetime + Interval::days(2), DateTime({2026, 5, 7}, {19, 59}));
+    EXPECT_EQ(datetime + Interval::days(10000),
+              DateTime({2053, 9, 20}, {19, 59}));
 
     /* add weeks */
     EXPECT_EQ(datetime + Interval::weeks(1), DateTime({2026, 5, 12}, {19, 59}));
     EXPECT_EQ(datetime + Interval::weeks(2), DateTime({2026, 5, 19}, {19, 59}));
+    EXPECT_EQ(datetime + Interval::weeks(10000),
+              DateTime({2217, 12, 30}, {19, 59}));
 
     /* week is a multiple of day */
     EXPECT_EQ(datetime + Interval::days(7), datetime + Interval::weeks(1));
@@ -235,10 +239,14 @@ TEST(TestDateTime, AddSimpleDateIntervals) {
     /* add months */
     EXPECT_EQ(datetime + Interval::months(1), DateTime({2026, 6, 5}, {19, 59}));
     EXPECT_EQ(datetime + Interval::months(2), DateTime({2026, 7, 5}, {19, 59}));
+    EXPECT_EQ(datetime + Interval::months(1000),
+              DateTime({2109, 9, 5}, {19, 59}));
 
     /* add years */
     EXPECT_EQ(datetime + Interval::years(1), DateTime({2027, 5, 5}, {19, 59}));
     EXPECT_EQ(datetime + Interval::years(2), DateTime({2028, 5, 5}, {19, 59}));
+    EXPECT_EQ(datetime + Interval::years(1000),
+              DateTime({3026, 5, 5}, {19, 59}));
 
     /* year is a multiple of month */
     EXPECT_EQ(datetime + Interval::months(12), datetime + Interval::years(1));
@@ -412,5 +420,26 @@ TEST(TestDateTime, DaysDiffBetweenDateTimesOnLeapYear) {
     EXPECT_EQ(DateTime::daysDiff(DateTime({2023, 2, 28}, {22, 59}),
                                  DateTime({2024, 3, 1}, {0, 0})),
               Interval::days(366));
+}
+
+TEST(TestDateTime, DiffAndIntervalCancelEachOtherOut) {
+    auto dt1{DateTime({2026, 5, 5}, {19, 59})};
+    auto dt2{DateTime({2025, 4, 4}, {18, 58})};
+
+    auto diff(DateTime::diff(dt1, dt2));
+    EXPECT_EQ(dt2 + diff, dt1);
+
+    /* on leap year */
+    dt1 = DateTime({2025, 5, 5}, {19, 59});
+    dt2 = DateTime({2023, 4, 4}, {18, 58});
+
+    diff = DateTime::diff(dt1, dt2);
+    EXPECT_EQ(dt2 + diff, dt1);
+
+    dt1 = DateTime({2025, 5, 5}, {19, 59});
+    dt2 = DateTime({1023, 2, 2}, {10, 58});
+
+    diff = DateTime::diff(dt1, dt2);
+    EXPECT_EQ(dt2 + diff, dt1);
 }
 } // namespace test::mods
