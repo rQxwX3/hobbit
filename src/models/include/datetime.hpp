@@ -18,15 +18,16 @@ class DateTime {
         THURSDAY,
         FRIDAY,
         SATURDAY,
+        COUNT_,
     };
 
-  private:
+  public:
     using duration_t = std::chrono::minutes;
     using value_t = std::chrono::sys_time<duration_t>;
 
     using weekday_t = Week;
 
-  private:
+  public:
     struct Date {
       public:
         using year_t = int16_t;
@@ -36,6 +37,7 @@ class DateTime {
         using duration_t = std::chrono::days;
 
       public:
+        /* order must not be changed */
         year_t year;
         month_t month;
         day_t day;
@@ -56,6 +58,9 @@ class DateTime {
 
             return std::chrono::sys_days(ymd).time_since_epoch();
         }
+
+        [[nodiscard]] auto operator<=>(const Date &other) const
+            -> std::strong_ordering = default;
     };
 
     struct Time {
@@ -73,6 +78,7 @@ class DateTime {
         static constexpr minute_t maxMinuteValue{59};
 
       public:
+        /* order must not be changed */
         hour_t hour;
         minute_t minute;
 
@@ -85,6 +91,9 @@ class DateTime {
         [[nodiscard]] auto toDuration() const -> duration_t {
             return duration_t((hour * Interval::minutesInHour) + minute);
         }
+
+        [[nodiscard]] auto operator<=>(const Time &other) const
+            -> std::strong_ordering = default;
     };
 
   private:
@@ -132,15 +141,14 @@ class DateTime {
     value_t value_;
 
   private:
-    DateTime(value_t value);
-
-  private:
     [[nodiscard]] auto getDaysSinceEpoch() const -> Date::duration_t;
 
     [[nodiscard]] auto getMinutesSinceMidnight() const -> Time::duration_t;
 
   public:
     DateTime();
+
+    DateTime(value_t value);
 
     DateTime(Date date, Time time = {.hour = 0, .minute = 0});
 
@@ -151,6 +159,8 @@ class DateTime {
     [[nodiscard]] auto getDate() const -> Date;
 
     [[nodiscard]] auto getTime() const -> Time;
+
+    [[nodiscard]] auto getWeekday() const -> weekday_t;
 
   public:
     [[nodiscard]] static auto equalDate(DateTime dt1, DateTime dt2) -> bool;
@@ -175,6 +185,9 @@ class DateTime {
 
   public:
     [[nodiscard]] static auto diff(const DateTime &dt1, const DateTime &dt2)
+        -> Interval;
+
+    [[nodiscard]] static auto daysDiff(const DateTime &dt1, const DateTime &dt2)
         -> Interval;
 };
 } // namespace hbt::mods

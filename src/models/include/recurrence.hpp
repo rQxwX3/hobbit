@@ -89,11 +89,12 @@ class Recurrence {
     [[nodiscard]] auto getWeekdayPattern() const -> WeekdayRecurrencePattern;
 
   public:
-    [[nodiscard]] auto getTimeStampsOnDate(DateTime start, Date date) const
+    [[nodiscard]] auto getTimeStampsOnDate(DateTime start, DateTime on) const
         -> timestamps_t;
 
   public:
-    [[nodiscard]] auto isForDate(DateTime start, Date date) const -> bool;
+    [[nodiscard]] auto isForDate(DateTime start, DateTime datetime) const
+        -> bool;
 
   private:
     [[nodiscard]] static auto containsAllJSONFields(const nlohmann::json &json)

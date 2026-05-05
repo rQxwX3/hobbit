@@ -98,15 +98,15 @@ class TaskSeries {
     auto setRecurrence(util::Recurrence recurrence) -> void;
 
   private:
-    [[nodiscard]] auto generateFirstSingularOfDate(mods::Date date) const
+    [[nodiscard]] auto generateFirstSingularOfDate(DateTime datetime) const
         -> std::optional<hbt::mods::SingularTask>;
 
   public:
-    [[nodiscard]] auto generateSingularsForDate(mods::Date date) const
+    [[nodiscard]] auto generateSingularsForDate(DateTime datetime) const
         -> std::vector<hbt::mods::SingularTask>;
 
   public:
-    [[nodiscard]] auto isForDate(hbt::mods::Date date) const -> bool;
+    [[nodiscard]] auto isForDate(DateTime datetime) const -> bool;
 
   private:
     [[nodiscard]] auto static containsAllJSONFields(const nlohmann::json &json)

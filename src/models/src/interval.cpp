@@ -7,9 +7,9 @@
 
 namespace hbt::mods {
 auto Interval::validateValue(value_t value) -> value_t {
-    if (value > maxValue) {
-        throw std::invalid_argument(errorMessage(Error::InvalidValue));
-    }
+    // if (value > maxValue) {
+    //     throw std::invalid_argument(errorMessage(Error::InvalidValue));
+    // }
 
     return value;
 }

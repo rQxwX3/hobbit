@@ -35,9 +35,9 @@ IntervalRecurrencePattern::fromJSON(const nlohmann::json &json)
 
 [[nodiscard]] auto
 IntervalRecurrencePattern::happensOnDate(mods::DateTime start,
-                                         mods::Date date) const -> bool {
+                                         mods::DateTime on) const -> bool {
     if (interval_.isZero()) {
-        return start.getDaysSinceEpoch() == date;
+        return DateTime::equalDate(start, on);
     }
 
     if (interval_ < Interval::days(1)) {
@@ -46,8 +46,8 @@ IntervalRecurrencePattern::happensOnDate(mods::DateTime start,
 
     // TODO: for day-based intervals use math instead of a loop
 
-    for (auto dt{start}; dt.getDaysSinceEpoch() <= date; dt += interval_) {
-        if (dt.getDaysSinceEpoch() == date) {
+    for (auto dt{start}; dt.getDate() <= on.getDate(); dt += interval_) {
+        if (DateTime::equalDate(dt, on)) {
             return true;
         }
     }
@@ -56,9 +56,9 @@ IntervalRecurrencePattern::happensOnDate(mods::DateTime start,
 }
 
 [[nodiscard]] auto IntervalRecurrencePattern::getFirstTimeStampOnDate(
-    mods::DateTime start, mods::Date date) const -> std::optional<timestamp_t> {
-    for (auto dt{start}; dt.getDaysSinceEpoch() <= date; dt += interval_) {
-        if (dt.getDaysSinceEpoch() == date) {
+    DateTime start, DateTime on) const -> std::optional<timestamp_t> {
+    for (auto dt{start}; dt.getDate() <= on.getDate(); dt += interval_) {
+        if (DateTime::equalDate(dt, on)) {
             return dt;
         }
     }
@@ -67,17 +67,17 @@ IntervalRecurrencePattern::happensOnDate(mods::DateTime start,
 }
 
 [[nodiscard]] auto IntervalRecurrencePattern::getTimeStampsOnDate(
-    mods::DateTime start, mods::Date date) const -> timestamps_t {
+    DateTime start, DateTime on) const -> timestamps_t {
     auto result{timestamps_t{}};
 
-    auto firstTS{getFirstTimeStampOnDate(start, date)};
+    auto firstTS{getFirstTimeStampOnDate(start, on)};
     if (!firstTS.has_value()) {
         return result;
     }
 
-    auto endDate{date + mods::Interval::days(1)};
+    auto endDate{on + mods::Interval::days(1)};
 
-    for (auto ts{firstTS}; ts->getDays() != endDate; *ts += interval_) {
+    for (auto ts{firstTS}; ts->getDate() != endDate; *ts += interval_) {
         result.push_back(*ts);
     }
 
@@ -118,10 +118,10 @@ WeekdayRecurrencePattern::WeekdayRecurrencePattern(
 WeekdayRecurrencePattern::getDateOfFirstTimeStamp(mods::DateTime start) const
     -> timestamp_t {
     for (auto days{0}; days != Interval::daysInWeek; ++days) {
-        auto date{start + Interval::days(days)};
+        auto datetime{start + Interval::days(days)};
 
-        if (weekdays_.containsWeekday(date.getDaysSinceEpoch().getWeekday())) {
-            return date;
+        if (weekdays_.containsWeekday(datetime.getWeekday())) {
+            return datetime;
         }
     }
 
@@ -129,22 +129,23 @@ WeekdayRecurrencePattern::getDateOfFirstTimeStamp(mods::DateTime start) const
 }
 
 [[nodiscard]] auto WeekdayRecurrencePattern::happensOnDate(DateTime start,
-                                                           Date date) const
+                                                           DateTime on) const
     -> bool {
-    if (!weekdays_.containsWeekday(date.getWeekday())) {
+    if (!weekdays_.containsWeekday(on.getWeekday())) {
         return false;
     }
 
-    auto firstTimeStampDate{getDateOfFirstTimeStamp(start)};
+    auto firstTimeStampDateTime{getDateOfFirstTimeStamp(start)};
 
-    return Date::daysBetween(date, firstTimeStampDate.getDays())
+    return DateTime::daysDiff(on, firstTimeStampDateTime)
         .isMultipleOf(interval_);
 }
 
-[[nodiscard]] auto WeekdayRecurrencePattern::getTimeStampsOnDate(
-    mods::DateTime start, mods::Date date) const -> timestamps_t {
-    if (happensOnDate(start, date)) {
-        return {mods::DateTime(date)};
+[[nodiscard]] auto
+WeekdayRecurrencePattern::getTimeStampsOnDate(DateTime start, DateTime on) const
+    -> timestamps_t {
+    if (happensOnDate(start, on)) {
+        return {mods::DateTime(on)};
     }
 
     return {};

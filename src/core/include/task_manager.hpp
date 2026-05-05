@@ -37,15 +37,17 @@ class TaskManager {
                          singulars_repo_t singularsRepo);
 
   private:
-    [[nodiscard]] auto instantiateSeriesForDate(mods::Date date) const
+    [[nodiscard]] auto instantiateSeriesForDate(mods::DateTime datetime) const
         -> singulars_t;
 
   public:
-    [[nodiscard]] auto getTasksForDate(mods::Date date) const -> singulars_t;
+    [[nodiscard]] auto getTasksForDate(mods::DateTime datetime) const
+        -> singulars_t;
 
     // Including from, excluding to
-    [[nodiscard]] auto getTasksForDateRange(mods::Date from,
-                                            mods::Date to) const -> calendar_t;
+    [[nodiscard]] auto getTasksForDateRange(mods::DateTime from,
+                                            mods::DateTime to) const
+        -> calendar_t;
 
     [[nodiscard]] auto getCalendarForToday() const -> calendar_t;
 

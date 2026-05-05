@@ -26,20 +26,20 @@ Recurrence::Recurrence(pattern_t pattern) : pattern_{std::move(pattern)} {}
 }
 
 [[nodiscard]] auto Recurrence::getTimeStampsOnDate(DateTime start,
-                                                   Date date) const
+                                                   DateTime datetime) const
     -> timestamps_t {
     return std::visit(
         [&](const auto &pattern) -> auto {
-            return pattern.getTimeStampsOnDate(start, date);
+            return pattern.getTimeStampsOnDate(start, datetime);
         },
         pattern_);
 }
 
-[[nodiscard]] auto Recurrence::isForDate(DateTime start, Date date) const
-    -> bool {
+[[nodiscard]] auto Recurrence::isForDate(DateTime start,
+                                         DateTime datetime) const -> bool {
     return std::visit(
         [&](const auto &pattern) -> bool {
-            return pattern.happensOnDate(start, date);
+            return pattern.happensOnDate(start, datetime);
         },
         pattern_);
 }

@@ -35,8 +35,8 @@ auto SingularTask::setCompleted(bool completed) -> void {
     return task_.isCompleted();
 }
 
-[[nodiscard]] auto SingularTask::isForDate(hbt::mods::Date date) const -> bool {
-    return getDateTime().getDaysSinceEpoch() == date;
+[[nodiscard]] auto SingularTask::isForDate(DateTime datetime) const -> bool {
+    return getDateTime().getDate() == datetime.getDate();
 }
 
 [[nodiscard]] auto SingularTask::hasDeadline() const -> bool {

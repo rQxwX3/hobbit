@@ -29,8 +29,8 @@ class RecurrencePattern {
     virtual ~RecurrencePattern() = default;
 
   public:
-    [[nodiscard]] virtual auto getTimeStampsOnDate(DateTime start,
-                                                   DateTime on) const
+    [[nodiscard]] virtual auto getTimeStampsOnDate(mods::DateTime start,
+                                                   mods::Date date) const
         -> timestamps_t = 0;
 };
 

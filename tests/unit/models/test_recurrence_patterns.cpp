@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 
-#include <date.hpp>
 #include <datetime.hpp>
 #include <interval.hpp>
 #include <recurrence_patterns.hpp>
@@ -9,7 +8,6 @@
 #include <chrono>
 
 namespace test::mods::util {
-using hbt::mods::Date;
 using year = std::chrono::year;
 using month = std::chrono::month;
 using day = std::chrono::day;

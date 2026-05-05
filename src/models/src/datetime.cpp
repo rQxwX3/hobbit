@@ -11,7 +11,15 @@ DateTime::DateTime() : value_{DateTime::now().value_} {}
 DateTime::DateTime(value_t value) : value_{value} {}
 
 DateTime::DateTime(Date date, Time time)
-    : value_{duration_t(date.toDuration() + time.toDuration())} {}
+    : value_{duration_t(date.toDuration() + time.toDuration())} {
+    if (!date.ok()) {
+        throw std::invalid_argument(errorMessage(Error::InvalidDate));
+    }
+
+    if (!time.ok()) {
+        throw std::invalid_argument(errorMessage(Error::InvalidTime));
+    }
+}
 
 [[nodiscard]] auto DateTime::getDaysSinceEpoch() const -> Date::duration_t {
     return std::chrono::duration_cast<Date::duration_t>(
@@ -20,8 +28,12 @@ DateTime::DateTime(Date date, Time time)
 
 [[nodiscard]] auto DateTime::getMinutesSinceMidnight() const
     -> Time::duration_t {
-    return std::chrono::duration_cast<Time::duration_t>(
-        value_.time_since_epoch());
+    using namespace std::chrono;
+
+    auto days{floor<std::chrono::days>(value_)};
+    auto timeOfDay{value_ - days};
+
+    return duration_cast<Time::duration_t>(timeOfDay);
 }
 
 [[nodiscard]] auto DateTime::now() -> DateTime {
@@ -48,6 +60,13 @@ DateTime::DateTime(Date date, Time time)
 
     return {.hour = static_cast<Time::hour_t>(hms.hours().count()),
             .minute = static_cast<Time::minute_t>(hms.minutes().count())};
+}
+
+[[nodiscard]] auto DateTime::getWeekday() const -> weekday_t {
+    auto days{std::chrono::floor<Date::duration_t>(value_)};
+    auto wd{std::chrono::weekday(days)};
+
+    return static_cast<weekday_t>(wd.c_encoding());
 }
 
 [[nodiscard]] auto DateTime::equalDate(DateTime dt1, DateTime dt2) -> bool {
@@ -167,5 +186,12 @@ auto DateTime::operator+=(const Interval &interval) -> DateTime & {
     auto mins{duration_cast<minutes>(diff < minutes{0} ? -diff : diff)};
 
     return Interval::minutes(mins.count());
+}
+
+[[nodiscard]] auto DateTime::daysDiff(const DateTime &dt1, const DateTime &dt2)
+    -> Interval {
+    auto minutesDiff{DateTime::diff(dt1, dt2)[Interval::unit_t::MINUTE]};
+
+    return Interval::days(minutesDiff / Interval::minutesInDay);
 }
 }; // namespace hbt::mods

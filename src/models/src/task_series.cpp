@@ -54,10 +54,10 @@ auto TaskSeries::setRecurrence(util::Recurrence recurrence) -> void {
     recurrence_ = std::move(recurrence);
 }
 
-[[nodiscard]] auto TaskSeries::generateSingularsForDate(mods::Date date) const
+[[nodiscard]] auto TaskSeries::generateSingularsForDate(DateTime datetime) const
     -> std::vector<hbt::mods::SingularTask> {
     auto results{std::vector<mods::SingularTask>{}};
-    auto timestamps{recurrence_.getTimeStampsOnDate(getStart(), date)};
+    auto timestamps{recurrence_.getTimeStampsOnDate(getStart(), datetime)};
 
     for (const auto &ts : timestamps) {
         // TODO: assert ts.getData() = datetime.getData()
@@ -71,13 +71,13 @@ auto TaskSeries::setRecurrence(util::Recurrence recurrence) -> void {
     return results;
 }
 
-[[nodiscard]] auto TaskSeries::isForDate(Date date) const -> bool {
-    if (date < getStart().getDaysSinceEpoch() ||
-        (stop_.has_value() && date > stop_->getDaysSinceEpoch())) {
+[[nodiscard]] auto TaskSeries::isForDate(DateTime datetime) const -> bool {
+    if (datetime.getDate() < getStart().getDate() ||
+        (stop_.has_value() && datetime.getDate() > stop_->getDate())) {
         return false;
     }
 
-    return recurrence_.isForDate(getStart(), date);
+    return recurrence_.isForDate(getStart(), datetime);
 }
 
 [[nodiscard]] auto TaskSeries::containsAllJSONFields(const nlohmann::json &json)
