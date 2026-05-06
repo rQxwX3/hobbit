@@ -414,8 +414,6 @@ TEST(TestDateTime, AddIntervalOnLeapYearFebruaryBorder) {
               DateTime({2024, 2, 29}, {00, 00}));
 
     datetime = DateTime({2024, 1, 31});
-    EXPECT_EQ(datetime + Interval::months(1), DateTime({2024, 2, 29}))
-        << (datetime + Interval::months(1)).toISO8601String() << '\n';
 
     datetime = DateTime({2023, 1, 27}, {22, 59});
     EXPECT_EQ(
@@ -423,6 +421,74 @@ TEST(TestDateTime, AddIntervalOnLeapYearFebruaryBorder) {
             Interval(
                 {.years = 1, .months = 1, .days = 1, .hours = 1, .minutes = 1}),
         DateTime({2024, 2, 29}, {0, 0}));
+}
+
+TEST(TestDateTime, AddSimpleIntervalsWithDifferentMonthHandling) {
+    using Handling = Interval::MonthHandling;
+
+    auto datetime{DateTime({2024, 1, 31})};
+
+    /* wrap around */
+    EXPECT_EQ(datetime + Interval::months(1), DateTime({2024, 3, 2}));
+
+    /* clamp to month end */
+    EXPECT_EQ(datetime + Interval({.months = 1}, Handling::ClampToEnd),
+              DateTime({2024, 2, 29}));
+
+    /* default month handling == wrap around */
+    EXPECT_EQ(datetime + Interval::months(1),
+              datetime + Interval({.months = 1}, Handling::WrapAround));
+}
+
+TEST(TestDateTime, ClampToEndPreservesLastDay) {
+    using Handling = Interval::MonthHandling;
+
+    auto datetime{DateTime({2024, 2, 29})};
+
+    EXPECT_EQ(datetime + Interval({.months = 1}, Handling::ClampToEnd),
+              DateTime({2024, 3, 31}))
+        << (datetime + Interval({.months = 1}, Handling::ClampToEnd))
+               .toISO8601String()
+        << '\n';
+}
+
+TEST(TestDateTime, AddMixedIntervalsWithDifferentMonthHandling) {
+    using Handling = Interval::MonthHandling;
+
+    auto datetime{DateTime({2024, 1, 31})};
+
+    /* leap year */
+    EXPECT_EQ(datetime +
+                  Interval({.years = 4, .months = 1}, Handling::WrapAround),
+              DateTime({2028, 3, 2}));
+
+    EXPECT_EQ(datetime +
+                  Interval({.years = 4, .months = 1}, Handling::ClampToEnd),
+              DateTime({2028, 2, 29}));
+
+    /* non-leap year */
+    datetime = DateTime({2023, 1, 31});
+
+    EXPECT_EQ(datetime + Interval({.months = 1}, Handling::WrapAround),
+              DateTime({2023, 3, 3}));
+
+    EXPECT_EQ(datetime + Interval({.months = 1}, Handling::ClampToEnd),
+              DateTime({2023, 2, 28}));
+}
+
+TEST(TestDateTime, AddMixedIntervalsWithDifferentMonthHandlingOnDayBorder) {
+    using Handling = Interval::MonthHandling;
+
+    auto datetime{DateTime({2024, 1, 29}, {22, 00})};
+
+    EXPECT_EQ(datetime +
+                  Interval({.months = 1, .hours = 2}, Handling::ClampToEnd),
+              DateTime({2024, 3, 1}));
+
+    /* must produce same result */
+    EXPECT_EQ(
+        datetime + Interval({.months = 1, .hours = 2}, Handling::WrapAround),
+        datetime + Interval({.months = 1, .hours = 2}, Handling::ClampToEnd));
 }
 
 TEST(TestDateTime, Diff) {
