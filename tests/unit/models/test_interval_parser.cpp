@@ -10,12 +10,12 @@ TEST(NaturalLanguageParserTest, ParsesValidInputs) {
         "1year 2months 3weeks 4days 5hours 6minutes")};
     ASSERT_TRUE(result);
 
-    EXPECT_EQ(result->getUnitValue(Interval::unit_t::YEAR), 1);
-    EXPECT_EQ(result->getUnitValue(Interval::unit_t::MONTH), 2);
-    EXPECT_EQ(result->getUnitValue(Interval::unit_t::WEEK), 3);
-    EXPECT_EQ(result->getUnitValue(Interval::unit_t::DAY), 4);
-    EXPECT_EQ(result->getUnitValue(Interval::unit_t::HOUR), 5);
-    EXPECT_EQ(result->getUnitValue(Interval::unit_t::MINUTE), 6);
+    EXPECT_EQ(result->getUnitValue(Interval::Unit::YEAR), 1);
+    EXPECT_EQ(result->getUnitValue(Interval::Unit::MONTH), 2);
+    EXPECT_EQ(result->getUnitValue(Interval::Unit::WEEK), 3);
+    EXPECT_EQ(result->getUnitValue(Interval::Unit::DAY), 4);
+    EXPECT_EQ(result->getUnitValue(Interval::Unit::HOUR), 5);
+    EXPECT_EQ(result->getUnitValue(Interval::Unit::MINUTE), 6);
 
     result = Interval::fromNaturalLanguage("1y2m3w4d5h6min");
     ASSERT_TRUE(result);
@@ -28,8 +28,8 @@ TEST(NaturalLanguageParserTest, HandlesFiltering) {
     auto result{Interval::fromNaturalLanguage("!@# 1 year !! 2 months @@")};
     ASSERT_TRUE(result);
 
-    EXPECT_EQ(result->getUnitValue(Interval::unit_t::YEAR), 1);
-    EXPECT_EQ(result->getUnitValue(Interval::unit_t::MONTH), 2);
+    EXPECT_EQ(result->getUnitValue(Interval::Unit::YEAR), 1);
+    EXPECT_EQ(result->getUnitValue(Interval::Unit::MONTH), 2);
 }
 TEST(NaturalLanguageParserTest, RejectsInvalidInputs) {
     EXPECT_FALSE(Interval::fromNaturalLanguage(""));
@@ -82,21 +82,21 @@ TEST(ISO8601ParserTest, ParsesValidInputs) {
 
     result = Interval::fromISO8601String("PT1M");
     ASSERT_TRUE(result.has_value());
-    EXPECT_EQ(result->getUnitValue(Interval::unit_t::MINUTE), 1);
+    EXPECT_EQ(result->getUnitValue(Interval::Unit::MINUTE), 1);
 
     result = Interval::fromISO8601String("PT1H1M");
     ASSERT_TRUE(result.has_value());
-    EXPECT_EQ(result->getUnitValue(Interval::unit_t::HOUR), 1);
-    EXPECT_EQ(result->getUnitValue(Interval::unit_t::MINUTE), 1);
+    EXPECT_EQ(result->getUnitValue(Interval::Unit::HOUR), 1);
+    EXPECT_EQ(result->getUnitValue(Interval::Unit::MINUTE), 1);
 
     result = Interval::fromISO8601String("P1Y2M3W4DT5H6M");
     ASSERT_TRUE(result.has_value());
-    EXPECT_EQ(result->getUnitValue(Interval::unit_t::YEAR), 1);
-    EXPECT_EQ(result->getUnitValue(Interval::unit_t::MONTH), 2);
-    EXPECT_EQ(result->getUnitValue(Interval::unit_t::WEEK), 3);
-    EXPECT_EQ(result->getUnitValue(Interval::unit_t::DAY), 4);
-    EXPECT_EQ(result->getUnitValue(Interval::unit_t::HOUR), 5);
-    EXPECT_EQ(result->getUnitValue(Interval::unit_t::MINUTE), 6);
+    EXPECT_EQ(result->getUnitValue(Interval::Unit::YEAR), 1);
+    EXPECT_EQ(result->getUnitValue(Interval::Unit::MONTH), 2);
+    EXPECT_EQ(result->getUnitValue(Interval::Unit::WEEK), 3);
+    EXPECT_EQ(result->getUnitValue(Interval::Unit::DAY), 4);
+    EXPECT_EQ(result->getUnitValue(Interval::Unit::HOUR), 5);
+    EXPECT_EQ(result->getUnitValue(Interval::Unit::MINUTE), 6);
 }
 
 TEST(ISO8601ParserTest, RejectsInvalidInputs) {

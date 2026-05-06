@@ -4,7 +4,7 @@
 
 namespace test::mods {
 using hbt::mods::Interval;
-using unit_t = Interval::unit_t;
+using Unit = Interval::Unit;
 
 [[nodiscard]] auto Interval123456() -> Interval {
     return Interval(Interval::struct_t{
@@ -20,23 +20,23 @@ using unit_t = Interval::unit_t;
 TEST(IntervalTest, EmptyOnConstruction) {
     auto interval{Interval{}};
 
-    EXPECT_EQ(interval.getUnitValue(unit_t::YEAR), 0);
-    EXPECT_EQ(interval.getUnitValue(unit_t::MONTH), 0);
-    EXPECT_EQ(interval.getUnitValue(unit_t::WEEK), 0);
-    EXPECT_EQ(interval.getUnitValue(unit_t::DAY), 0);
-    EXPECT_EQ(interval.getUnitValue(unit_t::HOUR), 0);
-    EXPECT_EQ(interval.getUnitValue(unit_t::MINUTE), 0);
+    EXPECT_EQ(interval.getUnitValue(Unit::YEAR), 0);
+    EXPECT_EQ(interval.getUnitValue(Unit::MONTH), 0);
+    EXPECT_EQ(interval.getUnitValue(Unit::WEEK), 0);
+    EXPECT_EQ(interval.getUnitValue(Unit::DAY), 0);
+    EXPECT_EQ(interval.getUnitValue(Unit::HOUR), 0);
+    EXPECT_EQ(interval.getUnitValue(Unit::MINUTE), 0);
 }
 
 TEST(IntervalTest, ArrayConstructor) {
     auto interval{Interval123456()};
 
-    EXPECT_EQ(interval.getUnitValue(unit_t::YEAR), 1);
-    EXPECT_EQ(interval.getUnitValue(unit_t::MONTH), 2);
-    EXPECT_EQ(interval.getUnitValue(unit_t::WEEK), 3);
-    EXPECT_EQ(interval.getUnitValue(unit_t::DAY), 4);
-    EXPECT_EQ(interval.getUnitValue(unit_t::HOUR), 5);
-    EXPECT_EQ(interval.getUnitValue(unit_t::MINUTE), 6);
+    EXPECT_EQ(interval.getUnitValue(Unit::YEAR), 1);
+    EXPECT_EQ(interval.getUnitValue(Unit::MONTH), 2);
+    EXPECT_EQ(interval.getUnitValue(Unit::WEEK), 3);
+    EXPECT_EQ(interval.getUnitValue(Unit::DAY), 4);
+    EXPECT_EQ(interval.getUnitValue(Unit::HOUR), 5);
+    EXPECT_EQ(interval.getUnitValue(Unit::MINUTE), 6);
 }
 
 TEST(IntervalTest, ArrayConstructorThrowsOnInvalidValue) {
@@ -60,12 +60,12 @@ TEST(IntervalTest, StructConstructor) {
                       .minutes = 6};
     auto interval{Interval{u}};
 
-    EXPECT_EQ(interval.getUnitValue(unit_t::YEAR), 1);
-    EXPECT_EQ(interval.getUnitValue(unit_t::MONTH), 2);
-    EXPECT_EQ(interval.getUnitValue(unit_t::WEEK), 3);
-    EXPECT_EQ(interval.getUnitValue(unit_t::DAY), 4);
-    EXPECT_EQ(interval.getUnitValue(unit_t::HOUR), 5);
-    EXPECT_EQ(interval.getUnitValue(unit_t::MINUTE), 6);
+    EXPECT_EQ(interval.getUnitValue(Unit::YEAR), 1);
+    EXPECT_EQ(interval.getUnitValue(Unit::MONTH), 2);
+    EXPECT_EQ(interval.getUnitValue(Unit::WEEK), 3);
+    EXPECT_EQ(interval.getUnitValue(Unit::DAY), 4);
+    EXPECT_EQ(interval.getUnitValue(Unit::HOUR), 5);
+    EXPECT_EQ(interval.getUnitValue(Unit::MINUTE), 6);
 }
 
 TEST(IntervalTest, StructConstructorThrowsOnInvalidValue) {
@@ -85,12 +85,12 @@ TEST(IntervalTest, ConvertUnitsUpwards) {
 
     auto res{interval.convertUnitsUpwards()};
 
-    EXPECT_EQ(res.getUnitValue(unit_t::YEAR), 2);
-    EXPECT_EQ(res.getUnitValue(unit_t::MONTH), 0);
-    EXPECT_EQ(res.getUnitValue(unit_t::WEEK), 5);
-    EXPECT_EQ(res.getUnitValue(unit_t::DAY), 1);
-    EXPECT_EQ(res.getUnitValue(unit_t::HOUR), 1);
-    EXPECT_EQ(res.getUnitValue(unit_t::MINUTE), 0);
+    EXPECT_EQ(res.getUnitValue(Unit::YEAR), 2);
+    EXPECT_EQ(res.getUnitValue(Unit::MONTH), 0);
+    EXPECT_EQ(res.getUnitValue(Unit::WEEK), 5);
+    EXPECT_EQ(res.getUnitValue(Unit::DAY), 1);
+    EXPECT_EQ(res.getUnitValue(Unit::HOUR), 1);
+    EXPECT_EQ(res.getUnitValue(Unit::MINUTE), 0);
 }
 
 TEST(IntervalTest, ConvertUnitsDownwards) {
@@ -98,25 +98,25 @@ TEST(IntervalTest, ConvertUnitsDownwards) {
 
     auto res{interval.convertUnitsDownwards()};
 
-    EXPECT_EQ(res.getUnitValue(unit_t::YEAR), 0);
-    EXPECT_EQ(res.getUnitValue(unit_t::MONTH), 14);
-    EXPECT_EQ(res.getUnitValue(unit_t::WEEK), 0);
-    EXPECT_EQ(res.getUnitValue(unit_t::DAY), 0);
-    EXPECT_EQ(res.getUnitValue(unit_t::HOUR), 0);
-    EXPECT_EQ(res.getUnitValue(unit_t::MINUTE), 36306);
+    EXPECT_EQ(res.getUnitValue(Unit::YEAR), 0);
+    EXPECT_EQ(res.getUnitValue(Unit::MONTH), 14);
+    EXPECT_EQ(res.getUnitValue(Unit::WEEK), 0);
+    EXPECT_EQ(res.getUnitValue(Unit::DAY), 0);
+    EXPECT_EQ(res.getUnitValue(Unit::HOUR), 0);
+    EXPECT_EQ(res.getUnitValue(Unit::MINUTE), 36306);
 }
 
 TEST(IntervalTest, FromUnit) {
-    auto interval{Interval::fromUnit(unit_t::YEAR, 12)};
-    EXPECT_EQ(interval.getUnitValue(unit_t::YEAR), 12);
+    auto interval{Interval::fromUnit(Unit::YEAR, 12)};
+    EXPECT_EQ(interval.getUnitValue(Unit::YEAR), 12);
 
-    EXPECT_THROW(Interval::fromUnit(unit_t::MONTH, Interval::maxValue + 1),
+    EXPECT_THROW(Interval::fromUnit(Unit::MONTH, Interval::maxValue + 1),
                  std::invalid_argument);
 }
 
 TEST(IntervalTest, FactoryFunctions) {
     auto allExceptUnitAreNullAndUnitIsValue{
-        [](Interval interval, unit_t exceptUnit,
+        [](Interval interval, Unit exceptUnit,
            Interval::value_t value) -> bool {
             for (auto unit : Interval::units) {
                 if (unit == exceptUnit &&
@@ -133,41 +133,41 @@ TEST(IntervalTest, FactoryFunctions) {
         }};
 
     EXPECT_TRUE(allExceptUnitAreNullAndUnitIsValue(Interval::years(12),
-                                                   unit_t::YEAR, 12));
+                                                   Unit::YEAR, 12));
 
     EXPECT_TRUE(allExceptUnitAreNullAndUnitIsValue(Interval::months(11),
-                                                   unit_t::MONTH, 11));
+                                                   Unit::MONTH, 11));
 
     EXPECT_TRUE(allExceptUnitAreNullAndUnitIsValue(Interval::weeks(10),
-                                                   unit_t::WEEK, 10));
+                                                   Unit::WEEK, 10));
     EXPECT_TRUE(
-        allExceptUnitAreNullAndUnitIsValue(Interval::days(9), unit_t::DAY, 9));
+        allExceptUnitAreNullAndUnitIsValue(Interval::days(9), Unit::DAY, 9));
 
     EXPECT_TRUE(allExceptUnitAreNullAndUnitIsValue(Interval::hours(8),
-                                                   unit_t::HOUR, 8));
+                                                   Unit::HOUR, 8));
 
     EXPECT_TRUE(allExceptUnitAreNullAndUnitIsValue(Interval::minutes(7),
-                                                   unit_t::MINUTE, 7));
+                                                   Unit::MINUTE, 7));
 }
 
 TEST(IntervalTest, GetNonZeroUnitValuePairs) {
     EXPECT_THAT(Interval123456().getNonZeroUnitValuePairs(),
-                testing::ElementsAre(std::make_pair(unit_t::YEAR, 1),
-                                     std::make_pair(unit_t::MONTH, 2),
-                                     std::make_pair(unit_t::WEEK, 3),
-                                     std::make_pair(unit_t::DAY, 4),
-                                     std::make_pair(unit_t::HOUR, 5),
-                                     std::make_pair(unit_t::MINUTE, 6)));
+                testing::ElementsAre(std::make_pair(Unit::YEAR, 1),
+                                     std::make_pair(Unit::MONTH, 2),
+                                     std::make_pair(Unit::WEEK, 3),
+                                     std::make_pair(Unit::DAY, 4),
+                                     std::make_pair(Unit::HOUR, 5),
+                                     std::make_pair(Unit::MINUTE, 6)));
 
     EXPECT_THAT(Interval(Interval::array_t{1, 0, 1, 0, 1, 0})
                     .getNonZeroUnitValuePairs(),
-                testing::ElementsAre(std::make_pair(unit_t::YEAR, 1),
-                                     std::make_pair(unit_t::WEEK, 1),
-                                     std::make_pair(unit_t::HOUR, 1)));
+                testing::ElementsAre(std::make_pair(Unit::YEAR, 1),
+                                     std::make_pair(Unit::WEEK, 1),
+                                     std::make_pair(Unit::HOUR, 1)));
 
     EXPECT_THAT(Interval(Interval::array_t{0, 0, 0, 0, 0, 1})
                     .getNonZeroUnitValuePairs(),
-                testing::ElementsAre(std::make_pair(unit_t::MINUTE, 1)));
+                testing::ElementsAre(std::make_pair(Unit::MINUTE, 1)));
 
     EXPECT_TRUE(Interval().getNonZeroUnitValuePairs().empty());
 }
@@ -183,50 +183,50 @@ TEST(IntervalTest, IsZero) {
 TEST(IntervalTest, AddGetUnits) {
     auto interval{Interval{}};
 
-    interval.addUnit(unit_t::YEAR, 1);
-    EXPECT_EQ(interval.getUnitValue(unit_t::YEAR), 1);
+    interval.addUnit(Unit::YEAR, 1);
+    EXPECT_EQ(interval.getUnitValue(Unit::YEAR), 1);
 
-    interval.addUnit(unit_t::MONTH, 1);
-    EXPECT_EQ(interval.getUnitValue(unit_t::MONTH), 1);
+    interval.addUnit(Unit::MONTH, 1);
+    EXPECT_EQ(interval.getUnitValue(Unit::MONTH), 1);
 
-    interval.addUnit(unit_t::WEEK, 1);
-    EXPECT_EQ(interval.getUnitValue(unit_t::WEEK), 1);
+    interval.addUnit(Unit::WEEK, 1);
+    EXPECT_EQ(interval.getUnitValue(Unit::WEEK), 1);
 
-    interval.addUnit(unit_t::DAY, 1);
-    EXPECT_EQ(interval.getUnitValue(unit_t::DAY), 1);
+    interval.addUnit(Unit::DAY, 1);
+    EXPECT_EQ(interval.getUnitValue(Unit::DAY), 1);
 
-    interval.addUnit(unit_t::HOUR, 1);
-    EXPECT_EQ(interval.getUnitValue(unit_t::HOUR), 1);
+    interval.addUnit(Unit::HOUR, 1);
+    EXPECT_EQ(interval.getUnitValue(Unit::HOUR), 1);
 
-    interval.addUnit(unit_t::MINUTE, 1);
-    EXPECT_EQ(interval.getUnitValue(unit_t::MINUTE), 1);
+    interval.addUnit(Unit::MINUTE, 1);
+    EXPECT_EQ(interval.getUnitValue(Unit::MINUTE), 1);
 }
 
 TEST(IntervalTest, OperatorPlus) {
     auto first{Interval{}};
-    first.addUnit(unit_t::YEAR, 1);
-    first.addUnit(unit_t::MONTH, 1);
-    first.addUnit(unit_t::WEEK, 1);
-    first.addUnit(unit_t::DAY, 1);
-    first.addUnit(unit_t::HOUR, 1);
-    first.addUnit(unit_t::MINUTE, 1);
+    first.addUnit(Unit::YEAR, 1);
+    first.addUnit(Unit::MONTH, 1);
+    first.addUnit(Unit::WEEK, 1);
+    first.addUnit(Unit::DAY, 1);
+    first.addUnit(Unit::HOUR, 1);
+    first.addUnit(Unit::MINUTE, 1);
 
     auto second{Interval{}};
-    second.addUnit(unit_t::YEAR, 1);
-    second.addUnit(unit_t::MONTH, 2);
-    second.addUnit(unit_t::WEEK, 3);
-    second.addUnit(unit_t::DAY, 4);
-    second.addUnit(unit_t::HOUR, 5);
-    second.addUnit(unit_t::MINUTE, 6);
+    second.addUnit(Unit::YEAR, 1);
+    second.addUnit(Unit::MONTH, 2);
+    second.addUnit(Unit::WEEK, 3);
+    second.addUnit(Unit::DAY, 4);
+    second.addUnit(Unit::HOUR, 5);
+    second.addUnit(Unit::MINUTE, 6);
 
     auto result{first + second};
 
-    EXPECT_EQ(result.getUnitValue(unit_t::YEAR), 2);
-    EXPECT_EQ(result.getUnitValue(unit_t::MONTH), 3);
-    EXPECT_EQ(result.getUnitValue(unit_t::WEEK), 4);
-    EXPECT_EQ(result.getUnitValue(unit_t::DAY), 5);
-    EXPECT_EQ(result.getUnitValue(unit_t::HOUR), 6);
-    EXPECT_EQ(result.getUnitValue(unit_t::MINUTE), 7);
+    EXPECT_EQ(result.getUnitValue(Unit::YEAR), 2);
+    EXPECT_EQ(result.getUnitValue(Unit::MONTH), 3);
+    EXPECT_EQ(result.getUnitValue(Unit::WEEK), 4);
+    EXPECT_EQ(result.getUnitValue(Unit::DAY), 5);
+    EXPECT_EQ(result.getUnitValue(Unit::HOUR), 6);
+    EXPECT_EQ(result.getUnitValue(Unit::MINUTE), 7);
 }
 
 TEST(IntervalTest, ComparisonOperators) {
@@ -250,11 +250,11 @@ TEST(IntervalTest, ComparisonOperators) {
 }
 
 TEST(IntervalTest, OnlyContainsUnit) {
-    EXPECT_TRUE(Interval::days(5).onlyContainsUnit(unit_t::DAY));
+    EXPECT_TRUE(Interval::days(5).onlyContainsUnit(Unit::DAY));
 
-    EXPECT_FALSE(Interval123456().onlyContainsUnit(unit_t::MONTH));
+    EXPECT_FALSE(Interval123456().onlyContainsUnit(Unit::MONTH));
 
-    EXPECT_FALSE(Interval().onlyContainsUnit(unit_t::MONTH));
+    EXPECT_FALSE(Interval().onlyContainsUnit(Unit::MONTH));
 }
 
 TEST(IntervalTest, IsMultipleOf) {

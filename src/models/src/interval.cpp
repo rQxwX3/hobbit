@@ -46,28 +46,31 @@ auto Interval::validateArray(array_t array) -> array_t {
     return unitsStruct;
 }
 
-Interval::Interval() : units_{array_t{}} {}
+Interval::Interval(MonthHandling monthHandling)
+    : units_{array_t{}}, monthHandling_{monthHandling} {}
 
-Interval::Interval(array_t unitsArray) : units_{validateArray(unitsArray)} {}
+Interval::Interval(array_t unitsArray, MonthHandling monthHandling)
+    : units_{validateArray(unitsArray)}, monthHandling_{monthHandling} {}
 
-Interval::Interval(const Units &unitsStruct)
-    : units_{validateStruct(unitsStruct).toArray()} {};
+Interval::Interval(const Units &unitsStruct, MonthHandling monthHandling)
+    : units_{validateStruct(unitsStruct).toArray()},
+      monthHandling_{monthHandling} {};
 
 [[nodiscard]] auto Interval::convertUnitsUpwards() const -> Interval {
     auto copy{*this};
 
     auto convertUpwards{
-        [&copy](unit_t from, unit_t to, value_t conversionRatio) -> void {
+        [&copy](Unit from, Unit to, value_t conversionRatio) -> void {
             assert(to < from);
 
             copy.units_[to] += copy.units_[from] / conversionRatio;
             copy.units_[from] %= conversionRatio;
         }};
 
-    convertUpwards(unit_t::MINUTE, unit_t::HOUR, minutesInHour);
-    convertUpwards(unit_t::HOUR, unit_t::DAY, hoursInDay);
-    convertUpwards(unit_t::DAY, unit_t::WEEK, daysInWeek);
-    convertUpwards(unit_t::MONTH, unit_t::YEAR, monthsInYear);
+    convertUpwards(Unit::MINUTE, Unit::HOUR, minutesInHour);
+    convertUpwards(Unit::HOUR, Unit::DAY, hoursInDay);
+    convertUpwards(Unit::DAY, Unit::WEEK, daysInWeek);
+    convertUpwards(Unit::MONTH, Unit::YEAR, monthsInYear);
 
     return copy;
 }
@@ -76,21 +79,21 @@ Interval::Interval(const Units &unitsStruct)
     auto copy{*this};
 
     auto convertDownwards{
-        [&copy](unit_t from, unit_t to, value_t conversionRatio) -> void {
+        [&copy](Unit from, Unit to, value_t conversionRatio) -> void {
             assert(from < to);
             copy.units_[to] += copy.units_[from] * conversionRatio;
             copy.units_[from] = 0;
         }};
 
-    convertDownwards(unit_t::YEAR, unit_t::MONTH, monthsInYear);
-    convertDownwards(unit_t::WEEK, unit_t::DAY, daysInWeek);
-    convertDownwards(unit_t::DAY, unit_t::HOUR, hoursInDay);
-    convertDownwards(unit_t::HOUR, unit_t::MINUTE, minutesInHour);
+    convertDownwards(Unit::YEAR, Unit::MONTH, monthsInYear);
+    convertDownwards(Unit::WEEK, Unit::DAY, daysInWeek);
+    convertDownwards(Unit::DAY, Unit::HOUR, hoursInDay);
+    convertDownwards(Unit::HOUR, Unit::MINUTE, minutesInHour);
 
     return copy;
 }
 
-[[nodiscard]] auto Interval::fromUnit(unit_t unit, value_t value) -> Interval {
+[[nodiscard]] auto Interval::fromUnit(Unit unit, value_t value) -> Interval {
     auto array{array_t{}};
     array[unit] = validateValue(value);
 
@@ -98,27 +101,27 @@ Interval::Interval(const Units &unitsStruct)
 }
 
 [[nodiscard]] auto Interval::years(value_t value) -> Interval {
-    return fromUnit(unit_t::YEAR, value);
+    return fromUnit(Unit::YEAR, value);
 }
 
 [[nodiscard]] auto Interval::months(value_t value) -> Interval {
-    return fromUnit(unit_t::MONTH, value);
+    return fromUnit(Unit::MONTH, value);
 }
 
 [[nodiscard]] auto Interval::weeks(value_t value) -> Interval {
-    return fromUnit(unit_t::WEEK, value);
+    return fromUnit(Unit::WEEK, value);
 }
 
 [[nodiscard]] auto Interval::days(value_t value) -> Interval {
-    return fromUnit(unit_t::DAY, value);
+    return fromUnit(Unit::DAY, value);
 }
 
 [[nodiscard]] auto Interval::hours(value_t value) -> Interval {
-    return fromUnit(unit_t::HOUR, value);
+    return fromUnit(Unit::HOUR, value);
 }
 
 [[nodiscard]] auto Interval::minutes(value_t value) -> Interval {
-    return fromUnit(unit_t::MINUTE, value);
+    return fromUnit(Unit::MINUTE, value);
 }
 
 // NOT USED
@@ -138,7 +141,7 @@ Interval::Interval(const Units &unitsStruct)
 [[nodiscard]] auto Interval::getNonZeroUnitValuePairs() const
     -> std::vector<unitValuePair_t> {
     std::vector<unitValuePair_t> result;
-    result.reserve(unit_t::COUNT_);
+    result.reserve(Unit::COUNT_);
 
     for (const auto unit : Interval::units) {
         if (auto value{units_[unit]}; value) {
@@ -149,7 +152,11 @@ Interval::Interval(const Units &unitsStruct)
     return result;
 }
 
-auto Interval::addUnit(unit_t unit, value_t value) -> void {
+[[nodiscard]] auto Interval::getMonthHandling() const -> MonthHandling {
+    return monthHandling_;
+}
+
+auto Interval::addUnit(Unit unit, value_t value) -> void {
     auto result{units_[unit] + value};
 
     try {
@@ -159,7 +166,7 @@ auto Interval::addUnit(unit_t unit, value_t value) -> void {
     }
 }
 
-[[nodiscard]] auto Interval::getUnitValue(unit_t unit) const -> value_t {
+[[nodiscard]] auto Interval::getUnitValue(Unit unit) const -> value_t {
     return units_[unit];
 }
 
@@ -172,7 +179,7 @@ auto Interval::addUnit(unit_t unit, value_t value) -> void {
                                [](auto value) -> bool { return value == 0; });
 }
 
-[[nodiscard]] auto Interval::onlyContainsUnit(unit_t onlyUnit) const -> bool {
+[[nodiscard]] auto Interval::onlyContainsUnit(Unit onlyUnit) const -> bool {
     for (const auto unit : Interval::units) {
         if (unit == static_cast<size_t>(onlyUnit) && units_[unit] == 0) {
             return false;
@@ -190,24 +197,23 @@ auto Interval::addUnit(unit_t unit, value_t value) -> void {
     auto convertedThis{this->convertUnitsDownwards()};
     auto convertedOther{other.convertUnitsDownwards()};
 
-    auto isUnitMultipleOf(
-        [&convertedThis, &convertedOther](unit_t unit) -> bool {
-            auto thisValue{convertedThis.getUnitValue(unit)};
-            auto otherValue{convertedOther.getUnitValue(unit)};
+    auto isUnitMultipleOf([&convertedThis, &convertedOther](Unit unit) -> bool {
+        auto thisValue{convertedThis.getUnitValue(unit)};
+        auto otherValue{convertedOther.getUnitValue(unit)};
 
-            if (otherValue == 0) {
-                return thisValue == 0;
-            }
+        if (otherValue == 0) {
+            return thisValue == 0;
+        }
 
-            return thisValue % otherValue == 0;
-        });
+        return thisValue % otherValue == 0;
+    });
 
-    return isUnitMultipleOf(unit_t::MONTH) && isUnitMultipleOf(unit_t::MINUTE);
+    return isUnitMultipleOf(Unit::MONTH) && isUnitMultipleOf(Unit::MINUTE);
 }
 
 [[nodiscard]] auto Interval::operator+(const Interval &other) const
     -> Interval {
-    auto result{Interval{*this}};
+    auto result{Interval{*this}}; // preserves lhs' MonthHandling
 
     for (const auto unit : Interval::units) {
         result.addUnit(unit, other.getUnitValue(unit));
@@ -245,7 +251,7 @@ auto Interval::addUnit(unit_t unit, value_t value) -> void {
     return true;
 }
 
-[[nodiscard]] auto Interval::operator[](unit_t unit) const -> value_t {
+[[nodiscard]] auto Interval::operator[](Unit unit) const -> value_t {
     return units_[unit];
 }
 

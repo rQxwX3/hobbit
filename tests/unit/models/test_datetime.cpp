@@ -125,23 +125,51 @@ TEST(TestDateTime, ComparisonOperators) {
     EXPECT_TRUE(DateTime::now() <= DateTime::now());
 
     EXPECT_FALSE(DateTime::now() > DateTime::now());
-    EXPECT_FALSE(DateTime::now() > DateTime::now());
+    EXPECT_FALSE(DateTime::now() < DateTime::now());
+
+    /* date w/o time */
+    EXPECT_TRUE(DateTime({2024, 5, 5}) != DateTime({2023, 5, 5}));
+    EXPECT_TRUE(DateTime({2024, 5, 5}) != DateTime({2024, 4, 5}));
+    EXPECT_TRUE(DateTime({2024, 5, 5}) != DateTime({2024, 5, 4}));
+
+    EXPECT_FALSE(DateTime({2024, 5, 5}) == DateTime({2023, 5, 5}));
+    EXPECT_FALSE(DateTime({2024, 5, 5}) == DateTime({2024, 4, 5}));
+    EXPECT_FALSE(DateTime({2024, 5, 5}) == DateTime({2024, 5, 4}));
 
     EXPECT_TRUE(DateTime({2024, 5, 5}) > DateTime({2023, 5, 5}));
     EXPECT_TRUE(DateTime({2024, 5, 5}) > DateTime({2024, 4, 5}));
     EXPECT_TRUE(DateTime({2024, 5, 5}) > DateTime({2024, 5, 4}));
+    EXPECT_TRUE(DateTime({2024, 5, 5}) >= DateTime({2023, 5, 5}));
+    EXPECT_TRUE(DateTime({2024, 5, 5}) >= DateTime({2024, 4, 5}));
+    EXPECT_TRUE(DateTime({2024, 5, 5}) >= DateTime({2024, 5, 4}));
 
+    EXPECT_TRUE(DateTime({2023, 5, 5}) < DateTime({2024, 5, 5}));
+    EXPECT_TRUE(DateTime({2024, 4, 5}) < DateTime({2024, 5, 5}));
+    EXPECT_TRUE(DateTime({2024, 5, 4}) < DateTime({2024, 5, 5}));
+    EXPECT_TRUE(DateTime({2023, 5, 5}) <= DateTime({2024, 5, 5}));
+    EXPECT_TRUE(DateTime({2024, 4, 5}) <= DateTime({2024, 5, 5}));
+    EXPECT_TRUE(DateTime({2024, 5, 4}) <= DateTime({2024, 5, 5}));
+
+    /* date w/ time */
     EXPECT_TRUE(DateTime({2024, 5, 5}, {12, 12}) ==
                 DateTime({2024, 5, 5}, {12, 12}));
+    EXPECT_FALSE(DateTime({2024, 5, 5}, {12, 12}) !=
+                 DateTime({2024, 5, 5}, {12, 12}));
 
     EXPECT_TRUE(DateTime({2024, 5, 5}, {12, 12}) >
                 DateTime({2024, 5, 5}, {11, 12}));
+    EXPECT_TRUE(DateTime({2024, 5, 5}, {11, 12}) <
+                DateTime({2024, 5, 5}, {12, 12}));
 
     EXPECT_TRUE(DateTime({2024, 5, 5}, {12, 12}) >
                 DateTime({2024, 5, 5}, {12, 11}));
+    EXPECT_TRUE(DateTime({2024, 5, 5}, {12, 11}) <
+                DateTime({2024, 5, 5}, {12, 12}));
 
     EXPECT_TRUE(DateTime({2024, 5, 5}, {12, 12}) >
                 DateTime({2024, 5, 5}, {0, 0}));
+    EXPECT_TRUE(DateTime({2024, 5, 5}, {0, 0}) <
+                DateTime({2024, 5, 5}, {12, 12}));
 }
 
 TEST(TestDateTime, ISO8601ValidInput) {
@@ -172,6 +200,12 @@ TEST(TestDateTime, ISO8601InvalidFormat) {
 
     /* missing time separator */
     EXPECT_FALSE(DateTime::fromISO8601String("2024-12-0123:40"));
+
+    /* invalid time separator */
+    EXPECT_FALSE(DateTime::fromISO8601String("2024-01-01t00:00"));
+    EXPECT_FALSE(DateTime::fromISO8601String("2024-01-01G00:00"));
+    EXPECT_FALSE(DateTime::fromISO8601String("2024-01-01-00:00"));
+    EXPECT_FALSE(DateTime::fromISO8601String("2024-01-01|00:00"));
 
     /* missing date separator */
     EXPECT_FALSE(DateTime::fromISO8601String("202412-01T23:40"));
@@ -218,6 +252,9 @@ TEST(TestDateTime, ISO8601SecondsAreIgnored) {
 
 TEST(TestDateTime, AddSimpleDateIntervals) {
     auto datetime{DateTime({2026, 5, 5}, {19, 59})};
+
+    /* zero interval */
+    EXPECT_EQ(datetime + Interval(), datetime);
 
     /* add days */
     EXPECT_EQ(datetime + Interval::days(1), DateTime({2026, 5, 6}, {19, 59}));
@@ -376,6 +413,10 @@ TEST(TestDateTime, AddIntervalOnLeapYearFebruaryBorder) {
     EXPECT_EQ(datetime + Interval::minutes(1),
               DateTime({2024, 2, 29}, {00, 00}));
 
+    datetime = DateTime({2024, 1, 31});
+    EXPECT_EQ(datetime + Interval::months(1), DateTime({2024, 2, 29}))
+        << (datetime + Interval::months(1)).toISO8601String() << '\n';
+
     datetime = DateTime({2023, 1, 27}, {22, 59});
     EXPECT_EQ(
         datetime +
@@ -384,7 +425,7 @@ TEST(TestDateTime, AddIntervalOnLeapYearFebruaryBorder) {
         DateTime({2024, 2, 29}, {0, 0}));
 }
 
-TEST(TestDateTime, DiffBetweenDateTimes) {
+TEST(TestDateTime, Diff) {
     auto dt1{DateTime({2026, 5, 5}, {19, 59})};
     auto dt2{DateTime({2025, 4, 4}, {18, 58})};
 
@@ -396,7 +437,7 @@ TEST(TestDateTime, DiffBetweenDateTimes) {
     EXPECT_EQ(DateTime::diff(dt1, dt2), Interval());
 }
 
-TEST(TestDateTime, DiffBetweenDateTimesOnLeapYear) {
+TEST(TestDateTime, DiffOnLeapYear) {
     EXPECT_EQ(DateTime::diff(DateTime({2024, 2, 28}), DateTime({2024, 3, 1})),
               Interval::minutes(2880));
 
@@ -405,14 +446,14 @@ TEST(TestDateTime, DiffBetweenDateTimesOnLeapYear) {
               Interval::minutes(527101));
 }
 
-TEST(TestDateTime, DaysDiffBetweenDateTimes) {
+TEST(TestDateTime, DaysDiff) {
     auto dt1{DateTime({2026, 5, 5}, {19, 59})};
     auto dt2{DateTime({2025, 4, 4}, {18, 58})};
 
     EXPECT_EQ(DateTime::daysDiff(dt1, dt2), Interval::days(396));
 }
 
-TEST(TestDateTime, DaysDiffBetweenDateTimesOnLeapYear) {
+TEST(TestDateTime, DaysDiffOnLeapYear) {
     EXPECT_EQ(
         DateTime::daysDiff(DateTime({2024, 2, 28}), DateTime({2024, 3, 1})),
         Interval::days(2));

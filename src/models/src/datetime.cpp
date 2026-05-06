@@ -137,13 +137,35 @@ DateTime::DateTime(Date date, Time time)
 [[nodiscard]] auto DateTime::operator+(const Interval &interval) const
     -> DateTime {
     using namespace std::chrono;
-    using unit_t = Interval::unit_t;
+    using Unit = Interval::Unit;
 
-    auto addYearsAndMonths([](year_month_day &ymd, Interval::value_t years,
-                              Interval::value_t months) -> void {
-        ymd += std::chrono::years(years);
-        ymd += std::chrono::months(months);
-    });
+    auto addYearsAndMonths(
+        [](year_month_day &ymd, const Interval &interval) -> void {
+            using namespace std::chrono;
+
+            auto intervalYears{interval[Interval::Unit::YEAR]};
+            auto intervalMonths{interval[Interval::Unit::MONTH]};
+
+            switch (interval.getMonthHandling()) {
+            case Interval::MonthHandling::WrapAround:
+                ymd += years(intervalYears);
+                ymd += months(intervalMonths);
+
+                break;
+
+            case Interval::MonthHandling::ClampToEnd:
+                auto originalDay{ymd.day()};
+
+                auto ym{year_month(ymd.year() / ymd.month())};
+                ym += years(intervalYears);
+                ym += months(intervalMonths);
+                auto lastDay{year_month_day_last(ym / last).day()};
+
+                auto newDay{(originalDay <= lastDay) ? originalDay : lastDay};
+
+                ymd = year_month_day{ym / newDay};
+            }
+        });
 
     auto addWeeksAndDays([](year_month_day &ymd, Interval::value_t weeks,
                             Interval::value_t days) -> void {
@@ -163,12 +185,11 @@ DateTime::DateTime(Date date, Time time)
     auto timeOfDay{value_ - dateInDays};
     auto ymd{year_month_day(dateInDays)};
 
-    addYearsAndMonths(ymd, interval[unit_t::YEAR], interval[unit_t::MONTH]);
-    addWeeksAndDays(ymd, interval[unit_t::WEEK], interval[unit_t::DAY]);
+    addYearsAndMonths(ymd, interval);
+    addWeeksAndDays(ymd, interval[Unit::WEEK], interval[Unit::DAY]);
 
     auto timepoint{sys_days(ymd) + timeOfDay};
-    addHoursAndMinutes(timepoint, interval[unit_t::HOUR],
-                       interval[unit_t::MINUTE]);
+    addHoursAndMinutes(timepoint, interval[Unit::HOUR], interval[Unit::MINUTE]);
 
     return {timepoint};
 }
@@ -190,7 +211,7 @@ auto DateTime::operator+=(const Interval &interval) -> DateTime & {
 
 [[nodiscard]] auto DateTime::daysDiff(const DateTime &dt1, const DateTime &dt2)
     -> Interval {
-    auto minutesDiff{DateTime::diff(dt1, dt2)[Interval::unit_t::MINUTE]};
+    auto minutesDiff{DateTime::diff(dt1, dt2)[Interval::Unit::MINUTE]};
 
     return Interval::days(minutesDiff / Interval::minutesInDay);
 }

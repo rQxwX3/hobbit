@@ -86,7 +86,7 @@ IntervalRecurrencePattern::happensOnDate(mods::DateTime start,
 
 auto WeekdayRecurrencePattern::validateInterval(const Interval &interval)
     -> Interval {
-    if (!interval.onlyContainsUnit(mods::Interval::unit_t::WEEK)) {
+    if (!interval.onlyContainsUnit(mods::Interval::Unit::WEEK)) {
         throw std::invalid_argument(errorMessage(Error::InvalidInterval));
     }
 

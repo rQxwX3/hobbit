@@ -5,6 +5,8 @@
 #include <regex>
 
 namespace hbt::mods::util {
+using Unit = Interval::Unit;
+
 [[nodiscard]] auto toLower(std::string_view string) -> std::string {
     auto result{std::string{string}};
     std::ranges::transform(result, result.begin(),
@@ -164,7 +166,7 @@ auto NaturalLanguageParser::parseAllUnits(const std::string &filteredInput,
 
     Interval result{};
 
-    auto parseGroup{[&matches, &result](unit_t unit) -> void {
+    auto parseGroup{[&matches, &result](Unit unit) -> void {
         auto unitGroup{patternUnitGroups[unit]};
 
         if (matches[unitGroup].matched) {
@@ -176,9 +178,9 @@ auto NaturalLanguageParser::parseAllUnits(const std::string &filteredInput,
         }
     }};
 
-    for (auto unit{static_cast<size_t>(unit_t::YEAR)}; unit != unit_t::COUNT_;
+    for (auto unit{static_cast<size_t>(Unit::YEAR)}; unit != Unit::COUNT_;
          ++unit) {
-        parseGroup(static_cast<unit_t>(unit));
+        parseGroup(static_cast<Unit>(unit));
     }
 
     return result;
@@ -193,7 +195,7 @@ auto NaturalLanguageParser::parseAllUnits(const std::string &filteredInput,
     auto result{std::string{formatPrefix}};
     auto timeSectionStarted{false};
 
-    auto formatDateGroup{[&interval, &result](unit_t unit) -> void {
+    auto formatDateGroup{[&interval, &result](Unit unit) -> void {
         if (const auto value{interval.getUnitValue(unit)}; value) {
             result += std::to_string(value);
             result += unitSeparators[unit];
@@ -201,7 +203,7 @@ auto NaturalLanguageParser::parseAllUnits(const std::string &filteredInput,
     }};
 
     auto formatTimeGroup{
-        [&timeSectionStarted, &interval, &result](unit_t unit) -> void {
+        [&timeSectionStarted, &interval, &result](Unit unit) -> void {
             if (const auto value{interval.getUnitValue(unit)}; value) {
                 if (!timeSectionStarted) {
                     result += timeSectionSeparator;
@@ -213,14 +215,14 @@ auto NaturalLanguageParser::parseAllUnits(const std::string &filteredInput,
             }
         }};
 
-    for (auto unit{static_cast<size_t>(unit_t::YEAR)}; unit != unit_t::HOUR;
+    for (auto unit{static_cast<size_t>(Unit::YEAR)}; unit != Unit::HOUR;
          ++unit) {
-        formatDateGroup(static_cast<unit_t>(unit));
+        formatDateGroup(static_cast<Unit>(unit));
     }
 
-    for (auto unit{static_cast<size_t>(unit_t::HOUR)}; unit != unit_t::COUNT_;
+    for (auto unit{static_cast<size_t>(Unit::HOUR)}; unit != Unit::COUNT_;
          ++unit) {
-        formatTimeGroup(static_cast<unit_t>(unit));
+        formatTimeGroup(static_cast<Unit>(unit));
     }
 
     return result;

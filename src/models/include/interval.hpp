@@ -46,7 +46,7 @@ class Interval {
     }
 
   public:
-    using unit_t = enum : uint8_t {
+    using Unit = enum : uint8_t {
         YEAR,
         MONTH,
         WEEK,
@@ -57,9 +57,9 @@ class Interval {
     };
 
     using value_t = std::size_t;
-    using unitValuePair_t = std::pair<unit_t, value_t>;
+    using unitValuePair_t = std::pair<Unit, value_t>;
 
-    using array_t = std::array<value_t, unit_t::COUNT_>;
+    using array_t = std::array<value_t, Unit::COUNT_>;
 
     struct Units {
         value_t years{0};
@@ -74,16 +74,24 @@ class Interval {
         }
 
         [[nodiscard]] static auto fromArray(const array_t &array) -> Units {
-            return {.years = array[unit_t::YEAR],
-                    .months = array[unit_t::MONTH],
-                    .weeks = array[unit_t::WEEK],
-                    .days = array[unit_t::DAY],
-                    .hours = array[unit_t::HOUR],
-                    .minutes = array[unit_t::MINUTE]};
+            return {.years = array[Unit::YEAR],
+                    .months = array[Unit::MONTH],
+                    .weeks = array[Unit::WEEK],
+                    .days = array[Unit::DAY],
+                    .hours = array[Unit::HOUR],
+                    .minutes = array[Unit::MINUTE]};
         }
     };
 
     using struct_t = Units;
+
+  public:
+    enum class MonthHandling : uint8_t {
+        WrapAround,
+        ClampToEnd,
+    };
+
+    static constexpr auto defaultMonthHandling{MonthHandling::WrapAround};
 
   public:
     static constexpr auto daysInWeek{value_t{7}};
@@ -97,15 +105,16 @@ class Interval {
     static constexpr auto maxValue{value_t{minutesInDay}};
 
   public:
-    static constexpr auto units{std::array<unit_t, unit_t::COUNT_>{
-        unit_t::YEAR, unit_t::MONTH, unit_t::WEEK, unit_t::DAY, unit_t::HOUR,
-        unit_t::MINUTE}};
+    static constexpr auto units{
+        std::array<Unit, Unit::COUNT_>{Unit::YEAR, Unit::MONTH, Unit::WEEK,
+                                       Unit::DAY, Unit::HOUR, Unit::MINUTE}};
 
   private:
     array_t units_;
+    MonthHandling monthHandling_;
 
   private:
-    [[nodiscard]] auto getMaxNonZeroUnit() const -> std::optional<unit_t>;
+    [[nodiscard]] auto getMaxNonZeroUnit() const -> std::optional<Unit>;
 
   private:
     static auto validateValue(value_t value) -> value_t;
@@ -115,11 +124,12 @@ class Interval {
     [[nodiscard]] static auto validateStruct(struct_t unitsStruct) -> struct_t;
 
   public:
-    Interval();
+    Interval(MonthHandling = defaultMonthHandling);
 
-    explicit Interval(array_t unitsArray);
+    explicit Interval(array_t array, MonthHandling = defaultMonthHandling);
 
-    explicit Interval(const struct_t &unitsStruct);
+    explicit Interval(const struct_t &units,
+                      MonthHandling = defaultMonthHandling);
 
   public:
     [[nodiscard]] auto convertUnitsUpwards() const -> Interval;
@@ -127,7 +137,7 @@ class Interval {
     [[nodiscard]] auto convertUnitsDownwards() const -> Interval;
 
   public:
-    [[nodiscard]] static auto fromUnit(unit_t unit, value_t value) -> Interval;
+    [[nodiscard]] static auto fromUnit(Unit unit, value_t value) -> Interval;
 
   public:
     [[nodiscard]] static auto years(value_t value) -> Interval;
@@ -143,20 +153,22 @@ class Interval {
     [[nodiscard]] static auto minutes(value_t value) -> Interval;
 
   public:
-    auto addUnit(unit_t unit, value_t value) -> void;
+    auto addUnit(Unit unit, value_t value) -> void;
 
   public:
-    [[nodiscard]] auto getUnitValue(unit_t unit) const -> value_t;
+    [[nodiscard]] auto getUnitValue(Unit unit) const -> value_t;
 
     [[nodiscard]] auto getUnits() const -> Units;
 
     [[nodiscard]] auto getNonZeroUnitValuePairs() const
         -> std::vector<unitValuePair_t>;
 
+    [[nodiscard]] auto getMonthHandling() const -> MonthHandling;
+
   public:
     [[nodiscard]] auto isZero() const -> bool;
 
-    [[nodiscard]] auto onlyContainsUnit(unit_t onlyUnit) const -> bool;
+    [[nodiscard]] auto onlyContainsUnit(Unit onlyUnit) const -> bool;
 
     [[nodiscard]] auto isMultipleOf(Interval other) const -> bool;
 
@@ -170,7 +182,7 @@ class Interval {
 
     [[nodiscard]] auto operator==(const Interval &other) const -> bool;
 
-    [[nodiscard]] auto operator[](unit_t unit) const -> value_t;
+    [[nodiscard]] auto operator[](Unit unit) const -> value_t;
 
   public:
     [[nodiscard]] auto toISO8601String() const -> std::string;

@@ -65,18 +65,18 @@ class NaturalLanguageParser {
             std::function<void(Interval &interval, Interval::value_t value)>;
 
       private:
-        Interval::unit_t unit;
+        Interval::Unit unit;
         possibleValues_t possibleValues_;
         addUnitCallback_t addUnitCallback_;
 
       public:
-        UnitBucket(Interval::unit_t unit, possibleValues_t possibleValues,
+        UnitBucket(Interval::Unit unit, possibleValues_t possibleValues,
                    addUnitCallback_t addUnitCallback)
             : unit{unit}, possibleValues_{std::move(possibleValues)},
               addUnitCallback_{std::move(addUnitCallback)} {}
 
       public:
-        [[nodiscard]] constexpr auto getUnit() const -> Interval::unit_t {
+        [[nodiscard]] constexpr auto getUnit() const -> Interval::Unit {
             return unit;
         }
 
@@ -90,8 +90,8 @@ class NaturalLanguageParser {
         }
     };
 
-    using unitBuckets_t = std::array<UnitBucket, Interval::unit_t::COUNT_>;
-    using matchedBuckets_t = std::bitset<Interval::unit_t::COUNT_>;
+    using unitBuckets_t = std::array<UnitBucket, Interval::Unit::COUNT_>;
+    using matchedBuckets_t = std::bitset<Interval::Unit::COUNT_>;
 
   private:
     [[nodiscard]] static auto
@@ -109,40 +109,40 @@ class NaturalLanguageParser {
     inline static const size_t pairRegexPatternUnitGroup{2};
 
   private:
-    inline static const std::array<std::string, Interval::unit_t::COUNT_>
+    inline static const std::array<std::string, Interval::Unit::COUNT_>
         preferredNaturalLanguageValues{"years", "months", "weeks",
                                        "days",  "hours",  "minutes"};
 
     inline static const std::array<std::unordered_set<std::string>,
-                                   Interval::unit_t::COUNT_>
+                                   Interval::Unit::COUNT_>
         possibleValues{
             getAllSubstrings(
-                preferredNaturalLanguageValues[Interval::unit_t::YEAR],
+                preferredNaturalLanguageValues[Interval::Unit::YEAR],
                 {"e", "a", "r", "s"}),
 
             getAllSubstrings(
-                preferredNaturalLanguageValues[Interval::unit_t::MONTH],
+                preferredNaturalLanguageValues[Interval::Unit::MONTH],
                 {"o", "n", "t", "h", "s", "hs"}),
 
             getAllSubstrings(
-                preferredNaturalLanguageValues[Interval::unit_t::WEEK],
+                preferredNaturalLanguageValues[Interval::Unit::WEEK],
                 {"e", "k", "s"}),
 
             getAllSubstrings(
-                preferredNaturalLanguageValues[Interval::unit_t::DAY],
+                preferredNaturalLanguageValues[Interval::Unit::DAY],
                 {"a", "y", "s"}),
 
             getAllSubstrings(
-                preferredNaturalLanguageValues[Interval::unit_t::HOUR],
+                preferredNaturalLanguageValues[Interval::Unit::HOUR],
                 {"o", "u", "r", "s"}),
 
             getAllSubstrings(
-                preferredNaturalLanguageValues[Interval::unit_t::MINUTE],
+                preferredNaturalLanguageValues[Interval::Unit::MINUTE],
                 {"m", "i", "n", "u", "t", "e", "s", "ms", "mt"}),
         };
 
   private:
-    static auto createUnitBucket(Interval::unit_t unit) -> UnitBucket {
+    static auto createUnitBucket(Interval::Unit unit) -> UnitBucket {
         return UnitBucket{
             unit, possibleValues[unit],
             [unit](Interval &interval, Interval::value_t value) -> void {
@@ -151,22 +151,19 @@ class NaturalLanguageParser {
     }
 
   private:
-    inline static const auto yearBucket{
-        createUnitBucket(Interval::unit_t::YEAR)};
+    inline static const auto yearBucket{createUnitBucket(Interval::Unit::YEAR)};
 
     inline static const auto monthBucket{
-        createUnitBucket(Interval::unit_t::MONTH)};
+        createUnitBucket(Interval::Unit::MONTH)};
 
-    inline static const auto weekBucket{
-        createUnitBucket(Interval::unit_t::WEEK)};
+    inline static const auto weekBucket{createUnitBucket(Interval::Unit::WEEK)};
 
-    inline static const auto dayBucket{createUnitBucket(Interval::unit_t::DAY)};
+    inline static const auto dayBucket{createUnitBucket(Interval::Unit::DAY)};
 
-    inline static const auto hourBucket{
-        createUnitBucket(Interval::unit_t::HOUR)};
+    inline static const auto hourBucket{createUnitBucket(Interval::Unit::HOUR)};
 
     inline static const auto minuteBucket{
-        createUnitBucket(Interval::unit_t::MINUTE)};
+        createUnitBucket(Interval::Unit::MINUTE)};
 
     inline static unitBuckets_t buckets{yearBucket, monthBucket, weekBucket,
                                         dayBucket,  hourBucket,  minuteBucket};
@@ -211,7 +208,7 @@ class ISO8601IntervalParser {
     }
 
   private:
-    using unit_t = Interval::unit_t;
+    using Unit = Interval::Unit;
 
   private:
     /*
@@ -222,7 +219,7 @@ class ISO8601IntervalParser {
     static inline const auto pattern{std::regex{
         R"(^P(?!$)(\d+(?:\.\d+)?Y)?(\d+(?:\.\d+)?M)?(\d+(?:\.\d+)?W)?(\d+(?:\.\d+)?D)?(?:T(?=[\d])(?:(\d+(?:\.\d+)?H)?(\d+(?:\.\d+)?M)?)?)?$)"}};
 
-    static constexpr std::array<size_t, unit_t::COUNT_> patternUnitGroups{
+    static constexpr std::array<size_t, Unit::COUNT_> patternUnitGroups{
         1, 2, 3, 4, 5, 6};
 
   private:
@@ -230,7 +227,7 @@ class ISO8601IntervalParser {
     static constexpr auto formatPrefix{'P'};
     static constexpr auto timeSectionSeparator{'T'};
 
-    static constexpr std::array<char, unit_t::COUNT_> unitSeparators{
+    static constexpr std::array<char, Unit::COUNT_> unitSeparators{
         'Y', 'M', 'W', 'D', 'H', 'M'};
 
   public:
