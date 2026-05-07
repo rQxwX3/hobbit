@@ -432,7 +432,7 @@ TEST(TestDateTime, AddSimpleIntervalsWithDifferentMonthHandling) {
     EXPECT_EQ(datetime + Interval::months(1), DateTime({2024, 3, 2}));
 
     /* clamp to month end */
-    EXPECT_EQ(datetime + Interval({.months = 1}, Handling::ClampToEnd),
+    EXPECT_EQ(datetime + Interval({.months = 1}, Handling::PreserveRelative),
               DateTime({2024, 2, 29}));
 
     /* default month handling == wrap around */
@@ -440,16 +440,13 @@ TEST(TestDateTime, AddSimpleIntervalsWithDifferentMonthHandling) {
               datetime + Interval({.months = 1}, Handling::WrapAround));
 }
 
-TEST(TestDateTime, ClampToEndPreservesLastDay) {
+TEST(TestDateTime, AddingPreserveRelativeIntervalPreservesLastDay) {
     using Handling = Interval::MonthHandling;
 
     auto datetime{DateTime({2024, 2, 29})};
 
-    EXPECT_EQ(datetime + Interval({.months = 1}, Handling::ClampToEnd),
-              DateTime({2024, 3, 31}))
-        << (datetime + Interval({.months = 1}, Handling::ClampToEnd))
-               .toISO8601String()
-        << '\n';
+    EXPECT_EQ(datetime + Interval({.months = 1}, Handling::PreserveRelative),
+              DateTime({2024, 3, 31}));
 }
 
 TEST(TestDateTime, AddMixedIntervalsWithDifferentMonthHandling) {
@@ -462,8 +459,8 @@ TEST(TestDateTime, AddMixedIntervalsWithDifferentMonthHandling) {
                   Interval({.years = 4, .months = 1}, Handling::WrapAround),
               DateTime({2028, 3, 2}));
 
-    EXPECT_EQ(datetime +
-                  Interval({.years = 4, .months = 1}, Handling::ClampToEnd),
+    EXPECT_EQ(datetime + Interval({.years = 4, .months = 1},
+                                  Handling::PreserveRelative),
               DateTime({2028, 2, 29}));
 
     /* non-leap year */
@@ -472,23 +469,80 @@ TEST(TestDateTime, AddMixedIntervalsWithDifferentMonthHandling) {
     EXPECT_EQ(datetime + Interval({.months = 1}, Handling::WrapAround),
               DateTime({2023, 3, 3}));
 
-    EXPECT_EQ(datetime + Interval({.months = 1}, Handling::ClampToEnd),
+    EXPECT_EQ(datetime + Interval({.months = 1}, Handling::PreserveRelative),
               DateTime({2023, 2, 28}));
 }
 
-TEST(TestDateTime, AddMixedIntervalsWithDifferentMonthHandlingOnDayBorder) {
+TEST(TestDateTime, AddingPreserveRelativeIntervalPreservesRelativeDay) {
     using Handling = Interval::MonthHandling;
 
-    auto datetime{DateTime({2024, 1, 29}, {22, 00})};
+    /* last day */
+    auto datetime{DateTime({2024, 1, 31})};
 
-    EXPECT_EQ(datetime +
-                  Interval({.months = 1, .hours = 2}, Handling::ClampToEnd),
+    /* leap year, last day is 29th */
+    EXPECT_EQ(datetime + Interval({.months = 1}, Handling::PreserveRelative),
+              DateTime({2024, 2, 29}));
+
+    /* March has 31 days */
+    EXPECT_EQ(datetime + Interval({.months = 2}, Handling::PreserveRelative),
+              DateTime({2024, 3, 31}));
+
+    /* April has 30 days */
+    EXPECT_EQ(datetime + Interval({.months = 3}, Handling::PreserveRelative),
+              DateTime({2024, 4, 30}));
+
+    /* 1 day before last day */
+    datetime = DateTime({2024, 1, 30});
+
+    /* leap year, last day is 29th */
+    EXPECT_EQ(datetime + Interval({.months = 1}, Handling::PreserveRelative),
+              DateTime({2024, 2, 28}));
+
+    /* March has 31 days */
+    EXPECT_EQ(datetime + Interval({.months = 2}, Handling::PreserveRelative),
+              DateTime({2024, 3, 30}));
+
+    /* April has 30 days */
+    EXPECT_EQ(datetime + Interval({.months = 3}, Handling::PreserveRelative),
+              DateTime({2024, 4, 29}));
+
+    /* 2 day before last day */
+    datetime = DateTime({2024, 1, 29});
+
+    /* leap year, last day is 29th */
+    EXPECT_EQ(datetime + Interval({.months = 1}, Handling::PreserveRelative),
+              DateTime({2024, 2, 27}));
+
+    /* March has 31 days */
+    EXPECT_EQ(datetime + Interval({.months = 2}, Handling::PreserveRelative),
+              DateTime({2024, 3, 29}));
+
+    /* April has 30 days */
+    EXPECT_EQ(datetime + Interval({.months = 3}, Handling::PreserveRelative),
+              DateTime({2024, 4, 28}));
+}
+
+TEST(TestDateTime,
+     AddingPreserveRelativeIntervalDoesntChangeDaysCloseToFirstOfTheMonth) {
+    using Handling = Interval::MonthHandling;
+
+    auto datetime{DateTime({2024, 1, 1})};
+    EXPECT_EQ(datetime + Interval({.months = 1}, Handling::PreserveRelative),
+              DateTime({2024, 2, 1}));
+
+    EXPECT_EQ(datetime + Interval({.months = 2}, Handling::PreserveRelative),
               DateTime({2024, 3, 1}));
 
-    /* must produce same result */
-    EXPECT_EQ(
-        datetime + Interval({.months = 1, .hours = 2}, Handling::WrapAround),
-        datetime + Interval({.months = 1, .hours = 2}, Handling::ClampToEnd));
+    datetime = DateTime({2024, 1, 27});
+
+    EXPECT_EQ(datetime + Interval({.months = 1}, Handling::PreserveRelative),
+              DateTime({2024, 2, 27}));
+
+    EXPECT_EQ(datetime + Interval({.months = 2}, Handling::PreserveRelative),
+              DateTime({2024, 3, 27}));
+
+    EXPECT_EQ(datetime + Interval({.months = 11}, Handling::PreserveRelative),
+              DateTime({2024, 12, 27}));
 }
 
 TEST(TestDateTime, Diff) {
@@ -529,7 +583,7 @@ TEST(TestDateTime, DaysDiffOnLeapYear) {
               Interval::days(366));
 }
 
-TEST(TestDateTime, DiffAndIntervalCancelEachOtherOut) {
+TEST(TestDateTime, DiffAndWrapAroundIntervalCancelEachOtherOut) {
     auto dt1{DateTime({2026, 5, 5}, {19, 59})};
     auto dt2{DateTime({2025, 4, 4}, {18, 58})};
 
@@ -537,14 +591,29 @@ TEST(TestDateTime, DiffAndIntervalCancelEachOtherOut) {
     EXPECT_EQ(dt2 + diff, dt1);
 
     /* on leap year */
-    dt1 = DateTime({2025, 5, 5}, {19, 59});
-    dt2 = DateTime({2023, 4, 4}, {18, 58});
+    dt1 = DateTime({2024, 5, 5}, {19, 59});
+    dt2 = DateTime({2024, 4, 4}, {18, 58});
 
     diff = DateTime::diff(dt1, dt2);
     EXPECT_EQ(dt2 + diff, dt1);
 
+    /* interval containing multiple leap years */
     dt1 = DateTime({2025, 5, 5}, {19, 59});
     dt2 = DateTime({1023, 2, 2}, {10, 58});
+
+    diff = DateTime::diff(dt1, dt2);
+    EXPECT_EQ(dt2 + diff, dt1);
+
+    /* on non-leap year */
+    dt1 = DateTime({2023, 5, 5}, {19, 59});
+    dt2 = DateTime({2023, 2, 2}, {10, 58});
+
+    diff = DateTime::diff(dt1, dt2);
+    EXPECT_EQ(dt2 + diff, dt1);
+
+    /* on interval containing multiple non-leap years */
+    dt1 = DateTime({2027, 2, 2}, {10, 58});
+    dt2 = DateTime({2025, 5, 5}, {19, 59});
 
     diff = DateTime::diff(dt1, dt2);
     EXPECT_EQ(dt2 + diff, dt1);

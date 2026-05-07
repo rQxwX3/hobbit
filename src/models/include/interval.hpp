@@ -88,7 +88,7 @@ class Interval {
   public:
     enum class MonthHandling : uint8_t {
         WrapAround,
-        ClampToEnd,
+        PreserveRelative,
     };
 
     static constexpr auto defaultMonthHandling{MonthHandling::WrapAround};

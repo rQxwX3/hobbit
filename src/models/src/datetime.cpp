@@ -153,15 +153,24 @@ DateTime::DateTime(Date date, Time time)
 
                 break;
 
-            case Interval::MonthHandling::ClampToEnd:
-                auto originalDay{ymd.day()};
-
+            case Interval::MonthHandling::PreserveRelative:
                 auto ym{year_month(ymd.year() / ymd.month())};
+                auto oldDay(ymd.day());
+                auto daysUntilOldMonthEnd(year_month_day_last(ym / last).day() -
+                                          oldDay);
+
                 ym += years(intervalYears);
                 ym += months(intervalMonths);
-                auto lastDay{year_month_day_last(ym / last).day()};
+                auto newMonthEnd{year_month_day_last(ym / last).day()};
 
-                auto newDay{(originalDay <= lastDay) ? originalDay : lastDay};
+                const auto largestCommonDayOfTheMonth{size_t{27}};
+                const auto oldDayIsNotContainedByAllMonths{
+                    static_cast<size_t>(unsigned(oldDay)) >
+                    largestCommonDayOfTheMonth};
+
+                auto newDay{(oldDayIsNotContainedByAllMonths)
+                                ? newMonthEnd - daysUntilOldMonthEnd
+                                : oldDay};
 
                 ymd = year_month_day{ym / newDay};
             }
@@ -203,10 +212,10 @@ auto DateTime::operator+=(const Interval &interval) -> DateTime & {
     -> Interval {
     using namespace std::chrono;
 
-    auto diff{dt1.value_ - dt2.value_};
-    auto mins{duration_cast<minutes>(diff < minutes{0} ? -diff : diff)};
+    auto diff{(dt1 > dt2) ? (dt1.value_ - dt2.value_)
+                          : (dt2.value_ - dt1.value_)};
 
-    return Interval::minutes(mins.count());
+    return Interval::minutes(diff.count());
 }
 
 [[nodiscard]] auto DateTime::daysDiff(const DateTime &dt1, const DateTime &dt2)
