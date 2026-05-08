@@ -193,7 +193,7 @@ class NaturalLanguageParser {
 
 class ISO8601IntervalParser {
   public:
-    enum class Error : uint8_t { RegexMismatch };
+    enum class Error : uint8_t { RegexMismatch, InvalidUnitValue };
 
   public:
     [[nodiscard]] static constexpr auto errorMessage(Error error)
@@ -202,8 +202,12 @@ class ISO8601IntervalParser {
         case Error::RegexMismatch:
             return "ISO8601IntervalParser: provided input didn't match regex";
 
+        case Error::InvalidUnitValue:
+            return "ISO8601IntervalParser: provided input contains invalid "
+                   "value (possible overflow)";
+
         default:
-            return "ISO8601IntervalParser: unclassified error";
+            std::unreachable();
         }
     }
 

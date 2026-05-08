@@ -9,8 +9,9 @@ using Unit = Interval::Unit;
 
 [[nodiscard]] auto toLower(std::string_view string) -> std::string {
     auto result{std::string{string}};
-    std::ranges::transform(result, result.begin(),
-                           [](unsigned char c) { return std::tolower(c); });
+    std::ranges::transform(result, result.begin(), [](unsigned char c) -> int {
+        return std::tolower(c);
+    });
 
     return result;
 }
@@ -83,12 +84,12 @@ auto NaturalLanguageParser::parseAllUnits(const std::string &filteredInput,
          it != std::sregex_iterator(); ++it) {
         const auto &match{*it};
 
-        auto value{std::stoi(match[pairRegexPatternValueGroup].str())};
-        auto unit{match[pairRegexPatternUnitGroup].str()};
-
+        auto value{std::stoull(match[pairRegexPatternValueGroup].str())};
         if (!Interval::isValidValue(value)) {
             throw std::runtime_error(errorMessage(Error::InvalidUnitValue));
         }
+
+        auto unit{match[pairRegexPatternUnitGroup].str()};
 
         try {
             parseUnit(unit, value, interval, matchedBuckets);
@@ -100,10 +101,10 @@ auto NaturalLanguageParser::parseAllUnits(const std::string &filteredInput,
 
 [[nodiscard]] auto filterInput(const std::string &input) -> std::string {
     std::string filtered;
-    std::ranges::copy(input | std::ranges::views::filter([](unsigned char c) {
-                          return std::isalnum(c);
-                      }),
-                      std::back_inserter(filtered));
+    std::ranges::copy(
+        input | std::ranges::views::filter(
+                    [](unsigned char c) -> int { return std::isalnum(c); }),
+        std::back_inserter(filtered));
 
     return filtered;
 }
@@ -173,14 +174,23 @@ auto NaturalLanguageParser::parseAllUnits(const std::string &filteredInput,
             auto groupString{matches[unitGroup].str()};
 
             groupString.pop_back(); // remove trailing 'Y', 'M', etc.
-            result.addUnit(
-                unit, static_cast<Interval::value_t>(std::stoll(groupString)));
+            auto value{std::stoull(groupString)};
+
+            if (!Interval::isValidValue(value)) {
+                throw std::runtime_error(errorMessage(Error::InvalidUnitValue));
+            }
+
+            result.addUnit(unit, static_cast<Interval::value_t>(value));
         }
     }};
 
     for (auto unit{static_cast<size_t>(Unit::YEAR)}; unit != Unit::COUNT_;
          ++unit) {
-        parseGroup(static_cast<Unit>(unit));
+        try {
+            parseGroup(static_cast<Unit>(unit));
+        } catch (std::runtime_error) {
+            return std::unexpected(Error::InvalidUnitValue);
+        }
     }
 
     return result;
@@ -196,7 +206,7 @@ auto NaturalLanguageParser::parseAllUnits(const std::string &filteredInput,
     auto timeSectionStarted{false};
 
     auto formatDateGroup{[&interval, &result](Unit unit) -> void {
-        if (const auto value{interval.getUnitValue(unit)}; value) {
+        if (const auto value{interval[unit]}; value) {
             result += std::to_string(value);
             result += unitSeparators[unit];
         }
@@ -204,7 +214,7 @@ auto NaturalLanguageParser::parseAllUnits(const std::string &filteredInput,
 
     auto formatTimeGroup{
         [&timeSectionStarted, &interval, &result](Unit unit) -> void {
-            if (const auto value{interval.getUnitValue(unit)}; value) {
+            if (const auto value{interval[unit]}; value) {
                 if (!timeSectionStarted) {
                     result += timeSectionSeparator;
                     timeSectionStarted = true;

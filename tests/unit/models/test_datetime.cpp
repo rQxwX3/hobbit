@@ -10,7 +10,7 @@ using hbt::mods::Interval;
 using Date = DateTime::Date;
 using Time = DateTime::Time;
 
-TEST(TestDateTime, ConstructsFromValidDate) {
+TEST(DateTimeTest, ConstructsFromValidDate) {
     EXPECT_NO_THROW(DateTime({2026, 5, 5}));
 
     EXPECT_NO_THROW(DateTime({1000, 12, 31}));
@@ -22,7 +22,7 @@ TEST(TestDateTime, ConstructsFromValidDate) {
     EXPECT_NO_THROW(DateTime({2024, 2, 29})); // leap year
 }
 
-TEST(TestDateTime, ConstructsFromValidDateAndTime) {
+TEST(DateTimeTest, ConstructsFromValidDateAndTime) {
     EXPECT_NO_THROW(DateTime({2026, 5, 5}, {23, 59}));
 
     EXPECT_NO_THROW(DateTime({1000, 12, 31}, {0, 0}));
@@ -34,7 +34,7 @@ TEST(TestDateTime, ConstructsFromValidDateAndTime) {
     EXPECT_NO_THROW(DateTime({2024, 2, 29}, {0, 30})); // leap year
 }
 
-TEST(TestDateTime, ThrowsOnInvalidDate) {
+TEST(DateTimeTest, ThrowsOnInvalidDate) {
     EXPECT_THROW(DateTime({2023, 2, 29}),
                  std::invalid_argument); // not a leap year
 
@@ -49,7 +49,7 @@ TEST(TestDateTime, ThrowsOnInvalidDate) {
     EXPECT_THROW(DateTime({2023, 0, 0}), std::invalid_argument);
 }
 
-TEST(TestDateTime, ThrowsOnInvalidDateAndTime) {
+TEST(DateTimeTest, ThrowsOnInvalidDateAndTime) {
     EXPECT_THROW(DateTime({2026, 5, 5}, {24, 0}), std::invalid_argument);
 
     EXPECT_THROW(DateTime({2026, 5, 5}, {23, 60}), std::invalid_argument);
@@ -57,11 +57,11 @@ TEST(TestDateTime, ThrowsOnInvalidDateAndTime) {
     EXPECT_THROW(DateTime({2026, 5, 5}, {24, 60}), std::invalid_argument);
 }
 
-TEST(TestDateTime, DefaultConstructorCreatesNow) {
+TEST(DateTimeTest, DefaultConstructorCreatesNow) {
     EXPECT_EQ(DateTime(), DateTime::now());
 }
 
-TEST(TestDateTime, GetDate) {
+TEST(DateTimeTest, GetDate) {
     EXPECT_EQ(DateTime({2026, 5, 5}).getDate(), Date({2026, 5, 5}));
     EXPECT_EQ(DateTime({2026, 5, 5}, {12, 12}).getDate(), Date({2026, 5, 5}));
 
@@ -73,7 +73,7 @@ TEST(TestDateTime, GetDate) {
               Date({2024, 2, 29})); // leap year
 }
 
-TEST(TestDateTime, GetTime) {
+TEST(DateTimeTest, GetTime) {
     EXPECT_EQ(DateTime({2026, 5, 5}, {12, 12}).getTime(), Time({12, 12}));
 
     EXPECT_EQ(DateTime({2026, 5, 5}, {00, 00}).getTime(), Time({0, 0}));
@@ -81,7 +81,7 @@ TEST(TestDateTime, GetTime) {
     EXPECT_EQ(DateTime({2026, 5, 5}, {23, 59}).getTime(), Time({23, 59}));
 }
 
-TEST(TestDateTime, GetWeekday) {
+TEST(DateTimeTest, GetWeekday) {
     using weekday_t = DateTime::weekday_t;
 
     EXPECT_EQ(DateTime({2026, 5, 3}, {12, 12}).getWeekday(), weekday_t::SUNDAY);
@@ -97,7 +97,7 @@ TEST(TestDateTime, GetWeekday) {
               weekday_t::SATURDAY);
 }
 
-TEST(TestDateTime, EqualDate) {
+TEST(DateTimeTest, EqualDate) {
     EXPECT_TRUE(DateTime::equalDate(DateTime::now(), DateTime::now()));
 
     EXPECT_TRUE(DateTime::equalDate(DateTime({2026, 5, 5}, {12, 12}),
@@ -107,7 +107,7 @@ TEST(TestDateTime, EqualDate) {
                                      DateTime({2026, 5, 5}, {12, 12})));
 }
 
-TEST(TestDateTime, EqualTime) {
+TEST(DateTimeTest, EqualTime) {
     EXPECT_TRUE(DateTime::equalTime(DateTime::now(), DateTime::now()));
 
     EXPECT_TRUE(DateTime::equalTime(DateTime({2026, 5, 5}, {12, 12}),
@@ -117,7 +117,7 @@ TEST(TestDateTime, EqualTime) {
                                      DateTime({2026, 5, 5}, {13, 12})));
 }
 
-TEST(TestDateTime, ComparisonOperators) {
+TEST(DateTimeTest, ComparisonOperators) {
     EXPECT_TRUE(DateTime::now() == DateTime::now());
     EXPECT_FALSE(DateTime::now() != DateTime::now());
 
@@ -172,7 +172,7 @@ TEST(TestDateTime, ComparisonOperators) {
                 DateTime({2024, 5, 5}, {12, 12}));
 }
 
-TEST(TestDateTime, ISO8601ValidInput) {
+TEST(DateTimeTest, ISO8601ValidInput) {
     auto datetime{DateTime::fromISO8601String("2024-12-01T23:40")};
 
     ASSERT_TRUE(datetime);
@@ -186,7 +186,7 @@ TEST(TestDateTime, ISO8601ValidInput) {
     EXPECT_EQ(leapYear->getTime(), Time({12, 0}));
 }
 
-TEST(TestDateTime, ISO8601InvalidFormat) {
+TEST(DateTimeTest, ISO8601InvalidFormat) {
     EXPECT_FALSE(DateTime::fromISO8601String("hello"));
 
     /* missing hours */
@@ -213,7 +213,7 @@ TEST(TestDateTime, ISO8601InvalidFormat) {
     EXPECT_FALSE(DateTime::fromISO8601String("20241201T23:40"));
 }
 
-TEST(TestDateTime, ISO8601InvalidDate) {
+TEST(DateTimeTest, ISO8601InvalidDate) {
     /* not a leap year */
     EXPECT_FALSE(DateTime::fromISO8601String("2023-02-29T00:00"));
 
@@ -230,7 +230,7 @@ TEST(TestDateTime, ISO8601InvalidDate) {
     EXPECT_FALSE(DateTime::fromISO8601String("2024-1-01T00:00"));
 }
 
-TEST(TestDateTime, ISO8601InvalidTime) {
+TEST(DateTimeTest, ISO8601InvalidTime) {
     EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T1:1"));
     EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T0:0"));
 
@@ -240,7 +240,7 @@ TEST(TestDateTime, ISO8601InvalidTime) {
     EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T99:99"));
 }
 
-TEST(TestDateTime, ISO8601SecondsAreIgnored) {
+TEST(DateTimeTest, ISO8601SecondsAreIgnored) {
     auto dt1{DateTime::fromISO8601String("2024-12-01T12:30:59")};
     auto dt2{DateTime::fromISO8601String("2024-12-01T12:30:00")};
 
@@ -250,7 +250,7 @@ TEST(TestDateTime, ISO8601SecondsAreIgnored) {
     EXPECT_EQ(dt1->getTime(), dt2->getTime());
 }
 
-TEST(TestDateTime, AddSimpleDateIntervals) {
+TEST(DateTimeTest, AddSimpleDateIntervals) {
     auto datetime{DateTime({2026, 5, 5}, {19, 59})};
 
     /* zero interval */
@@ -291,7 +291,7 @@ TEST(TestDateTime, AddSimpleDateIntervals) {
     EXPECT_EQ(datetime + Interval::months(120), datetime + Interval::years(10));
 }
 
-TEST(TestDateTime, AddMixedDateIntervals) {
+TEST(DateTimeTest, AddMixedDateIntervals) {
     auto datetime{DateTime({2026, 5, 5}, {19, 59})};
 
     EXPECT_EQ(datetime +
@@ -307,7 +307,7 @@ TEST(TestDateTime, AddMixedDateIntervals) {
               DateTime({2027, 7, 30}, {19, 59}));
 }
 
-TEST(TestDateTime, AddSimpleTimeIntervals) {
+TEST(DateTimeTest, AddSimpleTimeIntervals) {
     auto datetime{DateTime({2026, 5, 5}, {19, 59})};
 
     /* add minutes */
@@ -332,7 +332,7 @@ TEST(TestDateTime, AddSimpleTimeIntervals) {
     EXPECT_EQ(datetime + Interval::hours(240), datetime + Interval::days(10));
 }
 
-TEST(TestDateTime, AddMixedTimeIntervals) {
+TEST(DateTimeTest, AddMixedTimeIntervals) {
     auto datetime{DateTime({2026, 5, 5}, {19, 59})};
 
     EXPECT_EQ(datetime + Interval({.hours = 1, .minutes = 1}),
@@ -345,7 +345,7 @@ TEST(TestDateTime, AddMixedTimeIntervals) {
               DateTime({2026, 5, 5}, {21, 01}));
 }
 
-TEST(TestDateTime, AddDateTimeIntervals) {
+TEST(DateTimeTest, AddDateTimeIntervals) {
     auto datetime{DateTime({2026, 5, 5}, {19, 59})};
 
     EXPECT_EQ(datetime + Interval({.days = 1, .minutes = 1}),
@@ -368,14 +368,14 @@ TEST(TestDateTime, AddDateTimeIntervals) {
               DateTime({2028, 7, 21}, {22, 01}));
 }
 
-TEST(TestDateTime, AddIntervalOnHourBorder) {
+TEST(DateTimeTest, AddIntervalOnHourBorder) {
     auto datetime{DateTime({2026, 5, 5}, {19, 59})};
 
     EXPECT_EQ(datetime + Interval::minutes(1),
               DateTime({2026, 5, 5}, {20, 00}));
 }
 
-TEST(TestDateTime, AddIntervalOnDayBorder) {
+TEST(DateTimeTest, AddIntervalOnDayBorder) {
     auto datetime{DateTime({2026, 5, 5}, {23, 59})};
     EXPECT_EQ(datetime + Interval::minutes(1),
               DateTime({2026, 5, 6}, {00, 00}));
@@ -385,7 +385,7 @@ TEST(TestDateTime, AddIntervalOnDayBorder) {
               DateTime({2026, 5, 6}, {00, 00}));
 }
 
-TEST(TestDateTime, AddIntervalOnMonthBorder) {
+TEST(DateTimeTest, AddIntervalOnMonthBorder) {
     auto datetime{DateTime({2026, 5, 31}, {23, 59})};
     EXPECT_EQ(datetime + Interval::minutes(1),
               DateTime({2026, 6, 1}, {00, 00}));
@@ -395,7 +395,7 @@ TEST(TestDateTime, AddIntervalOnMonthBorder) {
               DateTime({2026, 6, 1}, {00, 00}));
 }
 
-TEST(TestDateTime, AddIntervalOnYearBorder) {
+TEST(DateTimeTest, AddIntervalOnYearBorder) {
     auto datetime{DateTime({2026, 12, 31}, {23, 59})};
     EXPECT_EQ(datetime + Interval::minutes(1),
               DateTime({2027, 1, 1}, {00, 00}));
@@ -408,7 +408,7 @@ TEST(TestDateTime, AddIntervalOnYearBorder) {
         DateTime({2027, 1, 1}, {00, 00}));
 }
 
-TEST(TestDateTime, AddIntervalOnLeapYearFebruaryBorder) {
+TEST(DateTimeTest, AddIntervalOnLeapYearFebruaryBorder) {
     auto datetime{DateTime({2024, 2, 28}, {23, 59})};
     EXPECT_EQ(datetime + Interval::minutes(1),
               DateTime({2024, 2, 29}, {00, 00}));
@@ -423,7 +423,7 @@ TEST(TestDateTime, AddIntervalOnLeapYearFebruaryBorder) {
         DateTime({2024, 2, 29}, {0, 0}));
 }
 
-TEST(TestDateTime, AddSimpleIntervalsWithDifferentMonthHandling) {
+TEST(DateTimeTest, AddSimpleIntervalsWithDifferentMonthHandling) {
     using Handling = Interval::MonthHandling;
 
     auto datetime{DateTime({2024, 1, 31})};
@@ -440,7 +440,7 @@ TEST(TestDateTime, AddSimpleIntervalsWithDifferentMonthHandling) {
               datetime + Interval({.months = 1}, Handling::WrapAround));
 }
 
-TEST(TestDateTime, AddingPreserveRelativeIntervalPreservesLastDay) {
+TEST(DateTimeTest, AddingPreserveRelativeIntervalPreservesLastDay) {
     using Handling = Interval::MonthHandling;
 
     auto datetime{DateTime({2024, 2, 29})};
@@ -449,7 +449,7 @@ TEST(TestDateTime, AddingPreserveRelativeIntervalPreservesLastDay) {
               DateTime({2024, 3, 31}));
 }
 
-TEST(TestDateTime, AddMixedIntervalsWithDifferentMonthHandling) {
+TEST(DateTimeTest, AddMixedIntervalsWithDifferentMonthHandling) {
     using Handling = Interval::MonthHandling;
 
     auto datetime{DateTime({2024, 1, 31})};
@@ -473,7 +473,7 @@ TEST(TestDateTime, AddMixedIntervalsWithDifferentMonthHandling) {
               DateTime({2023, 2, 28}));
 }
 
-TEST(TestDateTime, AddingPreserveRelativeIntervalPreservesRelativeDay) {
+TEST(DateTimeTest, AddingPreserveRelativeIntervalPreservesRelativeDay) {
     using Handling = Interval::MonthHandling;
 
     /* last day */
@@ -522,7 +522,7 @@ TEST(TestDateTime, AddingPreserveRelativeIntervalPreservesRelativeDay) {
               DateTime({2024, 4, 28}));
 }
 
-TEST(TestDateTime,
+TEST(DateTimeTest,
      AddingPreserveRelativeIntervalDoesntChangeDaysCloseToFirstOfTheMonth) {
     using Handling = Interval::MonthHandling;
 
@@ -545,7 +545,7 @@ TEST(TestDateTime,
               DateTime({2024, 12, 27}));
 }
 
-TEST(TestDateTime, Diff) {
+TEST(DateTimeTest, Diff) {
     auto dt1{DateTime({2026, 5, 5}, {19, 59})};
     auto dt2{DateTime({2025, 4, 4}, {18, 58})};
 
@@ -557,7 +557,7 @@ TEST(TestDateTime, Diff) {
     EXPECT_EQ(DateTime::diff(dt1, dt2), Interval());
 }
 
-TEST(TestDateTime, DiffOnLeapYear) {
+TEST(DateTimeTest, DiffOnLeapYear) {
     EXPECT_EQ(DateTime::diff(DateTime({2024, 2, 28}), DateTime({2024, 3, 1})),
               Interval::minutes(2880));
 
@@ -566,14 +566,14 @@ TEST(TestDateTime, DiffOnLeapYear) {
               Interval::minutes(527101));
 }
 
-TEST(TestDateTime, DaysDiff) {
+TEST(DateTimeTest, DaysDiff) {
     auto dt1{DateTime({2026, 5, 5}, {19, 59})};
     auto dt2{DateTime({2025, 4, 4}, {18, 58})};
 
     EXPECT_EQ(DateTime::daysDiff(dt1, dt2), Interval::days(396));
 }
 
-TEST(TestDateTime, DaysDiffOnLeapYear) {
+TEST(DateTimeTest, DaysDiffOnLeapYear) {
     EXPECT_EQ(
         DateTime::daysDiff(DateTime({2024, 2, 28}), DateTime({2024, 3, 1})),
         Interval::days(2));
@@ -583,7 +583,7 @@ TEST(TestDateTime, DaysDiffOnLeapYear) {
               Interval::days(366));
 }
 
-TEST(TestDateTime, DiffAndWrapAroundIntervalCancelEachOtherOut) {
+TEST(DateTimeTest, DiffAndWrapAroundIntervalCancelEachOtherOut) {
     auto dt1{DateTime({2026, 5, 5}, {19, 59})};
     auto dt2{DateTime({2025, 4, 4}, {18, 58})};
 
