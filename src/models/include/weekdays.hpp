@@ -1,15 +1,30 @@
 #pragma once
 
-#include <datetime.hpp>
-
 #include <bitset>
 #include <expected>
+#include <string>
+
+#include <nlohmann/json.hpp>
 
 namespace hbt::mods {
 class Weekdays {
+  public:
+    enum class Week : uint8_t {
+        SUNDAY,
+        MONDAY,
+        TUESDAY,
+        WEDNESDAY,
+        THURSDAY,
+        FRIDAY,
+        SATURDAY,
+        COUNT_,
+    };
+
   private:
     enum class Error : uint8_t {
         JSONNotString,
+        JSONInvalidString,
+
         StringLengthMoreThanWeek,
     };
 
@@ -20,21 +35,22 @@ class Weekdays {
         case Error::JSONNotString:
             return "Weekdays: provided JSON doesn't contains a string";
 
+        case Error::JSONInvalidString:
+            return "Weekdays: provided JSON contains invalid string";
+
         case Error::StringLengthMoreThanWeek:
             return "Weekdays: provided string exceeds maximum length";
 
         default:
-            return "Weekdays: unclassified error";
+            std::unreachable();
         }
     }
 
   public:
-    static constexpr size_t daysCount{
-        static_cast<size_t>(DateTime::weekday_t::COUNT_)};
+    static constexpr size_t daysCount{static_cast<size_t>(Week::COUNT_)};
 
   public:
     using days_t = std::bitset<daysCount>;
-    using weekday_t = DateTime::weekday_t;
 
   private:
     days_t days_;
@@ -43,19 +59,17 @@ class Weekdays {
     [[nodiscard]] auto operator==(const Weekdays &) const -> bool = default;
 
   public:
-    Weekdays(const std::vector<DateTime::weekday_t> &weekdays);
+    Weekdays(const std::vector<Week> &weekdays);
 
     Weekdays(days_t days);
-
-    Weekdays(const std::string &daysString);
 
   public:
     [[nodiscard]] auto getDays() const -> days_t;
 
-    [[nodiscard]] auto containsWeekday(weekday_t weekday) const -> bool;
+    [[nodiscard]] auto containsWeekday(Week weekday) const -> bool;
 
   private:
-    static auto validateString(const std::string &string) -> std::string;
+    static auto validateAndReverseString(std::string string) -> std::string;
 
   public:
     [[nodiscard]] auto toJSON() const -> nlohmann::json;

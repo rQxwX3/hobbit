@@ -1,6 +1,7 @@
 #pragma once
 
 #include <interval.hpp>
+#include <weekdays.hpp>
 
 #include <nlohmann/json.hpp>
 
@@ -10,22 +11,10 @@
 namespace hbt::mods {
 class DateTime {
   public:
-    enum class Week : uint8_t {
-        SUNDAY,
-        MONDAY,
-        TUESDAY,
-        WEDNESDAY,
-        THURSDAY,
-        FRIDAY,
-        SATURDAY,
-        COUNT_,
-    };
-
-  public:
     using duration_t = std::chrono::minutes;
     using value_t = std::chrono::sys_time<duration_t>;
 
-    using weekday_t = Week;
+    using weekday_t = Weekdays::Week;
 
   public:
     struct Date {
