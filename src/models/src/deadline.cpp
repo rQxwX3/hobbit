@@ -37,16 +37,24 @@ Deadline::Deadline(type_t type)
 }
 
 [[nodiscard]] auto Deadline::getInterval() const -> Interval {
+    if (getType() != Type::Interval) {
+        throw std::runtime_error(errorMessage(Error::IntervalBadAccess));
+    }
+
     return std::get<Interval>(type_);
 }
 
 [[nodiscard]] auto Deadline::getDateTime() const -> DateTime {
+    if (getType() != Type::DateTime) {
+        throw std::runtime_error(errorMessage(Error::DateTimeBadAccess));
+    }
+
     return std::get<DateTime>(type_);
 }
 
 [[nodiscard]] auto Deadline::toJSON() const -> nlohmann::json {
     if (std::holds_alternative<Interval>(type_)) {
-        auto intervalJSON{std::get<Interval>(type_).toISO8601String()};
+        auto intervalJSON = std::get<Interval>(type_).toJSON();
 
         return {{jsonTypeField, jsonTypeIntervalValue},
                 {jsonIntervalField, intervalJSON}};
@@ -72,13 +80,13 @@ Deadline::Deadline(type_t type)
             return std::unexpected(Error::JSONMissingRequiredIntervalField);
         }
 
-        auto intervalFromISO8601{hbt::mods::Interval::fromISO8601String(
-            json[jsonIntervalField].get<std::string>())};
-        if (!intervalFromISO8601) {
+        auto intervalFromJSON{
+            hbt::mods::Interval::fromJSON(json[jsonIntervalField])};
+        if (!intervalFromJSON) {
             return std::unexpected(Error::JSONFailedToParseInterval);
         }
 
-        return Deadline{intervalFromISO8601.value()};
+        return Deadline{intervalFromJSON.value()};
     }
 
     if (json[jsonTypeField] == jsonTypeDateTimeValue) {

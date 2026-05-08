@@ -4,7 +4,7 @@ add_executable(models_test
 	unit/models/test_user.cpp
 	unit/models/test_interval.cpp
 	unit/models/test_datetime.cpp
-	# unit/models/test_deadline.cpp
+	unit/models/test_deadline.cpp
 	# unit/models/test_weekdays.cpp
 	# unit/models/test_recurrence_patterns.cpp
 	# unit/models/test_task_data.cpp

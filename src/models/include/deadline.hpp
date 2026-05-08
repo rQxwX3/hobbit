@@ -35,6 +35,9 @@ class Deadline {
 
         InvalidUnderlyingType,
         RTInvalidUnderlyingType,
+
+        IntervalBadAccess,
+        DateTimeBadAccess,
     };
 
   public:
@@ -64,6 +67,14 @@ class Deadline {
 
         case Error::RTInvalidUnderlyingType:
             return "Deadline: invalid object state (invalid underlying type)";
+
+        case Error::IntervalBadAccess:
+            return "Deadline: attempted to access interval in a non-interval "
+                   "instance";
+
+        case Error::DateTimeBadAccess:
+            return "Deadline: attempted to access datetime in a non-datetime "
+                   "instance";
 
         default:
             std::unreachable();
