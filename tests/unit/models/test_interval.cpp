@@ -513,4 +513,64 @@ TEST(IntervalTest, ISO8601ParserRoundTrip) {
 
     EXPECT_EQ(fromISO8601.value().toISO8601String(), ISO8601String);
 }
+
+TEST(IntervalTest, ToJSON) {
+    auto interval{Interval({.years = 1,
+                            .months = 1,
+                            .weeks = 1,
+                            .days = 1,
+                            .hours = 1,
+                            .minutes = 1},
+                           Interval::MonthHandling::PreserveRelative)};
+
+    auto json = interval.toJSON();
+
+    ASSERT_TRUE(json.contains("duration"));
+    ASSERT_TRUE(json.contains("month_handling"));
+
+    EXPECT_EQ(json["duration"].get<std::string>(), interval.toISO8601String());
+    EXPECT_EQ(json["month_handling"].get<Interval::MonthHandling>(),
+              interval.getMonthHandling());
+}
+
+TEST(IntervalTest, JSONRoundTrip) {
+    auto interval{Interval({.years = 1, .hours = 1},
+                           Interval::MonthHandling::PreserveRelative)};
+
+    auto intervalJSON = interval.toJSON();
+    EXPECT_EQ(Interval::fromJSON(intervalJSON), interval);
+}
+
+TEST(IntervalTest, FromJSONFailsOnInvalidInput) {
+    /* empty json */
+    auto json = nlohmann::json{};
+
+    EXPECT_FALSE(Interval::fromJSON(json));
+
+    /* missing duration */
+    json = {{"month_handling", Interval::MonthHandling::PreserveRelative}};
+
+    EXPECT_FALSE(Interval::fromJSON(json));
+
+    /* invalid duration */
+    json = {{"duration", "invalid"},
+            {"month_handling", Interval::MonthHandling::PreserveRelative}};
+
+    EXPECT_FALSE(Interval::fromJSON(json));
+
+    /* missing month handling */
+    json = {{"duration", "P1Y"}};
+
+    EXPECT_FALSE(Interval::fromJSON(json));
+
+    /* invalid month handling */
+    json = {{"duration", "P1Y"}, {"month_handling", 1000}};
+
+    EXPECT_FALSE(Interval::fromJSON(json));
+
+    /* invalid duration and month handling */
+    json = {{"duration", "invalid"}, {"month_handling", 1000}};
+
+    EXPECT_FALSE(Interval::fromJSON(json));
+}
 } // namespace test::mods

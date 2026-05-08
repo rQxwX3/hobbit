@@ -82,6 +82,10 @@ Interval::Interval(const struct_t &unitsStruct, MonthHandling monthHandling)
     return monthHandling_;
 }
 
+auto Interval::setMonthHandling(MonthHandling monthHandling) -> void {
+    monthHandling_ = monthHandling;
+}
+
 auto Interval::addUnit(Unit unit, value_t value) -> void {
     units_[unit] += value;
 }
@@ -214,5 +218,41 @@ auto Interval::addUnit(Unit unit, value_t value) -> void {
 
 [[nodiscard]] auto Interval::toNaturalLanguage() const -> std::string {
     return util::IntervalParser<util::NaturalLanguageParser>::format(*this);
+}
+
+[[nodiscard]] auto Interval::containsAllJSONFields(const nlohmann::json &json)
+    -> bool {
+    return std::ranges::all_of(jsonFields, [&json](const auto &field) -> bool {
+        return json.contains(field);
+    });
+}
+
+[[nodiscard]] auto Interval::toJSON() const -> nlohmann::json {
+    return {{jsonDurationField, toISO8601String()},
+            {jsonMonthHandlingField, monthHandling_}};
+}
+
+[[nodiscard]] auto Interval::fromJSON(const nlohmann::json &json)
+    -> std::expected<Interval, Error> {
+    if (!containsAllJSONFields(json)) {
+        return std::unexpected(Error::JSONMissingRequiredField);
+    }
+
+    auto intervalFromISO8601{
+        fromISO8601String(json[jsonDurationField].get<std::string>())};
+    if (!intervalFromISO8601) {
+        return std::unexpected(Error::JSONFailedToParseIntervalDuration);
+    }
+
+    auto monthHandlingFromJSON{
+        json[jsonMonthHandlingField].get<MonthHandling>()};
+    if (monthHandlingFromJSON != MonthHandling::PreserveRelative &&
+        monthHandlingFromJSON != MonthHandling::WrapAround) {
+        return std::unexpected(Error::JSONInvalidMonthHandling);
+    }
+
+    intervalFromISO8601->setMonthHandling(monthHandlingFromJSON);
+
+    return intervalFromISO8601.value();
 }
 } // namespace hbt::mods

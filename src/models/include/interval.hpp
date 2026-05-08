@@ -8,10 +8,16 @@
 #include <utility>
 #include <vector>
 
+#include <nlohmann/json.hpp>
+
 namespace hbt::mods {
 class Interval {
   public:
     enum class Error : uint8_t {
+        JSONMissingRequiredField,
+        JSONFailedToParseIntervalDuration,
+        JSONInvalidMonthHandling,
+
         ISO8601FailedToParse,
         NaturalLanguageFailedToParse,
 
@@ -35,6 +41,14 @@ class Interval {
             std::unreachable();
         }
     }
+
+  public:
+    static constexpr auto jsonDurationField{std::string_view{"duration"}};
+    static constexpr auto jsonMonthHandlingField{
+        std::string_view{"month_handling"}};
+
+    static constexpr auto jsonFields{std::array<std::string_view, 2>{
+        jsonDurationField, jsonMonthHandlingField}};
 
   public:
     using Unit = enum : uint8_t {
@@ -147,6 +161,9 @@ class Interval {
 
     [[nodiscard]] auto getMonthHandling() const -> MonthHandling;
 
+  private:
+    auto setMonthHandling(MonthHandling monthHandling) -> void;
+
   public:
     [[nodiscard]] auto isZero() const -> bool;
 
@@ -179,5 +196,15 @@ class Interval {
         -> std::expected<Interval, Error>;
 
     [[nodiscard]] auto toNaturalLanguage() const -> std::string;
+
+  private:
+    [[nodiscard]] auto static containsAllJSONFields(const nlohmann::json &json)
+        -> bool;
+
+  public:
+    [[nodiscard]] auto toJSON() const -> nlohmann::json;
+
+    [[nodiscard]] static auto fromJSON(const nlohmann::json &json)
+        -> std::expected<Interval, Error>;
 };
 } // namespace hbt::mods

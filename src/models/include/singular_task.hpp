@@ -28,7 +28,7 @@ class SingularTask {
             return "SingularTask: failed to parse TaskData from JSON";
 
         default:
-            return "SingularTask: unclassified error";
+            std::unreachable();
         }
     }
 

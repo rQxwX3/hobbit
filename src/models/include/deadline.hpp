@@ -66,7 +66,7 @@ class Deadline {
             return "Deadline: invalid object state (invalid underlying type)";
 
         default:
-            return "Deadline: unclassified error";
+            std::unreachable();
         }
     }
 
