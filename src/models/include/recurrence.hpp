@@ -90,12 +90,10 @@ class Recurrence {
     [[nodiscard]] auto getWeekdayPattern() const -> WeekdaysRecurrencePattern;
 
   public:
-    [[nodiscard]] auto getOccurrencesOfDate(DateTime start, DateTime on) const
-        -> occurrences_t;
+    [[nodiscard]] auto getOccurrencesOfDate(DateTime on) const -> occurrences_t;
 
   public:
-    [[nodiscard]] auto happensOnDate(DateTime start, DateTime datetime) const
-        -> bool;
+    [[nodiscard]] auto happensOnDate(DateTime datetime) const -> bool;
 
   private:
     [[nodiscard]] static auto containsAllJSONFields(const nlohmann::json &json)

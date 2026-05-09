@@ -25,21 +25,19 @@ Recurrence::Recurrence(pattern_t pattern) : pattern_{std::move(pattern)} {}
     return std::get<WeekdaysRecurrencePattern>(pattern_);
 }
 
-[[nodiscard]] auto Recurrence::getOccurrencesOfDate(DateTime start,
-                                                    DateTime datetime) const
+[[nodiscard]] auto Recurrence::getOccurrencesOfDate(DateTime datetime) const
     -> occurrences_t {
     return std::visit(
         [&](const auto &pattern) -> auto {
-            return pattern.getOccurrencesOfDate(start, datetime);
+            return pattern.getOccurrencesOfDate(datetime);
         },
         pattern_);
 }
 
-[[nodiscard]] auto Recurrence::happensOnDate(DateTime start,
-                                             DateTime datetime) const -> bool {
+[[nodiscard]] auto Recurrence::happensOnDate(DateTime datetime) const -> bool {
     return std::visit(
         [&](const auto &pattern) -> bool {
-            return pattern.happensOnDate(start, datetime);
+            return pattern.happensOnDate(datetime);
         },
         pattern_);
 }

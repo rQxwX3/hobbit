@@ -10,34 +10,22 @@ auto IntervalRecurrencePattern::validateInterval(const Interval &interval)
     return interval;
 }
 
-IntervalRecurrencePattern::IntervalRecurrencePattern(const Interval &interval)
-    : interval_{validateInterval(interval)} {}
-
-[[nodiscard]] auto IntervalRecurrencePattern::toJSON() const -> nlohmann::json {
-    return interval_.toISO8601String();
-};
-
-[[nodiscard]] auto
-IntervalRecurrencePattern::fromJSON(const nlohmann::json &json)
-    -> std::expected<IntervalRecurrencePattern, Error> {
-    auto intervalFromISO8601{
-        Interval::fromISO8601String(json.get<std::string>())};
-    if (!intervalFromISO8601) {
-        return std::unexpected(Error::JSONFailedToParseInterval);
-    }
-
-    return IntervalRecurrencePattern(intervalFromISO8601.value());
-}
+IntervalRecurrencePattern::IntervalRecurrencePattern(DateTime start,
+                                                     Interval interval)
+    : start_{start}, interval_{validateInterval(interval)} {}
 
 [[nodiscard]] auto IntervalRecurrencePattern::getInterval() const -> Interval {
     return interval_;
 }
 
-[[nodiscard]] auto IntervalRecurrencePattern::happensOnDate(DateTime start,
-                                                            DateTime on) const
+[[nodiscard]] auto IntervalRecurrencePattern::happensOnDate(DateTime on) const
     -> bool {
+    if (on < start_) {
+        return false;
+    }
+
     if (interval_.isZero()) {
-        return DateTime::equalDate(start, on);
+        return DateTime::equalDate(start_, on);
     }
 
     if (interval_ < Interval::days(1)) {
@@ -46,7 +34,7 @@ IntervalRecurrencePattern::fromJSON(const nlohmann::json &json)
 
     // TODO: for day-based intervals use math instead of a loop
 
-    for (auto dt{start}; dt.getDate() <= on.getDate(); dt += interval_) {
+    for (auto dt{start_}; dt.getDate() <= on.getDate(); dt += interval_) {
         if (DateTime::equalDate(dt, on)) {
             return true;
         }
@@ -55,9 +43,10 @@ IntervalRecurrencePattern::fromJSON(const nlohmann::json &json)
     return false;
 }
 
-[[nodiscard]] auto IntervalRecurrencePattern::getFirstOccurrenceOfDate(
-    DateTime start, DateTime on) const -> std::optional<occurrence_t> {
-    for (auto dt{start}; dt.getDate() <= on.getDate(); dt += interval_) {
+[[nodiscard]] auto
+IntervalRecurrencePattern::getFirstOccurrenceOfDate(DateTime on) const
+    -> std::optional<occurrence_t> {
+    for (auto dt{start_}; dt.getDate() <= on.getDate(); dt += interval_) {
         if (DateTime::equalDate(dt, on)) {
             return dt;
         }
@@ -66,21 +55,60 @@ IntervalRecurrencePattern::fromJSON(const nlohmann::json &json)
     return std::nullopt;
 }
 
-[[nodiscard]] auto IntervalRecurrencePattern::getOccurrencesOfDate(
-    DateTime start, DateTime on) const -> occurrences_t {
+[[nodiscard]] auto
+IntervalRecurrencePattern::getOccurrencesOfDate(DateTime on) const
+    -> occurrences_t {
     auto result{occurrences_t{}};
 
-    auto firstTS{getFirstOccurrenceOfDate(start, on)};
-    if (!firstTS.has_value()) {
+    auto firstOccurrence{getFirstOccurrenceOfDate(on)};
+    if (!firstOccurrence.has_value()) {
         return result;
     }
 
-    auto endDate{on + Interval::days(1)};
+    auto endDate{(on + Interval::days(1)).getDate()};
 
-    for (auto ts{firstTS}; ts->getDate() != endDate; *ts += interval_) {
-        result.push_back(*ts);
+    for (auto dt{firstOccurrence}; dt->getDate() != endDate; *dt += interval_) {
+        result.push_back(*dt);
     }
 
     return result;
+}
+
+[[nodiscard]] auto IntervalRecurrencePattern::operator==(
+    const IntervalRecurrencePattern &other) const -> bool = default;
+
+[[nodiscard]] auto
+IntervalRecurrencePattern::containsAllJSONFields(const nlohmann::json &json)
+    -> bool {
+    return std::ranges::all_of(jsonFields, [json](const auto &field) -> bool {
+        return json.contains(field);
+    });
+}
+
+[[nodiscard]] auto IntervalRecurrencePattern::toJSON() const -> nlohmann::json {
+    return {{jsonStartField, start_.toISO8601String()},
+            {jsonIntervalField, interval_.toJSON()}};
+};
+
+[[nodiscard]] auto
+IntervalRecurrencePattern::fromJSON(const nlohmann::json &json)
+    -> std::expected<IntervalRecurrencePattern, Error> {
+    if (!containsAllJSONFields(json)) {
+        return std::unexpected(Error::JSONMissingRequiredField);
+    }
+
+    auto startFromISO8601{
+        DateTime::fromISO8601String(json[jsonStartField].get<std::string>())};
+    if (!startFromISO8601) {
+        return std::unexpected(Error::JSONFailedToParseStart);
+    }
+
+    auto intervalFromJSON{Interval::fromJSON(json[jsonIntervalField])};
+    if (!intervalFromJSON) {
+        return std::unexpected(Error::JSONFailedToParseInterval);
+    }
+
+    return IntervalRecurrencePattern(startFromISO8601.value(),
+                                     intervalFromJSON.value());
 }
 } // namespace hbt::mods::util

@@ -6,6 +6,8 @@ namespace hbt::mods::util {
 class IntervalRecurrencePattern : public RecurrencePattern {
   private:
     enum class Error : uint8_t {
+        JSONMissingRequiredField,
+        JSONFailedToParseStart,
         JSONFailedToParseInterval,
 
         InvalidInterval,
@@ -15,6 +17,14 @@ class IntervalRecurrencePattern : public RecurrencePattern {
     [[nodiscard]] static constexpr auto errorMessage(Error error)
         -> std::string {
         switch (error) {
+        case Error::JSONMissingRequiredField:
+            return "IntervalRecurrencePattern: missing required field(s) in "
+                   "JSON";
+
+        case Error::JSONFailedToParseStart:
+            return "IntervalRecurrencePattern: failed to parse start DateTime "
+                   "from JSON";
+
         case Error::JSONFailedToParseInterval:
             return "IntervalRecurrencePattern: failed to parse Interval from "
                    "JSON";
@@ -24,33 +34,48 @@ class IntervalRecurrencePattern : public RecurrencePattern {
                    "pattern from zero Interval";
 
         default:
-            return "IntervalRecurrencePattern: unclassified error";
+            std::unreachable();
         }
     }
+
+  private:
+    static constexpr auto jsonStartField{std::string_view{"start"}};
+    static constexpr auto jsonIntervalField{std::string_view{"interval"}};
+
+    static constexpr auto jsonFields{
+        std::array<std::string_view, 2>{jsonStartField, jsonIntervalField}};
 
   private:
     static auto validateInterval(const Interval &interval) -> Interval;
 
   private:
+    DateTime start_;
     Interval interval_;
 
   public:
-    IntervalRecurrencePattern(const Interval &interval);
+    IntervalRecurrencePattern(DateTime start, Interval interval);
 
   public:
     [[nodiscard]] auto getInterval() const -> Interval;
 
   public:
-    [[nodiscard]] auto happensOnDate(DateTime start, DateTime on) const -> bool;
+    [[nodiscard]] auto happensOnDate(DateTime on) const -> bool;
 
-  private:
-    [[nodiscard]] auto getFirstOccurrenceOfDate(DateTime start,
-                                                DateTime on) const
+  public:
+    [[nodiscard]] auto getFirstOccurrenceOfDate(DateTime on) const
         -> std::optional<occurrence_t>;
 
   public:
-    [[nodiscard]] auto getOccurrencesOfDate(DateTime start, DateTime on) const
+    [[nodiscard]] auto getOccurrencesOfDate(DateTime on) const
         -> occurrences_t override;
+
+  public:
+    [[nodiscard]] auto operator==(const IntervalRecurrencePattern &other) const
+        -> bool;
+
+  private:
+    [[nodiscard]] static auto containsAllJSONFields(const nlohmann::json &json)
+        -> bool;
 
   public:
     [[nodiscard]] auto toJSON() const -> nlohmann::json;

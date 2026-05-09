@@ -19,9 +19,10 @@ auto WeekdaysRecurrencePattern::validateWeekdays(Weekdays weekdays)
     return weekdays;
 }
 
-WeekdaysRecurrencePattern::WeekdaysRecurrencePattern(const Interval &interval,
+WeekdaysRecurrencePattern::WeekdaysRecurrencePattern(DateTime start,
+                                                     Interval interval,
                                                      Weekdays weekdays)
-    : weekdays_{validateWeekdays(weekdays)},
+    : start_{start}, weekdays_{validateWeekdays(weekdays)},
       interval_{validateInterval(interval)} {}
 
 [[nodiscard]] auto WeekdaysRecurrencePattern::getInterval() const -> Interval {
@@ -32,36 +33,19 @@ WeekdaysRecurrencePattern::WeekdaysRecurrencePattern(const Interval &interval,
     return weekdays_;
 }
 
-[[nodiscard]] auto
-WeekdaysRecurrencePattern::getFirstOccurrence(DateTime start) const
-    -> occurrence_t {
-    for (auto days{0}; days != Interval::daysInWeek; ++days) {
-        auto datetime{start + Interval::days(days)};
-
-        if (weekdays_.containsWeekday(datetime.getWeekday())) {
-            return datetime;
-        }
-    }
-
-    throw std::runtime_error(errorMessage(Error::EmptyWeekdays));
-}
-
-[[nodiscard]] auto WeekdaysRecurrencePattern::happensOnDate(DateTime start,
-                                                            DateTime on) const
+[[nodiscard]] auto WeekdaysRecurrencePattern::happensOnDate(DateTime on) const
     -> bool {
     if (!weekdays_.containsWeekday(on.getWeekday())) {
         return false;
     }
 
-    auto firstTimeStampDateTime{getFirstOccurrence(start)};
-
-    return DateTime::daysDiff(on, firstTimeStampDateTime)
-        .isMultipleOf(interval_);
+    return DateTime::daysDiff(start_, on).isMultipleOf(interval_);
 }
 
-[[nodiscard]] auto WeekdaysRecurrencePattern::getOccurrencesOfDate(
-    DateTime start, DateTime on) const -> occurrences_t {
-    if (happensOnDate(start, on)) {
+[[nodiscard]] auto
+WeekdaysRecurrencePattern::getOccurrencesOfDate(DateTime on) const
+    -> occurrences_t {
+    if (happensOnDate(on)) {
         return {DateTime(on)};
     }
 
@@ -72,6 +56,8 @@ WeekdaysRecurrencePattern::getFirstOccurrence(DateTime start) const
     return {{jsonIntervalField, interval_.toISO8601String()},
             {jsonWeekdaysField, weekdays_.toJSON()}};
 }
+
+
 
 [[nodiscard]] auto
 WeekdaysRecurrencePattern::containsAllJSONFields(const nlohmann::json &json)
@@ -88,9 +74,14 @@ WeekdaysRecurrencePattern::fromJSON(const nlohmann::json &json)
         return std::unexpected(Error::JSONMissingRequiredField);
     }
 
-    auto intervalFromISO8601{Interval::fromISO8601String(
-        json[jsonIntervalField].get<std::string>())};
-    if (!intervalFromISO8601) {
+    auto startFromISO8601{
+        DateTime::fromISO8601String(json[jsonStartField].get<std::string>())};
+    if (!startFromISO8601) {
+        return std::unexpected(Error::JSONFailedToParseStart);
+    }
+
+    auto intervalFromJSON{Interval::fromJSON(json[jsonIntervalField])};
+    if (!intervalFromJSON) {
         return std::unexpected(Error::JSONFailedToParseInterval);
     }
 
@@ -99,7 +90,8 @@ WeekdaysRecurrencePattern::fromJSON(const nlohmann::json &json)
         return std::unexpected(Error::JSONFailedToParseWeekdays);
     }
 
-    return WeekdaysRecurrencePattern{intervalFromISO8601.value(),
+    return WeekdaysRecurrencePattern{startFromISO8601.value(),
+                                     intervalFromJSON.value(),
                                      weekdaysFromJSON.value()};
 }
 } // namespace hbt::mods::util

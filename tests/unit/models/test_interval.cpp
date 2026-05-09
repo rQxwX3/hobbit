@@ -316,8 +316,14 @@ TEST(IntervalTest, ComparisonOperators) {
     EXPECT_TRUE(Interval::hours(1) >
                 Interval::minutes(Interval::minutesInHour - 1));
 
+    /* months v. minutes (valid) */
+    EXPECT_TRUE(Interval::months(1) > Interval::minutes(1));
+    EXPECT_TRUE(Interval::months(1) > Interval::minutes(10000));
+    EXPECT_TRUE(Interval::months(144) > Interval::minutes(10000));
+
     /* invalid comparisons */
-    EXPECT_THROW(Interval::minutes(1) > Interval::months(1), std::logic_error);
+    EXPECT_THROW(Interval({.months = 1, .minutes = 1}) < Interval::days(1),
+                 std::logic_error);
 }
 
 TEST(IntervalTest, IsMultipleOf) {

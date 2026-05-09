@@ -34,8 +34,8 @@ class Interval {
             return "Interval: failed to parse from natural language";
 
         case Error::InvalidComparison:
-            return "Interval: can't compare month-based and minute-based "
-                   "intervals";
+            return "Interval: can't compare intervals if one of them contains "
+                   "both months and minutes after downward conversion";
 
         default:
             std::unreachable();

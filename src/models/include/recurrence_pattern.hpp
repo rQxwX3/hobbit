@@ -22,12 +22,14 @@ class RecurrencePattern {
     RecurrencePattern(RecurrencePattern &&) = delete;
     auto operator=(RecurrencePattern &&) -> RecurrencePattern & = delete;
 
+    [[nodiscard]] auto operator==(const RecurrencePattern &other) const
+        -> bool = default;
+
   public:
     virtual ~RecurrencePattern() = default;
 
   public:
-    [[nodiscard]] virtual auto getOccurrencesOfDate(DateTime start,
-                                                    DateTime on) const
+    [[nodiscard]] virtual auto getOccurrencesOfDate(DateTime on) const
         -> occurrences_t = 0;
 };
 } // namespace hbt::mods::util

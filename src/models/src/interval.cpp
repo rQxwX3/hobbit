@@ -152,11 +152,10 @@ auto Interval::addUnit(Unit unit, value_t value) -> void {
     auto rhs{other.convertUnitsDownwards()};
 
     /* months are not convertible to minutes and vice versa */
-    const bool convertedDownToTheSameUnit{
-        (!lhs[Unit::MONTH] && !rhs[Unit::MONTH]) ||
-        (!lhs[Unit::MINUTE] && !rhs[Unit::MINUTE])};
+    const bool lhsIsMixed{lhs[Unit::MINUTE] != 0 && lhs[Unit::MONTH] != 0};
+    const bool rhsIsMixed{rhs[Unit::MINUTE] != 0 && rhs[Unit::MONTH] != 0};
 
-    if (!convertedDownToTheSameUnit) {
+    if (lhsIsMixed || rhsIsMixed) {
         throw std::logic_error(errorMessage(Error::InvalidComparison));
     }
 

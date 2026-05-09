@@ -8,6 +8,7 @@ class WeekdaysRecurrencePattern : public RecurrencePattern {
     enum class Error : uint8_t {
         JSONMissingRequiredField,
 
+        JSONFailedToParseStart,
         JSONFailedToParseInterval,
         JSONFailedToParseWeekdays,
 
@@ -24,6 +25,10 @@ class WeekdaysRecurrencePattern : public RecurrencePattern {
         case Error::JSONMissingRequiredField:
             return "WeekdayRecurrencePattern: missing required field(s) in "
                    "JSON";
+
+        case Error::JSONFailedToParseStart:
+            return "WeekdayRecurrencePattern: failed to parse start DateTime "
+                   "from JSON";
 
         case Error::JSONFailedToParseInterval:
             return "WeekdayRecurrencePattern: failed to parse Interval from "
@@ -46,30 +51,31 @@ class WeekdaysRecurrencePattern : public RecurrencePattern {
                    "Weekdays object)";
 
         default:
-            return "WeekdayRecurrencePattern: unclassified error";
+            std::unreachable();
         }
     }
 
   private:
+    static constexpr auto jsonStartField{std::string_view{"start"}};
     static constexpr auto jsonIntervalField{std::string_view{"interval"}};
     static constexpr auto jsonWeekdaysField{std::string_view{"weekdays"}};
 
-    static constexpr auto jsonFields{
-        std::array<std::string_view, 2>{jsonIntervalField, jsonWeekdaysField}};
+    static constexpr auto jsonFields{std::array<std::string_view, 3>{
+        jsonStartField, jsonIntervalField, jsonWeekdaysField}};
 
   private:
+    DateTime start_;
     Interval interval_;
     Weekdays weekdays_;
 
   private:
-    [[nodiscard]] auto getFirstOccurrence(DateTime start) const -> occurrence_t;
-
     static auto validateInterval(const Interval &interval) -> Interval;
 
     static auto validateWeekdays(Weekdays weekdays) -> Weekdays;
 
   public:
-    WeekdaysRecurrencePattern(const Interval &interval, Weekdays weekdays);
+    WeekdaysRecurrencePattern(DateTime start, Interval interval,
+                              Weekdays weekdays);
 
   public:
     [[nodiscard]] auto getInterval() const -> Interval;
@@ -77,10 +83,10 @@ class WeekdaysRecurrencePattern : public RecurrencePattern {
     [[nodiscard]] auto getWeekdays() const -> Weekdays;
 
   public:
-    [[nodiscard]] auto happensOnDate(DateTime start, DateTime on) const -> bool;
+    [[nodiscard]] auto happensOnDate(DateTime on) const -> bool;
 
   public:
-    [[nodiscard]] auto getOccurrencesOfDate(DateTime start, DateTime on) const
+    [[nodiscard]] auto getOccurrencesOfDate(DateTime on) const
         -> occurrences_t override;
 
   private:
