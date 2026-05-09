@@ -108,6 +108,12 @@ IntervalRecurrencePattern::fromJSON(const nlohmann::json &json)
         return std::unexpected(Error::JSONFailedToParseInterval);
     }
 
+    try {
+        validateInterval(intervalFromJSON.value());
+    } catch (std::invalid_argument) {
+        return std::unexpected(Error::JSONInvalidInterval);
+    }
+
     return IntervalRecurrencePattern(startFromISO8601.value(),
                                      intervalFromJSON.value());
 }

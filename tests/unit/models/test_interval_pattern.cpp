@@ -62,6 +62,11 @@ TEST(IntervalPatternTest, HappensOnDate) {
     EXPECT_TRUE(pattern.happensOnDate(DateTime({2027, 1, 1})));
     EXPECT_FALSE(pattern.happensOnDate(DateTime({2025, 1, 2})));
     EXPECT_FALSE(pattern.happensOnDate(DateTime({2000, 6, 28})));
+
+    /* false before start same day */
+    start = DateTime({2025, 1, 1}, {12, 0});
+    pattern = IntervalRecurrencePattern(start, Interval::minutes(1));
+    EXPECT_FALSE(pattern.happensOnDate(DateTime({2025, 1, 1}, {11, 59})));
 }
 
 TEST(IntervalPatternTest, GetFirstOccurrenceOfDate) {
@@ -119,6 +124,24 @@ TEST(IntervalPatternTest, GetOccurrencesOfDate) {
     occurrencesOfDate = pattern.getOccurrencesOfDate(start);
     ASSERT_EQ(occurrencesOfDate.size(), 1);
     EXPECT_EQ(occurrencesOfDate[0], start);
+
+    /* subday interval */
+    start = DateTime({2025, 1, 1}, {0, 0});
+    pattern = IntervalRecurrencePattern(start, Interval::hours(5));
+    occurrencesOfDate = pattern.getOccurrencesOfDate(start);
+    ASSERT_EQ(occurrencesOfDate.size(), 5);
+    EXPECT_EQ(occurrencesOfDate[0], DateTime({2025, 1, 1}, {0, 0}));
+    EXPECT_EQ(occurrencesOfDate[1], DateTime({2025, 1, 1}, {5, 0}));
+    EXPECT_EQ(occurrencesOfDate[2], DateTime({2025, 1, 1}, {10, 0}));
+    EXPECT_EQ(occurrencesOfDate[3], DateTime({2025, 1, 1}, {15, 0}));
+    EXPECT_EQ(occurrencesOfDate[4], DateTime({2025, 1, 1}, {20, 0}));
+
+    /* stops at midnight boundary */
+    start = DateTime({2025, 1, 1}, {23, 0});
+    pattern = IntervalRecurrencePattern(start, Interval::hours(2));
+    occurrencesOfDate = pattern.getOccurrencesOfDate(start);
+    ASSERT_EQ(occurrencesOfDate.size(), 1);
+    EXPECT_EQ(occurrencesOfDate[0], DateTime({2025, 1, 1}, {23, 0}));
 }
 
 TEST(IntervalPatternTest, GetOccurrencesOfDateEmptyWhenNoOccurences) {
@@ -165,6 +188,11 @@ TEST(IntervalPatternTest, FromJSONFailsOnInvalidJSON) {
     /* invalid interval */
     json = {{"start", DateTime::now().toISO8601String()},
             {"interval", "invalid"}};
+    EXPECT_FALSE(IntervalRecurrencePattern::fromJSON(json));
+
+    /* invalid interval (zero-interval) */
+    json = {{"start", DateTime::now().toISO8601String()},
+            {"interval", Interval{}.toJSON()}};
     EXPECT_FALSE(IntervalRecurrencePattern::fromJSON(json));
 }
 } // namespace test::mods::util

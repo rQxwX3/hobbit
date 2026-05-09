@@ -9,6 +9,7 @@ class IntervalRecurrencePattern : public RecurrencePattern {
         JSONMissingRequiredField,
         JSONFailedToParseStart,
         JSONFailedToParseInterval,
+        JSONInvalidInterval,
 
         InvalidInterval,
     };
