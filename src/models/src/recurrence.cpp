@@ -8,7 +8,7 @@ Recurrence::Recurrence(pattern_t pattern) : pattern_{std::move(pattern)} {}
         return PatternType::Interval;
     }
 
-    if (std::holds_alternative<WeekdayRecurrencePattern>(pattern_)) {
+    if (std::holds_alternative<WeekdaysRecurrencePattern>(pattern_)) {
         return PatternType::Weekday;
     }
 
@@ -21,22 +21,22 @@ Recurrence::Recurrence(pattern_t pattern) : pattern_{std::move(pattern)} {}
 }
 
 [[nodiscard]] auto Recurrence::getWeekdayPattern() const
-    -> WeekdayRecurrencePattern {
-    return std::get<WeekdayRecurrencePattern>(pattern_);
+    -> WeekdaysRecurrencePattern {
+    return std::get<WeekdaysRecurrencePattern>(pattern_);
 }
 
-[[nodiscard]] auto Recurrence::getTimeStampsOnDate(DateTime start,
-                                                   DateTime datetime) const
-    -> timestamps_t {
+[[nodiscard]] auto Recurrence::getOccurrencesOfDate(DateTime start,
+                                                    DateTime datetime) const
+    -> occurrences_t {
     return std::visit(
         [&](const auto &pattern) -> auto {
-            return pattern.getTimeStampsOnDate(start, datetime);
+            return pattern.getOccurrencesOfDate(start, datetime);
         },
         pattern_);
 }
 
-[[nodiscard]] auto Recurrence::isForDate(DateTime start,
-                                         DateTime datetime) const -> bool {
+[[nodiscard]] auto Recurrence::happensOnDate(DateTime start,
+                                             DateTime datetime) const -> bool {
     return std::visit(
         [&](const auto &pattern) -> bool {
             return pattern.happensOnDate(start, datetime);
@@ -87,7 +87,7 @@ Recurrence::Recurrence(pattern_t pattern) : pattern_{std::move(pattern)} {}
 
     if (patternType == jsonWeekdayPatternTypeValue) {
         auto pattern{
-            WeekdayRecurrencePattern::fromJSON(json[jsonPatternField])};
+            WeekdaysRecurrencePattern::fromJSON(json[jsonPatternField])};
 
         if (!pattern) {
             return std::unexpected(Error::JSONFailedToParseWeekdayPattern);

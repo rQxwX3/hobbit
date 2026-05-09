@@ -3,96 +3,35 @@
 #include <task_data.hpp>
 
 namespace test::mods {
-
-using hbt::mods::DateTime;
-using hbt::mods::Deadline;
 using hbt::mods::TaskData;
 
-TEST(TaskDataTest, ConstructionAndGetters) {
-    auto dt{DateTime::fromISO8601String("2025-01-01T10:00:00").value()};
+TEST(TaskDataTest, ThrowsOnEmptyTitle) {
+    EXPECT_THROW(TaskData("", false), std::invalid_argument);
+}
 
-    auto task{TaskData("Test", dt, false, Deadline::null())};
+TEST(TaskDataTest, NotCompletedByDefault) {
+    EXPECT_FALSE(TaskData("Title").getCompleted());
+}
+
+TEST(TaskDataTest, ConstructionAndGetters) {
+    auto task{TaskData("Test", false)};
 
     EXPECT_EQ(task.getTitle(), "Test");
-    EXPECT_EQ(task.getDateTime(), dt);
-    EXPECT_FALSE(task.isCompleted());
-    EXPECT_TRUE(task.getDeadline().isNull());
+    EXPECT_FALSE(task.getCompleted());
 }
 
 TEST(TaskDataTest, Setters) {
-    auto dt{DateTime::fromISO8601String("2025-01-01T10:00:00").value()};
-    TaskData task{"Test", dt, false};
+    auto task{TaskData("Test", false)};
 
     task.setTitle("Updated");
     EXPECT_EQ(task.getTitle(), "Updated");
 
-    auto newDt{DateTime::fromISO8601String("2025-01-02T10:00:00").value()};
-    task.setDateTime(newDt);
-    EXPECT_EQ(task.getDateTime(), newDt);
-
     task.setCompleted(true);
-    EXPECT_TRUE(task.isCompleted());
+    EXPECT_TRUE(task.getCompleted());
 }
 
-TEST(TaskDataTest, ValidDeadlineAfterDateTime) {
-    auto dt{DateTime::fromISO8601String("2025-01-01T10:00:00").value()};
-    auto deadlineDT{DateTime::fromISO8601String("2025-01-02T10:00:00").value()};
-
-    auto deadline{Deadline(deadlineDT)};
-
-    TaskData task{"Test", dt, false, deadline};
-
-    ASSERT_FALSE(task.getDeadline().isNull());
-    EXPECT_EQ(task.getDeadline().getDateTime(), deadlineDT);
-}
-
-TEST(TaskDataTest, RejectsDeadlineBeforeDateTime) {
-    auto dt{DateTime::fromISO8601String("2025-01-02T10:00:00").value()};
-    auto deadlineDT{DateTime::fromISO8601String("2025-01-01T10:00:00").value()};
-
-    auto deadline{Deadline(deadlineDT)};
-
-    EXPECT_THROW(TaskData("Test", dt, false, deadline), std::invalid_argument);
-}
-
-TEST(TaskDataTest, RejectsDateTimeAfterDeadline) {
-    auto dt{DateTime::fromISO8601String("2025-01-02T10:00:00").value()};
-    auto deadlineDT{DateTime::fromISO8601String("2025-01-01T10:00:00").value()};
-
-    auto deadline{Deadline(deadlineDT)};
-
-    EXPECT_THROW(TaskData("Test", dt, false, deadline), std::invalid_argument);
-}
-
-TEST(TaskDataTest, SetDateTimeValidation) {
-    auto dt{DateTime::fromISO8601String("2025-01-01T10:00:00").value()};
-    auto deadlineDT{DateTime::fromISO8601String("2025-01-02T10:00:00").value()};
-    auto deadline{Deadline(deadlineDT)};
-
-    TaskData task{"Test", dt, false, deadline};
-
-    auto invalidDT{DateTime::fromISO8601String("2025-01-03T10:00:00").value()};
-
-    EXPECT_THROW(task.setDateTime(invalidDT), std::invalid_argument);
-}
-
-TEST(TaskDataTest, SetDeadlineValidation) {
-    auto dt{DateTime::fromISO8601String("2025-01-02T10:00:00").value()};
-    TaskData task{"Test", dt, false};
-
-    auto invalidDeadlineDT{
-        DateTime::fromISO8601String("2025-01-01T10:00:00").value()};
-    auto deadline{Deadline(invalidDeadlineDT)};
-
-    EXPECT_THROW(task.setDeadline(deadline), std::invalid_argument);
-}
-
-TEST(TaskDataTest, ToFromJSON) {
-    auto dt{DateTime::fromISO8601String("2025-01-01T10:00:00").value()};
-    auto deadlineDT{DateTime::fromISO8601String("2025-01-02T10:00:00").value()};
-    auto deadline{Deadline(deadlineDT)};
-
-    TaskData original{"Test", dt, true, deadline};
+TEST(TaskDataTest, JSONRoundTrip) {
+    auto original{TaskData("Test", true)};
 
     auto json = original.toJSON();
     auto restored{TaskData::fromJSON(json)};
@@ -100,37 +39,22 @@ TEST(TaskDataTest, ToFromJSON) {
     ASSERT_TRUE(restored.has_value());
 
     EXPECT_EQ(restored->getTitle(), original.getTitle());
-    EXPECT_EQ(restored->getDateTime(), original.getDateTime());
-    EXPECT_EQ(restored->isCompleted(), original.isCompleted());
-    ASSERT_FALSE(restored->getDeadline().isNull());
-    EXPECT_EQ(restored->getDeadline().getDateTime(),
-              original.getDeadline().getDateTime());
+    EXPECT_EQ(restored->getCompleted(), original.getCompleted());
 }
 
-TEST(TaskDataTest, ToFromJSONWithNullDeadline) {
-    auto dt{DateTime::fromISO8601String("2025-01-01T10:00:00").value()};
+TEST(TaskDataTest, FromJSONFailsOnInvalidJSON) {
+    auto json = nlohmann::json();
 
-    TaskData original{"Test", dt, false};
+    /* empty json */
+    EXPECT_FALSE(TaskData::fromJSON(json));
 
-    auto json = original.toJSON();
-    auto restored{TaskData::fromJSON(json)};
+    /* missing title */
+    EXPECT_FALSE(TaskData::fromJSON({{"completed", false}}).has_value());
 
-    ASSERT_TRUE(restored.has_value());
-    EXPECT_TRUE(restored->getDeadline().isNull());
+    /* empty title */
+    EXPECT_FALSE(TaskData::fromJSON({{"title", ""}, {"completed", false}}));
+
+    /* missing completed */
+    EXPECT_FALSE(TaskData::fromJSON({{"title", "title"}}));
 }
-
-TEST(TaskDataTest, FromJSONInvalid) {
-    nlohmann::json json{};
-
-    // missing fields
-    EXPECT_FALSE(TaskData::fromJSON(json).has_value());
-
-    // invalid datetime
-    json = {{"title", "Test"},
-            {"datetime", "invalid"},
-            {"deadline", nullptr},
-            {"completed", false}};
-    EXPECT_FALSE(TaskData::fromJSON(json).has_value());
-}
-
 } // namespace test::mods

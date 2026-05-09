@@ -9,87 +9,58 @@
 
 namespace hbt::mods {
 class TaskData {
-  public:
-    using deadline_t = Deadline;
-    using datetime_t = DateTime;
-
   private:
     enum class Error : uint8_t {
+        EmptyTitle,
+
         JSONMissingRequiredField,
-
-        JSONFailedToParseDateTime,
-        JSONFailedToParseDeadline,
-
-        InvalidDeadline,
-        InvalidDateTime,
+        JSONEmptyTitle,
     };
 
   public:
     [[nodiscard]] static constexpr auto errorMessage(Error error)
         -> std::string {
         switch (error) {
+        case Error::EmptyTitle:
+            return "TaskData: provided title is an empty string";
+
         case Error::JSONMissingRequiredField:
             return "TaskData: missing required field(s) in JSON";
 
-        case Error::JSONFailedToParseDateTime:
-            return "TaskData: failed to parse DateTime from JSON";
-
-        case Error::JSONFailedToParseDeadline:
-            return "TaskData: failed to parse Deadline from JSON";
-
-        case Error::InvalidDeadline:
-            return "TaskData: provided Deadline is before task's Datetime";
-
-        case Error::InvalidDateTime:
-            return "TaskData: provided Datetime is after task's Deadline";
+        case Error::JSONEmptyTitle:
+            return "TaskData: provided JSON contains empty title";
 
         default:
-            return "TaskData: unclassified error";
+            std::unreachable();
         }
     }
 
   private:
     static constexpr auto jsonTitleField{std::string_view{"title"}};
-    static constexpr auto jsonDateTimeField{std::string_view{"datetime"}};
-    static constexpr auto jsonDeadlineField{std::string_view{"deadline"}};
     static constexpr auto jsonCompletedField{std::string_view{"completed"}};
 
     static constexpr auto jsonFields{
-        std::array<std::string_view, 4>{jsonTitleField, jsonDateTimeField,
-                                        jsonDeadlineField, jsonCompletedField}};
+        std::array<std::string_view, 2>{jsonTitleField, jsonCompletedField}};
+
+  private:
+    [[nodiscard]] auto static validateTitle(const std::string &title)
+        -> std::string;
 
   private:
     std::string title_;
 
-    datetime_t datetime_;
-    deadline_t deadline_;
-
     bool completed_;
 
-  private:
-    auto validateDateTime(datetime_t datetime) const -> datetime_t;
-
-    auto validateDeadline(deadline_t deadline) const -> deadline_t;
-
   public:
-    TaskData(std::string title, datetime_t datetime, bool completed = false,
-             deadline_t deadline = Deadline::null());
+    TaskData(std::string title, bool completed = false);
 
   public:
     [[nodiscard]] auto getTitle() const -> std::string_view;
 
-    [[nodiscard]] auto getDateTime() const -> datetime_t;
-
-    [[nodiscard]] auto getDeadline() const -> deadline_t;
-
-    [[nodiscard]] auto isCompleted() const -> bool;
+    [[nodiscard]] auto getCompleted() const -> bool;
 
   public:
     auto setTitle(std::string title) -> void;
-
-    auto setDateTime(datetime_t datetime) -> void;
-
-    auto setDeadline(deadline_t deadline) -> void;
 
     auto setCompleted(bool completed) -> void;
 

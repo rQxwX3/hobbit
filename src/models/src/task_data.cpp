@@ -1,59 +1,26 @@
 #include <task_data.hpp>
 
 namespace hbt::mods {
-auto TaskData::validateDateTime(datetime_t datetime) const -> datetime_t {
-    if (deadline_.getType() == Deadline::Type::DateTime &&
-        datetime > deadline_.getDateTime()) {
-        throw std::invalid_argument(errorMessage(Error::InvalidDateTime));
+[[nodiscard]] auto TaskData::validateTitle(const std::string &title)
+    -> std::string {
+    if (title.empty()) {
+        throw std::invalid_argument(errorMessage(Error::EmptyTitle));
     }
 
-    return datetime;
+    return title;
 }
 
-auto TaskData::validateDeadline(deadline_t deadline) const -> deadline_t {
-    if (deadline.getType() != Deadline::Type::DateTime) {
-        return deadline;
-    }
-
-    if (auto deadlineDT{deadline.getDateTime()}; deadlineDT < datetime_) {
-        throw std::invalid_argument(errorMessage(Error::InvalidDeadline));
-    }
-
-    return deadline;
-}
-
-TaskData::TaskData(std::string title, datetime_t datetime, bool completed,
-                   deadline_t deadline)
-    : title_{std::move(title)}, datetime_{datetime},
-      deadline_{validateDeadline(std::move(deadline))}, completed_{completed} {
-    validateDateTime(datetime_); // cannot validate in initializer list due to
-                                 // circular dependency
-}
+TaskData::TaskData(std::string title, bool completed)
+    : title_{std::move(validateTitle(title))}, completed_{completed} {}
 
 [[nodiscard]] auto TaskData::getTitle() const -> std::string_view {
     return title_;
 }
 
-[[nodiscard]] auto TaskData::getDateTime() const -> datetime_t {
-    return datetime_;
-}
-
-[[nodiscard]] auto TaskData::getDeadline() const -> deadline_t {
-    return deadline_;
-}
-
-[[nodiscard]] auto TaskData::isCompleted() const -> bool { return completed_; }
+[[nodiscard]] auto TaskData::getCompleted() const -> bool { return completed_; }
 
 auto TaskData::setTitle(std::string title) -> void {
     title_ = std::move(title);
-}
-
-auto TaskData::setDateTime(datetime_t datetime) -> void {
-    datetime_ = validateDateTime(datetime);
-}
-
-auto TaskData::setDeadline(deadline_t deadline) -> void {
-    deadline_ = validateDeadline(std::move(deadline));
 }
 
 auto TaskData::setCompleted(bool completed) -> void { completed_ = completed; }
@@ -61,8 +28,6 @@ auto TaskData::setCompleted(bool completed) -> void { completed_ = completed; }
 [[nodiscard]] auto TaskData::toJSON() const & -> nlohmann::json {
     nlohmann::json json = {
         {jsonTitleField, title_},
-        {jsonDateTimeField, datetime_.toISO8601String()},
-        {jsonDeadlineField, deadline_.toJSON()},
         {jsonCompletedField, completed_},
     };
 
@@ -82,19 +47,13 @@ auto TaskData::setCompleted(bool completed) -> void { completed_ = completed; }
         return std::unexpected(Error::JSONMissingRequiredField);
     }
 
-    auto dateTimeFromISO8601{DateTime::fromISO8601String(
-        json[jsonDateTimeField].get<std::string>())};
-    if (!dateTimeFromISO8601) {
-        return std::unexpected(Error::JSONFailedToParseDateTime);
+    auto titleFromJSON{json[jsonTitleField].get<std::string>()};
+    try {
+        validateTitle(titleFromJSON);
+    } catch (std::invalid_argument) {
+        return std::unexpected(Error::JSONEmptyTitle);
     }
 
-    auto deadline{Deadline::fromJSON(json[jsonDeadlineField])};
-    if (!deadline) {
-        return std::unexpected(Error::JSONFailedToParseDeadline);
-    }
-
-    return TaskData{json[jsonTitleField].get<std::string>(),
-                    dateTimeFromISO8601.value(),
-                    json[jsonCompletedField].get<bool>(), deadline.value()};
+    return TaskData{titleFromJSON, json[jsonCompletedField].get<bool>()};
 }
 } // namespace hbt::mods

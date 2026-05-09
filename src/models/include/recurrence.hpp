@@ -1,7 +1,8 @@
 #pragma once
 
 #include <datetime.hpp>
-#include <recurrence_patterns.hpp>
+#include <interval_pattern.hpp>
+#include <weekdays_pattern.hpp>
 
 #include <nlohmann/json.hpp>
 
@@ -14,9 +15,9 @@ namespace hbt::mods::util {
 class Recurrence {
   public:
     using pattern_t =
-        std::variant<IntervalRecurrencePattern, WeekdayRecurrencePattern>;
+        std::variant<IntervalRecurrencePattern, WeekdaysRecurrencePattern>;
 
-    using timestamps_t = RecurrencePattern::timestamps_t;
+    using occurrences_t = RecurrencePattern::occurrences_t;
 
   private:
     static constexpr auto jsonPatternTypeField{std::string_view{"type"}};
@@ -65,7 +66,7 @@ class Recurrence {
                    "type)";
 
         default:
-            return "Recurrence: unclassified error";
+            std::unreachable();
         }
     }
 
@@ -86,14 +87,14 @@ class Recurrence {
 
     [[nodiscard]] auto getIntervalPattern() const -> IntervalRecurrencePattern;
 
-    [[nodiscard]] auto getWeekdayPattern() const -> WeekdayRecurrencePattern;
+    [[nodiscard]] auto getWeekdayPattern() const -> WeekdaysRecurrencePattern;
 
   public:
-    [[nodiscard]] auto getTimeStampsOnDate(DateTime start, DateTime on) const
-        -> timestamps_t;
+    [[nodiscard]] auto getOccurrencesOfDate(DateTime start, DateTime on) const
+        -> occurrences_t;
 
   public:
-    [[nodiscard]] auto isForDate(DateTime start, DateTime datetime) const
+    [[nodiscard]] auto happensOnDate(DateTime start, DateTime datetime) const
         -> bool;
 
   private:
