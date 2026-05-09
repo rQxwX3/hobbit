@@ -17,13 +17,16 @@ TaskData::TaskData(std::string title, bool completed)
     return title_;
 }
 
-[[nodiscard]] auto TaskData::getCompleted() const -> bool { return completed_; }
+[[nodiscard]] auto TaskData::isCompleted() const -> bool { return completed_; }
 
 auto TaskData::setTitle(std::string title) -> void {
-    title_ = std::move(title);
+    title_ = std::move(validateTitle(title));
 }
 
 auto TaskData::setCompleted(bool completed) -> void { completed_ = completed; }
+
+[[nodiscard]] auto TaskData::operator==(const TaskData &other) const
+    -> bool = default;
 
 [[nodiscard]] auto TaskData::toJSON() const & -> nlohmann::json {
     nlohmann::json json = {

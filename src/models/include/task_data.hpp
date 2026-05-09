@@ -57,12 +57,15 @@ class TaskData {
   public:
     [[nodiscard]] auto getTitle() const -> std::string_view;
 
-    [[nodiscard]] auto getCompleted() const -> bool;
+    [[nodiscard]] auto isCompleted() const -> bool;
 
   public:
     auto setTitle(std::string title) -> void;
 
     auto setCompleted(bool completed) -> void;
+
+  public:
+    [[nodiscard]] auto operator==(const TaskData &other) const -> bool;
 
   private:
     [[nodiscard]] static auto containsAllJSONFields(const nlohmann::json &json)

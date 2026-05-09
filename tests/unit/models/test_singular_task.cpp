@@ -3,110 +3,122 @@
 #include <singular_task.hpp>
 
 namespace test::mods {
-
-using hbt::mods::Date;
 using hbt::mods::DateTime;
 using hbt::mods::Deadline;
+using hbt::mods::Interval;
 using hbt::mods::SingularTask;
 using hbt::mods::TaskData;
 
-TEST(SingularTaskTest, ConstructionAndGetters) {
-    auto dt{DateTime::fromISO8601String("2025-01-01T10:00:00").value()};
-    TaskData data{"Test", dt, false};
+const auto taskData{TaskData("Title", false)};
+const auto deadlineInPast{Deadline(DateTime({2000, 1, 1}))};
+const auto deadlineYearFromNow{Deadline(DateTime::now() + Interval::years(1))};
 
-    SingularTask task{data};
-
-    EXPECT_EQ(task.getTitle(), "Test");
-    EXPECT_EQ(task.getDateTime(), dt);
-    EXPECT_FALSE(task.isCompleted());
-    EXPECT_FALSE(task.hasDeadline());
+TEST(SingularTaskTest, CtorThrowsOnInvalidDeadline) {
+    EXPECT_THROW(SingularTask(taskData, DateTime::now(), deadlineInPast),
+                 std::invalid_argument);
 }
 
-TEST(SingularTaskTest, Setters) {
-    auto dt{DateTime::fromISO8601String("2025-01-01T10:00:00").value()};
-    TaskData data{"Test", dt, false};
+TEST(SingularTaskTest, SetterThrowsOnInvalidDeadline) {
+    auto singularTask{
+        SingularTask(taskData, DateTime::now(),
+                     Deadline(DateTime::now() + Interval::days(1)))};
 
-    SingularTask task{data};
-
-    task.setTitle("Updated");
-    EXPECT_EQ(task.getTitle(), "Updated");
-
-    auto newDt{DateTime::fromISO8601String("2025-01-02T10:00:00").value()};
-    task.setDateTime(newDt);
-    EXPECT_EQ(task.getDateTime(), newDt);
-
-    task.setCompleted(true);
-    EXPECT_TRUE(task.isCompleted());
+    EXPECT_THROW(singularTask.setDeadline(deadlineInPast),
+                 std::invalid_argument);
 }
 
-TEST(SingularTaskTest, DeadlineHandling) {
-    auto dt{DateTime::fromISO8601String("2025-01-01T10:00:00").value()};
-    auto deadlineDT{DateTime::fromISO8601String("2025-01-02T10:00:00").value()};
-    auto deadline{Deadline(deadlineDT)};
+TEST(SingularTaskTest, SetterThrowsOnInvalidDateTime) {
+    auto singularTask{
+        SingularTask(taskData, DateTime::now(), deadlineYearFromNow)};
 
-    TaskData data{"Test", dt, false, deadline};
-    SingularTask task{data};
-
-    EXPECT_TRUE(task.hasDeadline());
-    EXPECT_EQ(task.getDeadline().getDateTime(), deadlineDT);
+    EXPECT_THROW(singularTask.setDateTime(deadlineYearFromNow.getDateTime() +
+                                          Interval::years(1)),
+                 std::invalid_argument);
 }
 
-TEST(SingularTaskTest, IsForDate) {
-    auto dt{DateTime::fromISO8601String("2025-01-01T10:00:00").value()};
-    TaskData data{"Test", dt, false};
+TEST(SingularTaskTest, Getters) {
+    auto singularTask{
+        SingularTask(taskData, DateTime::now(), deadlineYearFromNow)};
 
-    SingularTask task{data};
-
-    auto sameDate{dt.getDaysSinceEpoch()};
-    EXPECT_TRUE(task.isForDate(sameDate));
-
-    auto otherDate{DateTime::fromISO8601String("2025-01-02T10:00:00").value()};
-    EXPECT_FALSE(task.isForDate(otherDate.getDaysSinceEpoch()));
+    EXPECT_EQ(singularTask.getTitle(), taskData.getTitle());
+    EXPECT_EQ(singularTask.getDateTime(), DateTime::now());
+    EXPECT_EQ(singularTask.isCompleted(), taskData.isCompleted());
+    EXPECT_EQ(singularTask.getDeadline(), deadlineYearFromNow);
 }
 
-TEST(SingularTaskTest, ToFromJSON) {
-    auto dt{DateTime::fromISO8601String("2025-01-01T10:00:00").value()};
-    auto deadlineDT{DateTime::fromISO8601String("2025-01-02T10:00:00").value()};
-    auto deadline{Deadline(deadlineDT)};
+TEST(SingularTaskTest, IsForDateReturnsTrueCorrectly) {
+    auto singularTask{
+        SingularTask(taskData, DateTime::now(), deadlineYearFromNow)};
 
-    TaskData data{"Test", dt, true, deadline};
-    SingularTask original{data};
+    EXPECT_TRUE(singularTask.isForDate(DateTime::now()));
 
-    auto json{original.toJSON()};
-    auto restored{SingularTask::fromJSON(json)};
+    singularTask =
+        SingularTask(taskData, DateTime({2000, 1, 1}), deadlineYearFromNow);
 
-    ASSERT_TRUE(restored.has_value());
-
-    EXPECT_EQ(restored->getTitle(), original.getTitle());
-    EXPECT_EQ(restored->getDateTime(), original.getDateTime());
-    EXPECT_EQ(restored->isCompleted(), original.isCompleted());
-    ASSERT_TRUE(restored->hasDeadline());
-    EXPECT_EQ(restored->getDeadline().getDateTime(),
-              original.getDeadline().getDateTime());
+    EXPECT_TRUE(singularTask.isForDate(DateTime({2000, 1, 1})));
 }
 
-TEST(SingularTaskTest, ToFromJSONWithoutDeadline) {
-    auto dt{DateTime::fromISO8601String("2025-01-01T10:00:00").value()};
-    TaskData data{"Test", dt, false};
+TEST(SingularTaskTest, IsForDateReturnsFalseCorrectly) {
+    auto singularTask{
+        SingularTask(taskData, DateTime::now(), deadlineYearFromNow)};
 
-    SingularTask original{data};
+    EXPECT_FALSE(singularTask.isForDate(DateTime({2000, 1, 1})));
 
-    auto json{original.toJSON()};
-    auto restored{SingularTask::fromJSON(json)};
+    singularTask =
+        SingularTask(taskData, DateTime({2000, 1, 1}), deadlineYearFromNow);
 
-    ASSERT_TRUE(restored.has_value());
-    EXPECT_FALSE(restored->hasDeadline());
+    EXPECT_FALSE(singularTask.isForDate(DateTime::now()));
 }
 
-TEST(SingularTaskTest, FromJSONInvalid) {
-    nlohmann::json json{};
+TEST(SingularTaskTest, JSONRoundTrip) {
+    auto original{SingularTask(taskData, DateTime::now(), deadlineYearFromNow)};
+    auto restored{SingularTask::fromJSON(original.toJSON())};
 
-    // missing required field
-    EXPECT_FALSE(SingularTask::fromJSON(json).has_value());
-
-    // invalid TaskData inside
-    json = {{"task", {{"invalid", "data"}}}};
-    EXPECT_FALSE(SingularTask::fromJSON(json).has_value());
+    EXPECT_EQ(original, restored);
 }
 
+TEST(SingularTaskTest, FromJSONFailsOnInvalidJSON) {
+    auto json{nlohmann::json{}};
+
+    /* empty json */
+    EXPECT_FALSE(SingularTask::fromJSON(json));
+
+    /* missing datetime and deadline */
+    json = {taskData.toJSON()};
+    EXPECT_FALSE(SingularTask::fromJSON(json));
+
+    /* missing deadline */
+    json = {taskData.toJSON(), {"datetime", DateTime::now().toISO8601String()}};
+    EXPECT_FALSE(SingularTask::fromJSON(json));
+
+    /* invalid task data */
+    json = {{{"title", "title"}, {"completed", false}},
+            {"datetime", DateTime::now().toISO8601String()},
+            {"deadline", deadlineYearFromNow.toJSON()}};
+    EXPECT_FALSE(SingularTask::fromJSON(json));
+
+    /* invalid datetime */
+    json = {taskData.toJSON(),
+            {"datetime", "invalid"},
+            {"deadline", deadlineYearFromNow.toJSON()}};
+    EXPECT_FALSE(SingularTask::fromJSON(json));
+
+    /* invalid deadline */
+    json = {taskData.toJSON(),
+            {"datetime", DateTime::now().toISO8601String()},
+            {"deadline", "invalid"}};
+    EXPECT_FALSE(SingularTask::fromJSON(json));
+
+    /* missing deadline */
+    json = {taskData.toJSON(), {"deadline", deadlineYearFromNow.toJSON()}};
+    EXPECT_FALSE(SingularTask::fromJSON(json));
+
+    /* invalid deadline (earlier than datetime) */
+    json = {
+        taskData.toJSON(),
+        {"datetime", (deadlineYearFromNow.getDateTime() + Interval::years(1))
+                         .toISO8601String()},
+        {"deadline", deadlineYearFromNow.toJSON()}};
+    EXPECT_FALSE(SingularTask::fromJSON(json));
+}
 } // namespace test::mods

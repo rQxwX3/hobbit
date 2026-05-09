@@ -105,12 +105,19 @@ class Deadline {
 
     [[nodiscard]] auto isNull() const -> bool;
 
+    [[nodiscard]] auto isInterval() const -> bool;
+
+    [[nodiscard]] auto isDateTime() const -> bool;
+
   public:
     [[nodiscard]] auto getType() const -> Type;
 
     [[nodiscard]] auto getInterval() const -> Interval;
 
     [[nodiscard]] auto getDateTime() const -> DateTime;
+
+  public:
+    [[nodiscard]] auto operator==(const Deadline &deadline) const -> bool;
 
   public:
     [[nodiscard]] auto toJSON() const -> nlohmann::json;

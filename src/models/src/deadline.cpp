@@ -20,6 +20,14 @@ Deadline::Deadline(type_t type)
     return std::holds_alternative<std::monostate>(type_);
 }
 
+[[nodiscard]] auto Deadline::isInterval() const -> bool {
+    return std::holds_alternative<Interval>(type_);
+}
+
+[[nodiscard]] auto Deadline::isDateTime() const -> bool {
+    return std::holds_alternative<DateTime>(type_);
+}
+
 [[nodiscard]] auto Deadline::getType() const -> Type {
     if (std::holds_alternative<Interval>(type_)) {
         return Type::Interval;
@@ -51,6 +59,9 @@ Deadline::Deadline(type_t type)
 
     return std::get<DateTime>(type_);
 }
+
+[[nodiscard]] auto Deadline::operator==(const Deadline &deadline) const
+    -> bool = default;
 
 [[nodiscard]] auto Deadline::toJSON() const -> nlohmann::json {
     if (std::holds_alternative<Interval>(type_)) {

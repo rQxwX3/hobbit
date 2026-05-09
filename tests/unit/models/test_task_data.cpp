@@ -5,19 +5,23 @@
 namespace test::mods {
 using hbt::mods::TaskData;
 
-TEST(TaskDataTest, ThrowsOnEmptyTitle) {
+TEST(TaskDataTest, CtorThrowsOnEmptyTitle) {
     EXPECT_THROW(TaskData("", false), std::invalid_argument);
 }
 
+TEST(TaskDataTest, SetterThrowsOnEmptyTitle) {
+    EXPECT_THROW(TaskData("Title", false).setTitle(""), std::invalid_argument);
+}
+
 TEST(TaskDataTest, NotCompletedByDefault) {
-    EXPECT_FALSE(TaskData("Title").getCompleted());
+    EXPECT_FALSE(TaskData("Title").isCompleted());
 }
 
 TEST(TaskDataTest, ConstructionAndGetters) {
     auto task{TaskData("Test", false)};
 
     EXPECT_EQ(task.getTitle(), "Test");
-    EXPECT_FALSE(task.getCompleted());
+    EXPECT_FALSE(task.isCompleted());
 }
 
 TEST(TaskDataTest, Setters) {
@@ -27,7 +31,7 @@ TEST(TaskDataTest, Setters) {
     EXPECT_EQ(task.getTitle(), "Updated");
 
     task.setCompleted(true);
-    EXPECT_TRUE(task.getCompleted());
+    EXPECT_TRUE(task.isCompleted());
 }
 
 TEST(TaskDataTest, JSONRoundTrip) {
@@ -39,7 +43,7 @@ TEST(TaskDataTest, JSONRoundTrip) {
     ASSERT_TRUE(restored.has_value());
 
     EXPECT_EQ(restored->getTitle(), original.getTitle());
-    EXPECT_EQ(restored->getCompleted(), original.getCompleted());
+    EXPECT_EQ(restored->isCompleted(), original.isCompleted());
 }
 
 TEST(TaskDataTest, FromJSONFailsOnInvalidJSON) {
