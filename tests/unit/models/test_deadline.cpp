@@ -86,24 +86,34 @@ TEST(DeadlineTest, IntervalJSONFailsOnMissingField) {
     auto json = nlohmann::json{{"type", "interval"}};
 
     /* missing interval field */
-    EXPECT_FALSE(Deadline::fromJSON(json));
+    auto result{Deadline::fromJSON(json)};
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(),
+              Deadline::Error::JSONMissingRequiredIntervalField);
 
     /* empty json */
-    EXPECT_FALSE(Deadline::fromJSON(nlohmann::json()));
+    result = Deadline::fromJSON(nlohmann::json());
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), Deadline::Error::JSONMissingRequiredTypeField);
 }
 
 TEST(DeadlineTest, IntervalJSONFailsOnTypeValueMismatch) {
     auto json = nlohmann::json{{"type", "interval"},
                                {"interval", DateTime::now().toISO8601String()}};
 
-    EXPECT_FALSE(Deadline::fromJSON(json));
+    auto result{Deadline::fromJSON(json)};
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), Deadline::Error::JSONFailedToParseInterval);
 }
 
 TEST(DeadlineTest, IntervalJSONFailsOnIncorrectType) {
     auto json = nlohmann::json{{"type", "datetime"},
                                {"interval", Interval::days(1).toJSON()}};
 
-    EXPECT_FALSE(Deadline::fromJSON(json));
+    auto result{Deadline::fromJSON(json)};
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(),
+              Deadline::Error::JSONMissingRequiredDateTimeField);
 }
 
 TEST(DeadlineTest, IntervalJSONRoundTrip) {
@@ -135,28 +145,50 @@ TEST(DeadlineTest, DateTimeToJSON) {
     EXPECT_EQ(DateTime::fromISO8601String(jsonDateTime).value(), datetime);
 }
 
-TEST(DeadlineTest, DatetimeJSONFailsOnMissingField) {
+TEST(DeadlineTest, DateTimeJSONFailsOnMissingField) {
     auto json = nlohmann::json{{"type", "datetime"}};
 
     /* missing interval field */
-    EXPECT_FALSE(Deadline::fromJSON(json));
+    auto result{Deadline::fromJSON(json)};
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(),
+              Deadline::Error::JSONMissingRequiredDateTimeField);
 
     /* empty json */
-    EXPECT_FALSE(Deadline::fromJSON(nlohmann::json()));
+    result = Deadline::fromJSON(nlohmann::json());
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), Deadline::Error::JSONMissingRequiredTypeField);
+}
+
+TEST(DeadlineTest, DateTimeJSONFailsOnInvalidDateTime) {
+    auto json = nlohmann::json{
+        {"type", "datetime"},
+        {"datetime", "invalid-datetime-string"},
+    };
+
+    auto result{Deadline::fromJSON(json)};
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), Deadline::Error::JSONFailedToParseDateTime);
 }
 
 TEST(DeadlineTest, DateTimeJSONFailsOnIncorrectType) {
     auto json = nlohmann::json{{"type", "interval"},
                                {"datetime", DateTime::now().toISO8601String()}};
 
-    EXPECT_FALSE(Deadline::fromJSON(json));
+    auto result{Deadline::fromJSON(json)};
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(),
+              Deadline::Error::JSONMissingRequiredIntervalField);
 }
 
 TEST(DeadlineTest, DeadlineJSONFailsOnTypeValueMismatch) {
     auto json = nlohmann::json{{"type", "datetime"},
                                {"interval", Interval::days(1).toJSON()}};
 
-    EXPECT_FALSE(Deadline::fromJSON(json));
+    auto result{Deadline::fromJSON(json)};
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(),
+              Deadline::Error::JSONMissingRequiredDateTimeField);
 }
 
 TEST(DeadlineTest, DateTimeJSONRoundTrip) {
@@ -170,5 +202,22 @@ TEST(DeadlineTest, DateTimeJSONRoundTrip) {
 
     EXPECT_EQ(restored->getType(), Deadline::Type::DateTime);
     EXPECT_EQ(restored->getDateTime(), original.getDateTime());
+}
+
+TEST(DeadlineTest, NullDeadlineJSONRoundTrip) {
+    auto original{Deadline::null()};
+    auto restored{Deadline::fromJSON(original.toJSON())};
+
+    ASSERT_TRUE(restored.has_value());
+    EXPECT_EQ(restored, original);
+    EXPECT_TRUE(restored->isNull());
+}
+
+TEST(DeadlineTest, FromJSONFailsOnInvalidJSON) {
+    auto json = nlohmann::json{{"type", "unsupported_type"}};
+
+    auto result{Deadline::fromJSON(json)};
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), Deadline::Error::JSONUnsupportedType);
 }
 } // namespace test::mods
