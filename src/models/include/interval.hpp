@@ -14,6 +14,8 @@ namespace hbt::mods {
 class Interval {
   public:
     enum class Error : uint8_t {
+        InvalidMonthHandling,
+
         JSONMissingRequiredField,
         JSONFailedToParseIntervalDuration,
         JSONInvalidMonthHandling,
@@ -27,6 +29,18 @@ class Interval {
     [[nodiscard]] static constexpr auto errorMessage(Error error)
         -> std::string {
         switch (error) {
+        case Error::InvalidMonthHandling:
+            return "Interval: provided month handling is invalid";
+
+        case Error::JSONMissingRequiredField:
+            return "Interval: provided JSON doesn't contain required field(s)";
+
+        case Error::JSONFailedToParseIntervalDuration:
+            return "Interval: failed to parse Interval from provided JSON";
+
+        case Error::JSONInvalidMonthHandling:
+            return "Interval: provided JSON contains invalid MonthHandling";
+
         case Error::ISO8601FailedToParse:
             return "Interval: failed to parse from JSON";
 
@@ -106,6 +120,9 @@ class Interval {
 
     static constexpr auto defaultMonthHandling{MonthHandling::WrapAround};
 
+    [[nodiscard]] static auto validateMonthHandling(MonthHandling monthHandling)
+        -> MonthHandling;
+
   public:
     static constexpr auto daysInWeek{value_t{7}};
     static constexpr auto monthsInYear{value_t{12}};
@@ -161,7 +178,7 @@ class Interval {
 
     [[nodiscard]] auto getMonthHandling() const -> MonthHandling;
 
-  private:
+  public:
     auto setMonthHandling(MonthHandling monthHandling) -> void;
 
   public:

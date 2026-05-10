@@ -6,14 +6,28 @@
 #include <string>
 
 namespace hbt::mods {
+[[nodiscard]] auto Interval::validateMonthHandling(MonthHandling monthHandling)
+    -> MonthHandling {
+    switch (monthHandling) {
+    case MonthHandling::PreserveRelative:
+    case MonthHandling::WrapAround:
+        return monthHandling;
+
+    default:
+        throw std::invalid_argument(errorMessage(Error::InvalidMonthHandling));
+    }
+}
+
 Interval::Interval(MonthHandling monthHandling)
-    : units_{array_t{}}, monthHandling_{monthHandling} {}
+    : units_{array_t{}}, monthHandling_{validateMonthHandling(monthHandling)} {}
 
 Interval::Interval(array_t unitsArray, MonthHandling monthHandling)
-    : units_{unitsArray}, monthHandling_{monthHandling} {}
+    : units_{unitsArray}, monthHandling_{validateMonthHandling(monthHandling)} {
+}
 
 Interval::Interval(const struct_t &unitsStruct, MonthHandling monthHandling)
-    : units_{unitsStruct.toArray()}, monthHandling_{monthHandling} {};
+    : units_{unitsStruct.toArray()},
+      monthHandling_{validateMonthHandling(monthHandling)} {};
 
 [[nodiscard]] auto Interval::convertUnitsDownwards() const -> Interval {
     auto copy{*this};
@@ -83,7 +97,7 @@ Interval::Interval(const struct_t &unitsStruct, MonthHandling monthHandling)
 }
 
 auto Interval::setMonthHandling(MonthHandling monthHandling) -> void {
-    monthHandling_ = monthHandling;
+    monthHandling_ = validateMonthHandling(monthHandling);
 }
 
 auto Interval::addUnit(Unit unit, value_t value) -> void {
@@ -245,12 +259,12 @@ auto Interval::addUnit(Unit unit, value_t value) -> void {
 
     auto monthHandlingFromJSON{
         json[jsonMonthHandlingField].get<MonthHandling>()};
-    if (monthHandlingFromJSON != MonthHandling::PreserveRelative &&
-        monthHandlingFromJSON != MonthHandling::WrapAround) {
+
+    try {
+        intervalFromISO8601->setMonthHandling(monthHandlingFromJSON);
+    } catch (std::invalid_argument) {
         return std::unexpected(Error::JSONInvalidMonthHandling);
     }
-
-    intervalFromISO8601->setMonthHandling(monthHandlingFromJSON);
 
     return intervalFromISO8601.value();
 }

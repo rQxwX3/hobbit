@@ -464,6 +464,7 @@ TEST(IntervalTest, NaturalLanguageParserRejectsInvalidInputs) {
     result = Interval::fromNaturalLanguage(invalidString);
     ASSERT_FALSE(result);
     EXPECT_EQ(result.error(), Interval::Error::NaturalLanguageFailedToParse);
+    EXPECT_FALSE();
 }
 
 TEST(IntervalTest, NaturalLanguageParserRejectsDuplicateUnits) {
