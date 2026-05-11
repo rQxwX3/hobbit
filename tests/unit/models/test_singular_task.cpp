@@ -81,44 +81,61 @@ TEST(SingularTaskTest, FromJSONFailsOnInvalidJSON) {
     auto json{nlohmann::json{}};
 
     /* empty json */
-    EXPECT_FALSE(SingularTask::fromJSON(json));
+    auto result{SingularTask::fromJSON(json)};
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), SingularTask::Error::JSONMissingRequiredField);
 
     /* missing datetime and deadline */
     json = {taskData.toJSON()};
-    EXPECT_FALSE(SingularTask::fromJSON(json));
+    result = SingularTask::fromJSON(json);
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), SingularTask::Error::JSONMissingRequiredField);
 
     /* missing deadline */
     json = {taskData.toJSON(), {"datetime", DateTime::now().toISO8601String()}};
-    EXPECT_FALSE(SingularTask::fromJSON(json));
+    result = SingularTask::fromJSON(json);
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), SingularTask::Error::JSONMissingRequiredField);
 
     /* invalid task data */
-    json = {{{"title", "title"}, {"completed", false}},
+    json = {{"task", {{"title", ""}, {"completed", false}}},
             {"datetime", DateTime::now().toISO8601String()},
             {"deadline", deadlineYearFromNow.toJSON()}};
-    EXPECT_FALSE(SingularTask::fromJSON(json));
+    result = SingularTask::fromJSON(json);
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), SingularTask::Error::JSONFailedToParseTaskData);
 
     /* invalid datetime */
-    json = {taskData.toJSON(),
+    json = {{"task", taskData.toJSON()},
             {"datetime", "invalid"},
             {"deadline", deadlineYearFromNow.toJSON()}};
-    EXPECT_FALSE(SingularTask::fromJSON(json));
+    result = SingularTask::fromJSON(json);
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), SingularTask::Error::JSONFailedToParseDateTime);
 
     /* invalid deadline */
-    json = {taskData.toJSON(),
+    json = {{"task", taskData.toJSON()},
             {"datetime", DateTime::now().toISO8601String()},
             {"deadline", "invalid"}};
-    EXPECT_FALSE(SingularTask::fromJSON(json));
+    result = SingularTask::fromJSON(json);
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), SingularTask::Error::JSONFailedToParseDeadline);
 
     /* missing deadline */
-    json = {taskData.toJSON(), {"deadline", deadlineYearFromNow.toJSON()}};
-    EXPECT_FALSE(SingularTask::fromJSON(json));
+    json = {{"task", taskData.toJSON()},
+            {"deadline", deadlineYearFromNow.toJSON()}};
+    result = SingularTask::fromJSON(json);
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), SingularTask::Error::JSONMissingRequiredField);
 
     /* invalid deadline (earlier than datetime) */
     json = {
-        taskData.toJSON(),
+        {"task", taskData.toJSON()},
         {"datetime", (deadlineYearFromNow.getDateTime() + Interval::years(1))
                          .toISO8601String()},
         {"deadline", deadlineYearFromNow.toJSON()}};
-    EXPECT_FALSE(SingularTask::fromJSON(json));
+    result = SingularTask::fromJSON(json);
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), SingularTask::Error::JSONInvalidDateTimeDeadline);
 }
 } // namespace test::mods
