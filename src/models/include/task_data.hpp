@@ -9,7 +9,7 @@
 
 namespace hbt::mods {
 class TaskData {
-  private:
+  public:
     enum class Error : uint8_t {
         EmptyTitle,
 

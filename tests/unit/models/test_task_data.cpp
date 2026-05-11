@@ -40,7 +40,7 @@ TEST(TaskDataTest, JSONRoundTrip) {
     auto json = original.toJSON();
     auto restored{TaskData::fromJSON(json)};
 
-    ASSERT_TRUE(restored.has_value());
+    ASSERT_TRUE(restored);
 
     EXPECT_EQ(restored->getTitle(), original.getTitle());
     EXPECT_EQ(restored->isCompleted(), original.isCompleted());
@@ -50,15 +50,23 @@ TEST(TaskDataTest, FromJSONFailsOnInvalidJSON) {
     auto json = nlohmann::json();
 
     /* empty json */
-    EXPECT_FALSE(TaskData::fromJSON(json));
+    auto result{TaskData::fromJSON(json)};
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), TaskData::Error::JSONMissingRequiredField);
 
     /* missing title */
-    EXPECT_FALSE(TaskData::fromJSON({{"completed", false}}).has_value());
+    result = TaskData::fromJSON({{"completed", false}});
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), TaskData::Error::JSONMissingRequiredField);
 
     /* empty title */
-    EXPECT_FALSE(TaskData::fromJSON({{"title", ""}, {"completed", false}}));
+    result = TaskData::fromJSON({{"title", ""}, {"completed", false}});
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), TaskData::Error::JSONEmptyTitle);
 
     /* missing completed */
-    EXPECT_FALSE(TaskData::fromJSON({{"title", "title"}}));
+    result = TaskData::fromJSON({{"title", "title"}});
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), TaskData::Error::JSONMissingRequiredField);
 }
 } // namespace test::mods
