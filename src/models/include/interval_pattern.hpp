@@ -4,7 +4,7 @@
 
 namespace hbt::mods::util {
 class IntervalRecurrencePattern : public RecurrencePattern {
-  private:
+  public:
     enum class Error : uint8_t {
         JSONMissingRequiredField,
         JSONFailedToParseStart,

@@ -170,29 +170,46 @@ TEST(IntervalPatternTest, JSONRoundTrip) {
 TEST(IntervalPatternTest, FromJSONFailsOnInvalidJSON) {
     /* empty json */
     auto json = nlohmann::json{};
-
-    EXPECT_FALSE(IntervalRecurrencePattern::fromJSON(json));
+    auto result{IntervalRecurrencePattern::fromJSON(json)};
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(),
+              IntervalRecurrencePattern::Error::JSONMissingRequiredField);
 
     /* missing start */
     json = {{"interval", Interval::days(10).toJSON()}};
-    EXPECT_FALSE(IntervalRecurrencePattern::fromJSON(json));
+    result = IntervalRecurrencePattern::fromJSON(json);
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(),
+              IntervalRecurrencePattern::Error::JSONMissingRequiredField);
 
     /* invalid start */
     json = {{"start", "invalid"}, {"interval", Interval::days(10).toJSON()}};
-    EXPECT_FALSE(IntervalRecurrencePattern::fromJSON(json));
+    result = IntervalRecurrencePattern::fromJSON(json);
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(),
+              IntervalRecurrencePattern::Error::JSONFailedToParseStart);
 
     /* missing interval */
     json = {{"start", DateTime::now().toISO8601String()}};
-    EXPECT_FALSE(IntervalRecurrencePattern::fromJSON(json));
+    result = IntervalRecurrencePattern::fromJSON(json);
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(),
+              IntervalRecurrencePattern::Error::JSONMissingRequiredField);
 
     /* invalid interval */
     json = {{"start", DateTime::now().toISO8601String()},
             {"interval", "invalid"}};
-    EXPECT_FALSE(IntervalRecurrencePattern::fromJSON(json));
+    result = IntervalRecurrencePattern::fromJSON(json);
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(),
+              IntervalRecurrencePattern::Error::JSONFailedToParseInterval);
 
     /* invalid interval (zero-interval) */
     json = {{"start", DateTime::now().toISO8601String()},
             {"interval", Interval{}.toJSON()}};
-    EXPECT_FALSE(IntervalRecurrencePattern::fromJSON(json));
+    result = IntervalRecurrencePattern::fromJSON(json);
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(),
+              IntervalRecurrencePattern::Error::JSONInvalidInterval);
 }
 } // namespace test::mods::util
