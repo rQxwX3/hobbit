@@ -187,57 +187,122 @@ TEST(DateTimeTest, ISO8601ValidInput) {
 }
 
 TEST(DateTimeTest, ISO8601InvalidFormat) {
-    EXPECT_FALSE(DateTime::fromISO8601String("hello"));
+    auto result{DateTime::fromISO8601String("hello")};
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), DateTime::Error::ISO8601RegexMismatch);
 
     /* missing hours */
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T:58"));
+    result = DateTime::fromISO8601String("2024-12-01T:58");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), DateTime::Error::ISO8601RegexMismatch);
 
     /* missing minutes */
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T23"));
+    result = DateTime::fromISO8601String("2024-12-01T23");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), DateTime::Error::ISO8601RegexMismatch);
 
     /* missing time */
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T"));
+    result = DateTime::fromISO8601String("2024-12-01T");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), DateTime::Error::ISO8601RegexMismatch);
 
     /* missing time separator */
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-0123:40"));
+    result = DateTime::fromISO8601String("2024-12-0123:40");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), DateTime::Error::ISO8601RegexMismatch);
 
     /* invalid time separator */
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-01-01t00:00"));
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-01-01G00:00"));
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-01-01-00:00"));
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-01-01|00:00"));
+    result = DateTime::fromISO8601String("2024-01-01t00:00");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), DateTime::Error::ISO8601RegexMismatch);
+
+    result = DateTime::fromISO8601String("2024-01-01G00:00");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), DateTime::Error::ISO8601RegexMismatch);
+
+    result = DateTime::fromISO8601String("2024-01-01-00:00");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), DateTime::Error::ISO8601RegexMismatch);
+
+    result = DateTime::fromISO8601String("2024-01-01|00:00");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), DateTime::Error::ISO8601RegexMismatch);
 
     /* missing date separator */
-    EXPECT_FALSE(DateTime::fromISO8601String("202412-01T23:40"));
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-1201T23:40"));
-    EXPECT_FALSE(DateTime::fromISO8601String("20241201T23:40"));
+    result = DateTime::fromISO8601String("202412-01T23:40");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), DateTime::Error::ISO8601RegexMismatch);
+
+    result = DateTime::fromISO8601String("2024-1201T23:40");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), DateTime::Error::ISO8601RegexMismatch);
+
+    result = DateTime::fromISO8601String("20241201T23:40");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), DateTime::Error::ISO8601RegexMismatch);
 }
 
 TEST(DateTimeTest, ISO8601InvalidDate) {
     /* not a leap year */
-    EXPECT_FALSE(DateTime::fromISO8601String("2023-02-29T00:00"));
+    auto result{DateTime::fromISO8601String("2023-02-29T00:00")};
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), DateTime::Error::ISO8601InvalidDate);
 
     /* invalid day */
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-00T00:00"));
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-0T00:00"));
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-1T00:00"));
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-32T00:00"));
+    result = DateTime::fromISO8601String("2024-12-00T00:00");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), DateTime::Error::ISO8601InvalidDate);
+
+    result = DateTime::fromISO8601String("2024-12-0T00:00");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), DateTime::Error::ISO8601RegexMismatch);
+
+    result = DateTime::fromISO8601String("2024-12-1T00:00");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), DateTime::Error::ISO8601RegexMismatch);
+
+    result = DateTime::fromISO8601String("2024-12-32T00:00");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), DateTime::Error::ISO8601InvalidDate);
 
     /* invalid month */
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-00-01T00:00"));
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-0-01T00:00"));
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-13-01T00:00"));
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-1-01T00:00"));
+    result = DateTime::fromISO8601String("2024-00-01T00:00");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), DateTime::Error::ISO8601InvalidDate);
+
+    result = DateTime::fromISO8601String("2024-0-01T00:00");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), DateTime::Error::ISO8601RegexMismatch);
+
+    result = DateTime::fromISO8601String("2024-13-01T00:00");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), DateTime::Error::ISO8601InvalidDate);
+
+    result = DateTime::fromISO8601String("2024-1-01T00:00");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), DateTime::Error::ISO8601RegexMismatch);
 }
 
 TEST(DateTimeTest, ISO8601InvalidTime) {
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T1:1"));
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T0:0"));
+    auto result{DateTime::fromISO8601String("2024-12-01T1:1")};
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), DateTime::Error::ISO8601RegexMismatch);
 
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T24:00"));
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T12:60"));
+    result = DateTime::fromISO8601String("2024-12-01T0:0");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), DateTime::Error::ISO8601RegexMismatch);
 
-    EXPECT_FALSE(DateTime::fromISO8601String("2024-12-01T99:99"));
+    result = DateTime::fromISO8601String("2024-12-01T24:00");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), DateTime::Error::ISO8601InvalidTime);
+
+    result = DateTime::fromISO8601String("2024-12-01T12:60");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), DateTime::Error::ISO8601InvalidTime);
+
+    result = DateTime::fromISO8601String("2024-12-01T99:99");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), DateTime::Error::ISO8601InvalidTime);
 }
 
 TEST(DateTimeTest, ISO8601SecondsAreIgnored) {

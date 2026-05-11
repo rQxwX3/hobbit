@@ -117,12 +117,12 @@ DateTime::DateTime(Date date, Time time)
 
     auto date{Date(yearValue, monthValue, dayValue)};
     if (!date.ok()) {
-        return std::unexpected(Error::InvalidDate);
+        return std::unexpected(Error::ISO8601InvalidDate);
     }
 
     auto time{Time(hourValue, minuteValue)};
     if (!time.ok()) {
-        return std::unexpected(Error::InvalidTime);
+        return std::unexpected(Error::ISO8601InvalidTime);
     }
 
     return DateTime(date, time);
