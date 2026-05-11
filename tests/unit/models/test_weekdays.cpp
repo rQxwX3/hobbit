@@ -60,16 +60,26 @@ TEST(WeekdaysTest, JSONRoundTrip) {
 }
 
 TEST(WeekdaysTest, FromJSONFailsOnInvalidJSON) {
-    EXPECT_FALSE(Weekdays::fromJSON({"se777en"}));
+    auto result{Weekdays::fromJSON("se777en")};
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), Weekdays::Error::JSONInvalidString);
 
-    EXPECT_FALSE(Weekdays::fromJSON({"1234567"}));
+    result = Weekdays::fromJSON("1234567");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), Weekdays::Error::JSONInvalidString);
 
-    EXPECT_FALSE(Weekdays::fromJSON("11110000"));
+    result = Weekdays::fromJSON("11110000");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), Weekdays::Error::JSONInvalidString);
 
     /* empty string */
-    EXPECT_FALSE(Weekdays::fromJSON({""}));
+    result = Weekdays::fromJSON("");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), Weekdays::Error::JSONInvalidString);
 
     /* empty JSON */
-    EXPECT_FALSE(Weekdays::fromJSON({}));
+    result = Weekdays::fromJSON({});
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), Weekdays::Error::JSONNotString);
 }
 } // namespace test::mods

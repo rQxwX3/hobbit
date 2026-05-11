@@ -20,7 +20,7 @@ class Weekdays {
         COUNT_,
     };
 
-  private:
+  public:
     enum class Error : uint8_t {
         JSONNotString,
         JSONInvalidString,
