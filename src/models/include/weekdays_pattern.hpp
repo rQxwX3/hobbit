@@ -4,18 +4,23 @@
 
 namespace hbt::mods::util {
 class WeekdaysRecurrencePattern : public RecurrencePattern {
-  private:
+  public:
     enum class Error : uint8_t {
         JSONMissingRequiredField,
 
-        JSONFailedToParseStart,
+        JSONFailedToParseFirstWeek,
         JSONFailedToParseInterval,
-        JSONFailedToParseWeekdays,
+
+        JSONInvalidInterval,
+        JSONInvalidFirstWeek,
+
+        JSONFirstWeekNotArray,
+        JSONFirstWeekInvalidCount,
+        JSONFirstWeekArrayIsNotOfStrings,
+        JSONFirstWeekFailedToParseDateTime,
 
         InvalidInterval,
-        InvalidWeekdays,
-
-        EmptyWeekdays,
+        InvalidFirstWeek,
     };
 
   public:
@@ -26,29 +31,13 @@ class WeekdaysRecurrencePattern : public RecurrencePattern {
             return "WeekdayRecurrencePattern: missing required field(s) in "
                    "JSON";
 
-        case Error::JSONFailedToParseStart:
-            return "WeekdayRecurrencePattern: failed to parse start DateTime "
-                   "from JSON";
-
         case Error::JSONFailedToParseInterval:
             return "WeekdayRecurrencePattern: failed to parse Interval from "
-                   "JSON";
-
-        case Error::JSONFailedToParseWeekdays:
-            return "WeekdayRecurrencePattern: failed to parse Weekdays from "
                    "JSON";
 
         case Error::InvalidInterval:
             return "WeekdayRecurrencePattern: provided Interval contains units "
                    "other than week";
-
-        case Error::InvalidWeekdays:
-            return "WeekdayRecurrencePattern: provided Weekdays do not contain "
-                   "single selected day";
-
-        case Error::EmptyWeekdays:
-            return "WeekdayRecurrencePattern: invalid object state (empty "
-                   "Weekdays object)";
 
         default:
             std::unreachable();
@@ -56,26 +45,50 @@ class WeekdaysRecurrencePattern : public RecurrencePattern {
     }
 
   private:
-    static constexpr auto jsonStartField{std::string_view{"start"}};
+    static constexpr auto jsonFirstWeekField{
+        std::string_view{"first_week_datetimes"}};
     static constexpr auto jsonIntervalField{std::string_view{"interval"}};
-    static constexpr auto jsonWeekdaysField{std::string_view{"weekdays"}};
 
-    static constexpr auto jsonFields{std::array<std::string_view, 3>{
-        jsonStartField, jsonIntervalField, jsonWeekdaysField}};
+    static constexpr auto jsonFirstWeekNullValue{"null"};
+
+    static constexpr auto jsonFields{
+        std::array<std::string_view, 2>{jsonFirstWeekField, jsonIntervalField}};
 
   private:
-    DateTime start_;
+    using firstWeek_t = std::array<std::optional<DateTime>,
+                                   static_cast<size_t>(Weekdays::Week::COUNT_)>;
+
+    [[nodiscard]] static auto createFirstWeek(DateTime start, Weekdays weekdays)
+        -> firstWeek_t {
+        auto result{firstWeek_t{}};
+        auto endDT{start + Interval::weeks(1)};
+
+        for (auto dt{start}; dt.getDate() != endDT.getDate();
+             dt += Interval::days(1)) {
+            auto dtWeekday{dt.getWeekday()};
+
+            if (weekdays.containsWeekday(dtWeekday)) {
+                result[static_cast<size_t>(dtWeekday)] = dt;
+            }
+        }
+
+        return result;
+    }
+
+  private:
+    firstWeek_t firstWeek_;
     Interval interval_;
-    Weekdays weekdays_;
 
   private:
     static auto validateInterval(const Interval &interval) -> Interval;
 
-    static auto validateWeekdays(Weekdays weekdays) -> Weekdays;
+    static auto validateFirstWeek(const firstWeek_t &firstWeek) -> firstWeek_t;
 
   public:
-    WeekdaysRecurrencePattern(DateTime start, Interval interval,
-                              Weekdays weekdays);
+    WeekdaysRecurrencePattern(DateTime start, Weekdays weekdays,
+                              Interval interval);
+
+    WeekdaysRecurrencePattern(firstWeek_t firstWeek, Interval interval);
 
   public:
     [[nodiscard]] auto getInterval() const -> Interval;
@@ -92,6 +105,12 @@ class WeekdaysRecurrencePattern : public RecurrencePattern {
   private:
     [[nodiscard]] auto static containsAllJSONFields(const nlohmann::json &json)
         -> bool;
+
+  private:
+    [[nodiscard]] auto firstWeekToJSON() const -> nlohmann::json;
+
+    [[nodiscard]] auto static firstWeekFromJSON(const nlohmann::json &json)
+        -> std::expected<firstWeek_t, Error>;
 
   public:
     [[nodiscard]] auto toJSON() const -> nlohmann::json;
