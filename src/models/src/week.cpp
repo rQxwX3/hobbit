@@ -26,6 +26,12 @@ Week::Week(days_t days) : days_{days} {}
     return days_.test(static_cast<size_t>(weekday));
 }
 
+[[nodiscard]] auto Week::isEmpty() const -> bool {
+    return std::ranges::none_of(
+        Week::weekdays.begin(), Week::weekdays.end(),
+        [this](const auto wd) -> bool { return this->containsWeekday(wd); });
+}
+
 [[nodiscard]] auto Week::toJSON() const -> nlohmann::json {
     return days_.to_string();
 }

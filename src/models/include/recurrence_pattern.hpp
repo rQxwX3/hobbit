@@ -2,7 +2,7 @@
 
 #include <datetime.hpp>
 #include <interval.hpp>
-#include <weekdays.hpp>
+#include <week.hpp>
 
 #include <nlohmann/json.hpp>
 

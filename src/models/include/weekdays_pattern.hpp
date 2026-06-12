@@ -12,7 +12,6 @@ class WeekdaysRecurrencePattern : public RecurrencePattern {
         JSONFailedToParseInterval,
 
         JSONInvalidInterval,
-        JSONInvalidFirstWeek,
 
         JSONFirstWeekNotArray,
         JSONFirstWeekInvalidCount,
@@ -20,7 +19,7 @@ class WeekdaysRecurrencePattern : public RecurrencePattern {
         JSONFirstWeekFailedToParseDateTime,
 
         InvalidInterval,
-        InvalidFirstWeek,
+        EmptyWeek,
     };
 
   public:
@@ -39,6 +38,10 @@ class WeekdaysRecurrencePattern : public RecurrencePattern {
             return "WeekdayRecurrencePattern: provided Interval contains units "
                    "other than week";
 
+        case Error::EmptyWeek:
+            return "WeekdayRecurrencePattern: cannot construct pattern from "
+                   "empty Week object";
+
         default:
             std::unreachable();
         }
@@ -49,30 +52,40 @@ class WeekdaysRecurrencePattern : public RecurrencePattern {
         std::string_view{"first_week_datetimes"}};
     static constexpr auto jsonIntervalField{std::string_view{"interval"}};
 
-    static constexpr auto jsonFirstWeekNullValue{"null"};
-
     static constexpr auto jsonFields{
         std::array<std::string_view, 2>{jsonFirstWeekField, jsonIntervalField}};
 
+    static constexpr auto jsonFirstWeekNullValue{std::string_view{"null"}};
+
+  public:
+    using firstWeek_t =
+        std::array<std::optional<DateTime>, Week::weekdaysCount>;
+
   private:
-    using firstWeek_t = std::array<std::optional<DateTime>,
-                                   static_cast<size_t>(Weekdays::Week::COUNT_)>;
-
-    [[nodiscard]] static auto createFirstWeek(DateTime start, Weekdays weekdays)
+    [[nodiscard]] static auto createFirstWeek(DateTime startDT, Week week)
         -> firstWeek_t {
-        auto result{firstWeek_t{}};
-        auto endDT{start + Interval::weeks(1)};
-
-        for (auto dt{start}; dt.getDate() != endDT.getDate();
-             dt += Interval::days(1)) {
-            auto dtWeekday{dt.getWeekday()};
-
-            if (weekdays.containsWeekday(dtWeekday)) {
-                result[static_cast<size_t>(dtWeekday)] = dt;
+        auto firstOccurrence{DateTime()};
+        for (auto dt{startDT};; dt += Interval::days(1)) {
+            if (week.containsWeekday(dt.getWeekday())) {
+                firstOccurrence = dt;
+                break;
             }
         }
 
-        return result;
+        auto firstWeek{firstWeek_t{}};
+        auto endDT{firstOccurrence + Interval::weeks(1)};
+
+        for (auto dt{firstOccurrence}; dt.getDate() != endDT.getDate();
+             dt += Interval::days(1)) {
+            auto dtWeekday{dt.getWeekday()};
+            if (week.containsWeekday(dtWeekday)) {
+                firstWeek[static_cast<size_t>(dtWeekday)] = dt;
+            } else {
+                firstWeek[static_cast<size_t>(dtWeekday)] = std::nullopt;
+            }
+        }
+
+        return firstWeek;
     }
 
   private:
@@ -82,18 +95,17 @@ class WeekdaysRecurrencePattern : public RecurrencePattern {
   private:
     static auto validateInterval(const Interval &interval) -> Interval;
 
-    static auto validateFirstWeek(const firstWeek_t &firstWeek) -> firstWeek_t;
+    static auto validateWeek(const Week &week) -> Week;
 
   public:
-    WeekdaysRecurrencePattern(DateTime start, Weekdays weekdays,
-                              Interval interval);
+    WeekdaysRecurrencePattern(DateTime start, Week weekdays, Interval interval);
 
     WeekdaysRecurrencePattern(firstWeek_t firstWeek, Interval interval);
 
   public:
     [[nodiscard]] auto getInterval() const -> Interval;
 
-    [[nodiscard]] auto getWeekdays() const -> Weekdays;
+    [[nodiscard]] auto getWeekdays() const -> Week;
 
   public:
     [[nodiscard]] auto happensOnDate(DateTime on) const -> bool;
@@ -106,7 +118,7 @@ class WeekdaysRecurrencePattern : public RecurrencePattern {
     [[nodiscard]] auto static containsAllJSONFields(const nlohmann::json &json)
         -> bool;
 
-  private:
+  public:
     [[nodiscard]] auto firstWeekToJSON() const -> nlohmann::json;
 
     [[nodiscard]] auto static firstWeekFromJSON(const nlohmann::json &json)

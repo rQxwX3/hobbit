@@ -1,7 +1,7 @@
 #pragma once
 
 #include <interval.hpp>
-#include <weekdays.hpp>
+#include <week.hpp>
 
 #include <nlohmann/json.hpp>
 
@@ -14,7 +14,7 @@ class DateTime {
     using duration_t = std::chrono::minutes;
     using value_t = std::chrono::sys_time<duration_t>;
 
-    using weekday_t = Weekdays::Week;
+    using weekday_t = Week::Weekday;
 
   public:
     struct Date {

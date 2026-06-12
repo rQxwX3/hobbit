@@ -7,9 +7,9 @@
 #include <nlohmann/json.hpp>
 
 namespace hbt::mods {
-class Weekdays {
+class Week {
   public:
-    enum class Week : uint8_t {
+    enum class Weekday : uint8_t {
         SUNDAY,
         MONDAY,
         TUESDAY,
@@ -21,11 +21,18 @@ class Weekdays {
     };
 
   public:
+    static constexpr size_t weekdaysCount{static_cast<size_t>(Weekday::COUNT_)};
+
+    static constexpr auto weekdays{std::array<Weekday, Week::weekdaysCount>{
+        {Weekday::SUNDAY, Weekday::MONDAY, Weekday::TUESDAY, Weekday::WEDNESDAY,
+         Weekday::THURSDAY, Weekday::FRIDAY, Weekday::SATURDAY}}};
+
+  public:
     enum class Error : uint8_t {
         JSONNotString,
         JSONInvalidString,
 
-        StringLengthMoreThanWeek,
+        StringLengthExceedsLimit,
     };
 
   public:
@@ -33,13 +40,13 @@ class Weekdays {
         -> std::string {
         switch (error) {
         case Error::JSONNotString:
-            return "Weekdays: provided JSON doesn't contains a string";
+            return "Week: provided JSON doesn't contains a string";
 
         case Error::JSONInvalidString:
-            return "Weekdays: provided JSON contains invalid string";
+            return "Week: provided JSON contains invalid string";
 
-        case Error::StringLengthMoreThanWeek:
-            return "Weekdays: provided string exceeds maximum length";
+        case Error::StringLengthExceedsLimit:
+            return "Week: provided string exceeds maximum length";
 
         default:
             std::unreachable();
@@ -47,26 +54,25 @@ class Weekdays {
     }
 
   public:
-    static constexpr size_t daysCount{static_cast<size_t>(Week::COUNT_)};
-
-  public:
-    using days_t = std::bitset<daysCount>;
+    using days_t = std::bitset<weekdaysCount>;
 
   private:
     days_t days_;
 
   public:
-    [[nodiscard]] auto operator==(const Weekdays &) const -> bool = default;
+    [[nodiscard]] auto operator==(const Week &) const -> bool = default;
 
   public:
-    Weekdays(const std::vector<Week> &weekdays);
+    Week(days_t days = days_t{});
 
-    Weekdays(days_t days);
+    Week(const std::vector<Week::Weekday> &weekdays);
 
   public:
     [[nodiscard]] auto getDays() const -> days_t;
 
-    [[nodiscard]] auto containsWeekday(Week weekday) const -> bool;
+    [[nodiscard]] auto containsWeekday(Week::Weekday weekday) const -> bool;
+
+    [[nodiscard]] auto isEmpty() const -> bool;
 
   private:
     static auto validateAndReverseString(std::string string) -> std::string;
@@ -75,6 +81,6 @@ class Weekdays {
     [[nodiscard]] auto toJSON() const -> nlohmann::json;
 
     [[nodiscard]] static auto fromJSON(const nlohmann::json &json)
-        -> std::expected<Weekdays, Error>;
+        -> std::expected<Week, Error>;
 };
 } // namespace hbt::mods
