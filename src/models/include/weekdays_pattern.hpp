@@ -1,23 +1,12 @@
 #pragma once
 
+#include <calendar.hpp>
 #include <recurrence_pattern.hpp>
 
 namespace hbt::mods::util {
 class WeekdaysRecurrencePattern : public RecurrencePattern {
   public:
     enum class Error : uint8_t {
-        JSONMissingRequiredField,
-
-        JSONFailedToParseFirstWeek,
-        JSONFailedToParseInterval,
-
-        JSONInvalidInterval,
-
-        JSONFirstWeekNotArray,
-        JSONFirstWeekInvalidCount,
-        JSONFirstWeekArrayIsNotOfStrings,
-        JSONFirstWeekFailedToParseDateTime,
-
         InvalidInterval,
         EmptyWeek,
     };
@@ -26,14 +15,6 @@ class WeekdaysRecurrencePattern : public RecurrencePattern {
     [[nodiscard]] static constexpr auto errorMessage(Error error)
         -> std::string {
         switch (error) {
-        case Error::JSONMissingRequiredField:
-            return "WeekdayRecurrencePattern: missing required field(s) in "
-                   "JSON";
-
-        case Error::JSONFailedToParseInterval:
-            return "WeekdayRecurrencePattern: failed to parse Interval from "
-                   "JSON";
-
         case Error::InvalidInterval:
             return "WeekdayRecurrencePattern: provided Interval contains units "
                    "other than week";
@@ -48,64 +29,32 @@ class WeekdaysRecurrencePattern : public RecurrencePattern {
     }
 
   private:
-    static constexpr auto jsonFirstWeekField{
-        std::string_view{"first_week_datetimes"}};
-    static constexpr auto jsonIntervalField{std::string_view{"interval"}};
-
-    static constexpr auto jsonFields{
-        std::array<std::string_view, 2>{jsonFirstWeekField, jsonIntervalField}};
-
-    static constexpr auto jsonFirstWeekNullValue{std::string_view{"null"}};
-
-  public:
-    using firstWeek_t =
-        std::array<std::optional<DateTime>, Week::weekdaysCount>;
-
-  private:
-    [[nodiscard]] static auto createFirstWeek(DateTime startDT, Week week)
-        -> firstWeek_t {
-        auto firstOccurrence{DateTime()};
-        for (auto dt{startDT};; dt += Interval::days(1)) {
-            if (week.containsWeekday(dt.getWeekday())) {
-                firstOccurrence = dt;
-                break;
-            }
-        }
-
-        auto firstWeek{firstWeek_t{}};
-        auto endDT{firstOccurrence + Interval::weeks(1)};
-
-        for (auto dt{firstOccurrence}; dt.getDate() != endDT.getDate();
-             dt += Interval::days(1)) {
-            auto dtWeekday{dt.getWeekday()};
-            if (week.containsWeekday(dtWeekday)) {
-                firstWeek[static_cast<size_t>(dtWeekday)] = dt;
-            } else {
-                firstWeek[static_cast<size_t>(dtWeekday)] = std::nullopt;
-            }
-        }
-
-        return firstWeek;
-    }
-
-  private:
-    firstWeek_t firstWeek_;
+    /* don't change the order */
+    clndr::Week firstCalendarWeek_;
     Interval interval_;
+    Week week_;
 
   private:
     static auto validateInterval(const Interval &interval) -> Interval;
 
     static auto validateWeek(const Week &week) -> Week;
 
-  public:
-    WeekdaysRecurrencePattern(DateTime start, Week weekdays, Interval interval);
+  private:
+    [[nodiscard]] static auto getFirstOccurrence(DateTime start, Week week)
+        -> DateTime;
 
-    WeekdaysRecurrencePattern(firstWeek_t firstWeek, Interval interval);
+  public:
+    WeekdaysRecurrencePattern(DateTime start, Week week, Interval interval);
+
+    WeekdaysRecurrencePattern(clndr::Week firstCalendarWeek, Week week,
+                              Interval interval);
 
   public:
     [[nodiscard]] auto getInterval() const -> Interval;
 
-    [[nodiscard]] auto getWeekdays() const -> Week;
+    [[nodiscard]] auto getFirstCalendarWeek() const -> clndr::Week;
+
+    [[nodiscard]] auto getWeek() const -> Week;
 
   public:
     [[nodiscard]] auto happensOnDate(DateTime on) const -> bool;
@@ -114,20 +63,63 @@ class WeekdaysRecurrencePattern : public RecurrencePattern {
     [[nodiscard]] auto getOccurrencesOfDate(DateTime on) const
         -> occurrences_t override;
 
-  private:
-    [[nodiscard]] auto static containsAllJSONFields(const nlohmann::json &json)
-        -> bool;
-
   public:
-    [[nodiscard]] auto firstWeekToJSON() const -> nlohmann::json;
+    struct JSON {
+        enum class Error : uint8_t {
+            MissingRequiredField,
 
-    [[nodiscard]] auto static firstWeekFromJSON(const nlohmann::json &json)
-        -> std::expected<firstWeek_t, Error>;
+            FailedToParseFirstCalendarWeek,
+            FailedToParseInterval,
+            FailedToParseWeek,
 
-  public:
-    [[nodiscard]] auto toJSON() const -> nlohmann::json;
+            FailedToValidateInterval,
+            FailedToValidateWeek,
+        };
 
-    [[nodiscard]] auto static fromJSON(const nlohmann::json &json)
-        -> std::expected<WeekdaysRecurrencePattern, Error>;
+        [[nodiscard]] static constexpr auto errorMessage(JSON::Error error)
+            -> std::string {
+            switch (error) {
+            case JSON::Error::MissingRequiredField:
+                return "WeekdayRecurrencePattern::JSON: missing required "
+                       "field(s)";
+
+            case JSON::Error::FailedToParseInterval:
+                return "WeekdayRecurrencePattern::JSON: failed to parse "
+                       "Interval";
+
+            case JSON::Error::FailedToParseFirstCalendarWeek:
+                return "WeekdayRecurrencePattern::JSON: failed to parse "
+                       "clndr::Week";
+
+            case JSON::Error::FailedToParseWeek:
+                return "WeekdayRecurrencePattern::JSON: failed to parse Week";
+
+            case JSON::Error::FailedToValidateInterval:
+                return "WeekdayRecurrencePattern::JSON failed to validate "
+                       "parsed Interval";
+
+            case JSON::Error::FailedToValidateWeek:
+                return "WeekdayRecurrencePattern::JSON failed to validate "
+                       "parsed Week";
+            }
+        }
+
+        static constexpr auto firstCalendarWeekField{
+            std::string_view{"first_calendar_week"}};
+        static constexpr auto intervalField{std::string_view{"interval"}};
+        static constexpr auto weekField{std::string_view{"week"}};
+
+        static constexpr auto fields{std::array<std::string_view, 3>{
+            firstCalendarWeekField, intervalField, weekField}};
+
+        [[nodiscard]] auto static encode(
+            const WeekdaysRecurrencePattern &pattern) -> nlohmann::json;
+
+        [[nodiscard]] auto static decode(const nlohmann::json &json)
+            -> std::expected<WeekdaysRecurrencePattern, JSON::Error>;
+
+        [[nodiscard]] auto static containsAllFields(const nlohmann::json &json)
+            -> bool;
+    };
 };
 } // namespace hbt::mods::util
