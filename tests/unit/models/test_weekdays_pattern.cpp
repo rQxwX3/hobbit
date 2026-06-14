@@ -13,7 +13,7 @@ using hbt::mods::Week;
 
 using hbt::mods::util::WeekdaysRecurrencePattern;
 
-TEST(WeekdaysRecurrencePattern, ThrowsOnNonWeeklyIntervals) {
+TEST(WeekdaysRecurrencePatternTest, ThrowsOnNonWeeklyIntervals) {
     EXPECT_THROW(WeekdaysRecurrencePattern(DateTime::now(),
                                            Week({Week::Weekday::MONDAY}),
                                            Interval::minutes(1)),
@@ -38,30 +38,46 @@ TEST(WeekdaysRecurrencePattern, ThrowsOnNonWeeklyIntervals) {
                                            Week({Week::Weekday::MONDAY}),
                                            Interval::years(1)),
                  std::invalid_argument);
+
+    /* mods::clndr::Week ctor */
+    EXPECT_THROW(WeekdaysRecurrencePattern(
+                     hbt::mods::clndr::Week(DateTime::now()),
+                     Week({Week::Weekday::MONDAY}), Interval::years(1)),
+                 std::invalid_argument);
 }
 
 TEST(WeekdayRecurrencePatternTest, ThrowsOnEmptyWeek) {
+    /* mods::DateTime ctor */
     EXPECT_THROW(
         WeekdaysRecurrencePattern(DateTime::now(), Week(), Interval::weeks(1)),
         std::invalid_argument);
+
+    /* mods::clndr::Week ctor */
+    EXPECT_THROW(
+        WeekdaysRecurrencePattern(hbt::mods::clndr::Week(DateTime::now()),
+                                  Week(), Interval::weeks(1)),
+        std::invalid_argument);
 }
 
-TEST(WeekdayRecurrencePatternTest, MatchesOnlyCorrectWeekdays) {
+TEST(WeekdayRecurrencePatternTest, HappensOnDate) {
     auto start{DateTime({2025, 1, 6})}; // monday
 
     auto pattern{WeekdaysRecurrencePattern(
-        start, Week({Week::Weekday::WEDNESDAY}), Interval::weeks(1))};
+        start, Week({Week::Weekday::WEDNESDAY, Week::Weekday::FRIDAY}),
+        Interval::weeks(1))};
 
-    EXPECT_FALSE(pattern.happensOnDate(DateTime({2025, 1, 6})));
-    EXPECT_FALSE(pattern.happensOnDate(DateTime({2025, 1, 7})));
-    EXPECT_TRUE(pattern.happensOnDate(DateTime({2025, 1, 8})));
-    EXPECT_FALSE(pattern.happensOnDate(DateTime({2025, 1, 9})));
-    EXPECT_FALSE(pattern.happensOnDate(DateTime({2025, 1, 10})));
-    EXPECT_FALSE(pattern.happensOnDate(DateTime({2025, 1, 11})));
-    EXPECT_FALSE(pattern.happensOnDate(DateTime({2025, 1, 12})));
-    EXPECT_FALSE(pattern.happensOnDate(DateTime({2025, 1, 13})));
-    EXPECT_FALSE(pattern.happensOnDate(DateTime({2025, 1, 14})));
-    EXPECT_TRUE(pattern.happensOnDate(DateTime({2025, 1, 15})));
+    EXPECT_FALSE(
+        pattern.happensOnDate(DateTime({2025, 1, 1}))); // wednesday in past
+    EXPECT_FALSE(pattern.happensOnDate(DateTime({2025, 1, 6})));  // monday
+    EXPECT_FALSE(pattern.happensOnDate(DateTime({2025, 1, 7})));  // tuesday
+    EXPECT_TRUE(pattern.happensOnDate(DateTime({2025, 1, 8})));   // wednesday
+    EXPECT_FALSE(pattern.happensOnDate(DateTime({2025, 1, 9})));  // thursday
+    EXPECT_TRUE(pattern.happensOnDate(DateTime({2025, 1, 10})));  // friday
+    EXPECT_FALSE(pattern.happensOnDate(DateTime({2025, 1, 11}))); // saturday
+    EXPECT_FALSE(pattern.happensOnDate(DateTime({2025, 1, 12}))); // sunday
+    EXPECT_FALSE(pattern.happensOnDate(DateTime({2025, 1, 13}))); // monday
+    EXPECT_FALSE(pattern.happensOnDate(DateTime({2025, 1, 14}))); // tuesday
+    EXPECT_TRUE(pattern.happensOnDate(DateTime({2025, 1, 15})));  // wednesday
 }
 
 TEST(WeekdayRecurrencePatternTest, IntervalAffectsWeekdayRepetition) {
@@ -100,10 +116,73 @@ TEST(WeekdayRecurrencePatternTest, JSONRoundTrip) {
     auto pattern{WeekdaysRecurrencePattern(
         DateTime::now(), Week({Week::Weekday::WEDNESDAY}), Interval::weeks(1))};
 
-    auto json = pattern.toJSON();
-    auto restored{WeekdaysRecurrencePattern::fromJSON(json)};
+    auto json = WeekdaysRecurrencePattern::JSON::encode(pattern);
+    auto restored{WeekdaysRecurrencePattern::JSON::decode(json)};
 
     ASSERT_TRUE(restored);
     EXPECT_EQ(pattern, restored);
+}
+
+TEST(WeekdaysRecurrencePatternTest, FromJSONFailsOnInvalidJSON) {
+    /* empty json */
+    auto json = nlohmann::json{};
+    auto result{WeekdaysRecurrencePattern::JSON::decode(json)};
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(),
+              WeekdaysRecurrencePattern::JSON::Error::MissingRequiredField);
+
+    /* missing first week */
+    json = {{WeekdaysRecurrencePattern::JSON::weekField, Week().toJSON()},
+            {WeekdaysRecurrencePattern::JSON::intervalField,
+             Interval::weeks(1).toJSON()}};
+    result = WeekdaysRecurrencePattern::JSON::decode(json);
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(),
+              WeekdaysRecurrencePattern::JSON::Error::MissingRequiredField);
+
+    /* missing interval */
+    json = {{WeekdaysRecurrencePattern::JSON::weekField, Week().toJSON()},
+            {WeekdaysRecurrencePattern::JSON::firstCalendarWeekField,
+             hbt::mods::clndr::Week(DateTime()).toJSON()}};
+    result = WeekdaysRecurrencePattern::JSON::decode(json);
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(),
+              WeekdaysRecurrencePattern::JSON::Error::MissingRequiredField);
+
+    /* missing week */
+    json = {{WeekdaysRecurrencePattern::JSON::intervalField,
+             Interval::weeks(1).toJSON()},
+            {WeekdaysRecurrencePattern::JSON::firstCalendarWeekField,
+             hbt::mods::clndr::Week(DateTime()).toJSON()}};
+    result = WeekdaysRecurrencePattern::JSON::decode(json);
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(),
+              WeekdaysRecurrencePattern::JSON::Error::MissingRequiredField);
+
+    auto week{Week()};
+    week.addWeekday(Week::Weekday::FRIDAY);
+
+    /* invalid interval */
+    json = {{WeekdaysRecurrencePattern::JSON::intervalField,
+             Interval::months(1).toJSON()}, // month, not weekly
+            {WeekdaysRecurrencePattern::JSON::firstCalendarWeekField,
+             hbt::mods::clndr::Week(DateTime()).toJSON()},
+            {WeekdaysRecurrencePattern::JSON::weekField, week.toJSON()}};
+    result = WeekdaysRecurrencePattern::JSON::decode(json);
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(),
+              WeekdaysRecurrencePattern::JSON::Error::FailedToValidateInterval);
+
+    /* invalid week */
+    json = {{WeekdaysRecurrencePattern::JSON::intervalField,
+             Interval::weeks(1).toJSON()},
+            {WeekdaysRecurrencePattern::JSON::weekField,
+             Week().toJSON()}, // empty week
+            {WeekdaysRecurrencePattern::JSON::firstCalendarWeekField,
+             hbt::mods::clndr::Week(DateTime()).toJSON()}};
+    result = WeekdaysRecurrencePattern::JSON::decode(json);
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(),
+              WeekdaysRecurrencePattern::JSON::Error::FailedToValidateWeek);
 }
 } // namespace test::mods::util

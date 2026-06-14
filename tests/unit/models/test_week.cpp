@@ -28,11 +28,9 @@ TEST(WeekTest, ConstructsFromVector) {
 }
 
 TEST(WeekTest, ConstructsFromBitset) {
-    auto days{Week::days_t{}};
-    days.set(static_cast<size_t>(DateTime::weekday_t::TUESDAY));
-    days.set(static_cast<size_t>(DateTime::weekday_t::THURSDAY));
-
-    auto week{Week(days)};
+    auto week{Week()};
+    week.addWeekday(Week::Weekday::TUESDAY);
+    week.addWeekday(Week::Weekday::THURSDAY);
 
     EXPECT_TRUE(week.containsWeekday(DateTime::weekday_t::TUESDAY));
     EXPECT_TRUE(week.containsWeekday(DateTime::weekday_t::THURSDAY));
@@ -41,6 +39,15 @@ TEST(WeekTest, ConstructsFromBitset) {
     EXPECT_FALSE(week.containsWeekday(DateTime::weekday_t::FRIDAY));
     EXPECT_FALSE(week.containsWeekday(DateTime::weekday_t::SATURDAY));
     EXPECT_FALSE(week.containsWeekday(DateTime::weekday_t::SUNDAY));
+}
+
+TEST(WeekTest, IsEmpty) {
+    EXPECT_TRUE(Week().isEmpty());
+
+    auto week{Week()};
+    week.addWeekday(Week::Weekday::TUESDAY);
+
+    EXPECT_FALSE(week.isEmpty());
 }
 
 TEST(WeekTest, JSONRoundTrip) {

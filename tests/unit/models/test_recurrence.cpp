@@ -3,82 +3,128 @@
 #include <datetime.hpp>
 #include <interval.hpp>
 #include <recurrence.hpp>
-#include <weekdays.hpp>
 
+namespace test::mods::util {
+using hbt::mods::DateTime;
+using hbt::mods::Interval;
+using hbt::mods::Week;
+using hbt::mods::util::IntervalRecurrencePattern;
+using hbt::mods::util::Recurrence;
+using hbt::mods::util::WeekdaysRecurrencePattern;
 
-TEST(WeekdayRecurrencePatternTest, EmptyWeekdaysThrows) {
-    Weekdays empty{Weekdays::days_t{}};
+TEST(RecurrenceTest, GetPatternType) {
+    /* IntervalRecurrencePattern */
+    auto recurrence{Recurrence(
+        IntervalRecurrencePattern(DateTime::now(), Interval::weeks(1)))};
 
-    EXPECT_THROW(WeekdayRecurrencePattern(Interval::days(7), empty),
-                 std::invalid_argument);
+    EXPECT_EQ(recurrence.getPatternType(), Recurrence::PatternType::Interval);
+
+    /* WeekdaysRecurrencePattern */
+    auto week{Week()};
+    week.addWeekday(Week::Weekday::FRIDAY);
+    recurrence = Recurrence(
+        WeekdaysRecurrencePattern(DateTime::now(), week, Interval::weeks(1)));
+
+    EXPECT_EQ(recurrence.getPatternType(), Recurrence::PatternType::Weekday);
 }
 
-TEST(WeekdayRecurrencePatternTest, MatchesOnlyCorrectWeekday) {
-    auto start = DateTime(DateTime({2025, 1, 6})); // monday
+TEST(RecurrenceTest, GetPattern) {
+    /* IntervalRecurrencePattern */
+    auto intervalPattern{
+        IntervalRecurrencePattern(DateTime::now(), Interval::weeks(1))};
+    auto recurrence{Recurrence(intervalPattern)};
 
-    Weekdays w{{DateTime::weekday_t::WEDNESDAY}};
-    auto pattern = WeekdayRecurrencePattern(Interval::days(7), w);
+    EXPECT_EQ(recurrence.getIntervalPattern(), intervalPattern);
+    EXPECT_THROW(recurrence.getWeekdayPattern(), std::bad_variant_access);
 
-    EXPECT_TRUE(pattern.happensOnDate(start, DateTime({2025, 1, 8})));
-    EXPECT_FALSE(pattern.happensOnDate(start, DateTime({2025, 1, 7})));
+    /* WeekdaysRecurrencePattern */
+    auto week{Week()};
+    week.addWeekday(Week::Weekday::FRIDAY);
+
+    auto weekdaysPattern{
+        WeekdaysRecurrencePattern(DateTime::now(), week, Interval::weeks(1))};
+    recurrence = Recurrence(intervalPattern);
+
+    EXPECT_EQ(recurrence.getWeekdayPattern(), weekdaysPattern);
+    EXPECT_THROW(recurrence.getIntervalPattern(), std::bad_variant_access);
 }
 
-TEST(WeekdayRecurrencePatternTest, IntervalAffectsWeekdayRepetition) {
-    auto start = DateTime(DateTime({2025, 1, 6}));
+TEST(RecurrenceTest, JSONRoundTrip) {
+    /* IntervalRecurrencePattern */
+    auto original{Recurrence(
+        IntervalRecurrencePattern(DateTime::now(), Interval::weeks(1)))};
 
-    Weekdays w{{DateTime::weekday_t::WEDNESDAY}};
-    auto pattern = WeekdayRecurrencePattern(Interval::days(14), w);
+    auto json = Recurrence::JSON::encode(original);
+    auto restored{Recurrence::JSON::decode(json)};
 
-    EXPECT_TRUE(pattern.happensOnDate(start, DateTime({2025, 1, 8})));
-    EXPECT_TRUE(pattern.happensOnDate(start, DateTime({2025, 1, 22})));
+    ASSERT_TRUE(restored);
+    EXPECT_EQ(restored.value(), original);
+
+    /* WeekdaysRecurrencePattern */
+    auto week{Week()};
+    week.addWeekday(Week::Weekday::FRIDAY);
+    original = Recurrence(
+        WeekdaysRecurrencePattern(DateTime::now(), week, Interval::weeks(1)));
+
+    json = Recurrence::JSON::encode(original);
+    restored = Recurrence::JSON::decode(json);
+
+    ASSERT_TRUE(restored);
+    EXPECT_EQ(restored.value(), original);
 }
 
-TEST(WeekdayRecurrencePatternTest, NoFalsePositiveOnWrongWeekday) {
-    auto start = DateTime(DateTime({2025, 1, 6}));
+TEST(RecurrenceTest, FromJSONFailsOnInvalidJSON) {
+    /* empty json */
+    auto json = nlohmann::json{};
+    auto result{Recurrence::JSON::decode(json)};
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), Recurrence::JSON::Error::MissingRequiredField);
 
-    Weekdays w{{DateTime::weekday_t::WEDNESDAY}};
-    auto pattern = WeekdayRecurrencePattern(Interval::days(7), w);
+    auto week{Week()};
+    week.addWeekday(Week::Weekday::FRIDAY);
+    auto weekdaysPattern{
+        WeekdaysRecurrencePattern(DateTime::now(), week, Interval::weeks(1))};
 
-    EXPECT_FALSE(pattern.happensOnDate(start, DateTime({2025, 1, 9})));
-    EXPECT_FALSE(pattern.happensOnDate(start, DateTime({2025, 1, 10})));
-}
+    /* missing pattern type */
+    json = {{
+        "pattern",
+        WeekdaysRecurrencePattern::JSON::encode(weekdaysPattern),
+    }};
+    result = Recurrence::JSON::decode(json);
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), Recurrence::JSON::Error::MissingRequiredField);
 
-TEST(WeekdayRecurrencePatternTest, GetOccurrencesSingleMatch) {
-    auto start = DateTime(DateTime({2025, 1, 6}));
+    /* missing pattern */
+    json = {{
+        "type",
+        Recurrence::JSON::weekdayPatternTypeValue,
+    }};
+    result = Recurrence::JSON::decode(json);
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), Recurrence::JSON::Error::MissingRequiredField);
 
-    Weekdays w{{DateTime::weekday_t::WEDNESDAY}};
-    auto pattern = WeekdayRecurrencePattern(Interval::days(7), w);
+    /* invalid pattern type */
+    json = {{"type", ""},
+            {
+                "pattern",
+                WeekdaysRecurrencePattern::JSON::encode(weekdaysPattern),
+            }};
+    result = Recurrence::JSON::decode(json);
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), Recurrence::JSON::Error::UnsupportedPatternType);
 
-    auto result = pattern.getTimeStampsOnDate(start, DateTime({2025, 1, 8}));
+    /* invalid WeekdaysRecurrencePattern */
+    json = {{"type", "weekday"}, {"pattern", ""}};
+    result = Recurrence::JSON::decode(json);
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(),
+              Recurrence::JSON::Error::FailedToParseWeekdayPattern);
 
-    EXPECT_EQ(result.size(), 1);
-    EXPECT_EQ(result.front(), DateTime({2025, 1, 8}));
-}
-
-TEST(WeekdayRecurrencePatternTest, GetOccurrencesEmptyWhenNoMatch) {
-    auto start = DateTime(DateTime({2025, 1, 6}));
-
-    Weekdays w{{DateTime::weekday_t::WEDNESDAY}};
-    auto pattern = WeekdayRecurrencePattern(Interval::days(7), w);
-
-    auto result = pattern.getTimeStampsOnDate(start, DateTime({2025, 1, 7}));
-
-    EXPECT_TRUE(result.empty());
-}
-
-TEST(WeekdayRecurrencePatternTest, JSONRoundTripPreservesState) {
-    Weekdays w{{DateTime::weekday_t::WEDNESDAY, DateTime::weekday_t::FRIDAY}};
-
-    auto pattern = WeekdayRecurrencePattern(Interval::days(7), w);
-
-    auto json = pattern.toJSON();
-    auto restored = WeekdayRecurrencePattern::fromJSON(json);
-
-    ASSERT_TRUE(restored.has_value());
-
-    EXPECT_EQ(restored->getInterval(), pattern.getInterval());
-
-    EXPECT_EQ(restored->getWeekdays().getDays(),
-              pattern.getWeekdays().getDays());
+    /* invalid IntervalRecurrencePattern */
+    json = {{"type", "interval"}, {"pattern", ""}};
+    result = Recurrence::JSON::decode(json);
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(),
+              Recurrence::JSON::Error::FailedToParseIntervalPattern);
 }
 } // namespace test::mods::util

@@ -74,6 +74,9 @@ class Week {
 
     [[nodiscard]] auto isEmpty() const -> bool;
 
+  public:
+    auto addWeekday(Week::Weekday weekday) -> void;
+
   private:
     static auto validateAndReverseString(std::string string) -> std::string;
 

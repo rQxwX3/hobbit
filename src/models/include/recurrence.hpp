@@ -20,26 +20,7 @@ class Recurrence {
     using occurrences_t = RecurrencePattern::occurrences_t;
 
   private:
-    static constexpr auto jsonPatternTypeField{std::string_view{"type"}};
-    static constexpr auto jsonPatternField{std::string_view{"pattern"}};
-
-    static constexpr auto jsonFields{std::array<std::string_view, 2>{
-        jsonPatternTypeField, jsonPatternField}};
-
-    static constexpr auto jsonIntervalPatternTypeValue{
-        std::string_view{"interval"}};
-    static constexpr auto jsonWeekdayPatternTypeValue{
-        std::string_view{"weekday"}};
-
-  private:
     enum class Error : uint8_t {
-        JSONMissingRequiredField,
-
-        JSONFailedToParseIntervalPattern,
-        JSONFailedToParseWeekdayPattern,
-
-        JSONUnsupportedPatternType,
-
         UnsupportedPatternType,
     };
 
@@ -47,20 +28,6 @@ class Recurrence {
     [[nodiscard]] static constexpr auto errorMessage(Error error)
         -> std::string {
         switch (error) {
-        case Error::JSONMissingRequiredField:
-            return "Recurrence: missing required field(s) in JSON";
-
-        case Error::JSONFailedToParseIntervalPattern:
-            return "Recurrence: failed to parse IntervalRecurrencePattern from "
-                   "JSON";
-
-        case Error::JSONFailedToParseWeekdayPattern:
-            return "Recurrence: failed to parse WeekdayRecurrencePattern from "
-                   "JSON";
-
-        case Error::JSONUnsupportedPatternType:
-            return "Recurrence: unsupported pattern type provided in JSON";
-
         case Error::UnsupportedPatternType:
             return "Recurrence: invalid object state (unsupported pattern "
                    "type)";
@@ -90,19 +57,68 @@ class Recurrence {
     [[nodiscard]] auto getWeekdayPattern() const -> WeekdaysRecurrencePattern;
 
   public:
-    [[nodiscard]] auto getOccurrencesOfDate(DateTime on) const -> occurrences_t;
+    [[nodiscard]] auto happensOnDate(DateTime on) const -> bool;
 
   public:
-    [[nodiscard]] auto happensOnDate(DateTime datetime) const -> bool;
-
-  private:
-    [[nodiscard]] static auto containsAllJSONFields(const nlohmann::json &json)
-        -> bool;
+    [[nodiscard]] auto getOccurrencesOfDate(DateTime datetime) const
+        -> occurrences_t;
 
   public:
-    [[nodiscard]] auto toJSON() const -> nlohmann::json;
+    [[nodiscard]] auto operator==(const Recurrence &recurrence) const
+        -> bool = default;
 
-    [[nodiscard]] static auto fromJSON(const nlohmann::json &json)
-        -> std::expected<Recurrence, Error>;
+  public:
+    struct JSON {
+        static constexpr auto patternTypeField{std::string_view{"type"}};
+        static constexpr auto patternField{std::string_view{"pattern"}};
+
+        static constexpr auto fields{
+            std::array<std::string_view, 2>{patternTypeField, patternField}};
+
+        static constexpr auto intervalPatternTypeValue{
+            std::string_view{"interval"}};
+        static constexpr auto weekdayPatternTypeValue{
+            std::string_view{"weekday"}};
+
+        enum class Error : uint8_t {
+            MissingRequiredField,
+
+            FailedToParseIntervalPattern,
+            FailedToParseWeekdayPattern,
+
+            UnsupportedPatternType,
+        };
+
+        [[nodiscard]] static auto containsAllFields(const nlohmann::json &json)
+            -> bool;
+
+        [[nodiscard]] static auto encode(const Recurrence &recurrence)
+            -> nlohmann::json;
+
+        [[nodiscard]] static auto decode(const nlohmann::json &json)
+            -> std::expected<Recurrence, JSON::Error>;
+
+        [[nodiscard]] static constexpr auto errorMessage(Error error)
+            -> std::string {
+            switch (error) {
+            case JSON::Error::MissingRequiredField:
+                return "Recurrence::JSON: missing required field(s)";
+
+            case JSON::Error::FailedToParseIntervalPattern:
+                return "Recurrence::JSON: failed to parse "
+                       "IntervalRecurrencePattern";
+
+            case JSON::Error::FailedToParseWeekdayPattern:
+                return "Recurrence::JSON: failed to parse "
+                       "WeekdayRecurrencePattern";
+
+            case JSON::Error::UnsupportedPatternType:
+                return "Recurrence::JSON: unsupported pattern type";
+
+            default:
+                std::unreachable();
+            }
+        }
+    };
 };
 } // namespace hbt::mods::util

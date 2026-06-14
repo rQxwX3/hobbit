@@ -32,6 +32,10 @@ Week::Week(days_t days) : days_{days} {}
         [this](const auto wd) -> bool { return this->containsWeekday(wd); });
 }
 
+auto Week::addWeekday(Week::Weekday weekday) -> void {
+    days_.set(static_cast<size_t>(weekday));
+}
+
 [[nodiscard]] auto Week::toJSON() const -> nlohmann::json {
     return days_.to_string();
 }
