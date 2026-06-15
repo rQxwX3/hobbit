@@ -1,124 +1,161 @@
-// #include <task_series.hpp>
-//
-// namespace hbt::mods {
-// auto TaskSeries::validateDeadline(deadline_t deadline) const -> deadline_t {
-//     if (deadline.getType() != Deadline::Type::Interval) {
-//         throw std::invalid_argument(errorMessage(Error::InvalidDeadline));
-//     }
-//
-//     return deadline;
-// }
-//
-// auto TaskSeries::validateStop(stop_t stop) const -> stop_t {
-//     if (stop.has_value() && stop.value() < getStart()) {
-//         throw std::invalid_argument(errorMessage(Error::InvalidStop));
-//     }
-//
-//     return stop;
-// }
-//
-// TaskSeries::TaskSeries(TaskData task, util::Recurrence recurrence, stop_t
-// stop)
-//     : task_{std::move(task)}, recurrence_{std::move(recurrence)},
-//       stop_{validateStop(stop)} {
-//     validateDeadline(task_.getDeadline());
-// }
-//
-// // [[nodiscard]] auto TaskSeries::generateFirstSingularOfDate(mods::DateTime
-// // datetime)
-// //     -> std::optional<hbt::mods::SingularTask> {
-// //     if (std::holds_alternative<mods::util::WeekdayRecurrence>(
-// //             recurrencePattern_)) {
-// //     }
-// //
-// //     for (auto dt{task_.start}; !mods::DateTime::equalDates(dt, datetime);)
-// // }
-// //
-// //
-// [[nodiscard]] auto TaskSeries::getStart() const -> start_t {
-//     return task_.getDateTime();
-// }
-//
-// [[nodiscard]] auto TaskSeries::getStop() const -> stop_t { return stop_; }
-//
-// [[nodiscard]] auto TaskSeries::getRecurrence() const -> util::Recurrence {
-//     return recurrence_;
-// }
-//
-// auto TaskSeries::setStop(stop_t stop) -> void { stop_ = validateStop(stop); }
-//
-// auto TaskSeries::setDeadline(deadline_t deadline) -> void {
-//     task_.setDeadline(validateDeadline(std::move(deadline)));
-// }
-//
-// auto TaskSeries::setRecurrence(util::Recurrence recurrence) -> void {
-//     recurrence_ = std::move(recurrence);
-// }
-//
-// [[nodiscard]] auto TaskSeries::generateSingularsForDate(DateTime datetime)
-// const
-//     -> std::vector<hbt::mods::SingularTask> {
-//     auto results{std::vector<mods::SingularTask>{}};
-//     auto timestamps{recurrence_.getOccurrencesOfDate(getStart(), datetime)};
-//
-//     for (const auto &ts : timestamps) {
-//         // TODO: assert ts.getData() = datetime.getData()
-//
-//         auto taskData{task_};
-//         taskData.setDateTime(ts);
-//
-//         results.emplace_back(std::move(taskData));
-//     }
-//
-//     return results;
-// }
-//
-// [[nodiscard]] auto TaskSeries::isForDate(DateTime datetime) const -> bool {
-//     if (datetime.getDate() < getStart().getDate() ||
-//         (stop_.has_value() && datetime.getDate() > stop_->getDate())) {
-//         return false;
-//     }
-//
-//     return recurrence_.happensOnDate(getStart(), datetime);
-// }
-//
-// [[nodiscard]] auto TaskSeries::containsAllJSONFields(const nlohmann::json
-// &json)
-//     -> bool {
-//     return std::ranges::all_of(jsonFields, [&json](const auto &field) -> bool
-//     {
-//         return json.contains(field);
-//     });
-// }
-//
-// [[nodiscard]] auto TaskSeries::toJSON() const -> nlohmann::json {
-//     return {{jsonTaskField, task_.toJSON()},
-//             {jsonStopField, stop_->toISO8601String()},
-//             {jsonRecurrenceField, recurrence_.toJSON()}};
-// }
-//
-// [[nodiscard]] auto TaskSeries::fromJSON(const nlohmann::json &json)
-//     -> std::expected<TaskSeries, Error> {
-//     if (!containsAllJSONFields(json)) {
-//         return std::unexpected(Error::JSONMissingRequiredField);
-//     }
-//
-//     auto task{TaskData::fromJSON(json[jsonTaskField])};
-//     if (!task) {
-//         return std::unexpected(Error::JSONFailedToParseTaskData);
-//     }
-//
-//     // maybe validation here?
-//     auto stop{DateTime::fromISO8601String(json[jsonStopField])};
-//     if (!stop) {
-//         return std::unexpected(Error::JSONFailedToParseStop);
-//     }
-//
-//     auto recurrence{util::Recurrence::fromJSON(json[jsonRecurrenceField])};
-//     if (!recurrence) {
-//         return std::unexpected(Error::JSONFailedToParseRecurrence);
-//     }
-//
-//     return TaskSeries{task.value(), recurrence.value(), stop.value()};
-// }
-// } // namespace hbt::mods
+#include <task_series.hpp>
+
+namespace hbt::mods {
+auto TaskSeries::validateDeadline(Deadline deadline) -> Deadline {
+    if (!deadline.isInterval()) {
+        throw std::invalid_argument(errorMessage(Error::InvalidDeadline));
+    }
+
+    return deadline;
+}
+
+auto TaskSeries::validateStartDateTime(DateTime startDateTime) const
+    -> DateTime {
+    if (startDateTime >= endDateTime_) {
+        throw std::invalid_argument(errorMessage(Error::InvalidStartDateTime));
+    }
+
+    return startDateTime;
+}
+
+auto TaskSeries::validateEndDateTime(endDateTime_t endDateTime) const
+    -> endDateTime_t {
+    if (endDateTime.has_value() && endDateTime.value() < getStartDateTime()) {
+        throw std::invalid_argument(errorMessage(Error::InvalidEndDateTime));
+    }
+
+    return endDateTime;
+}
+
+TaskSeries::TaskSeries(TaskData taskData, util::Recurrence recurrence,
+                       endDateTime_t endDateTime)
+    : taskData_{std::move(taskData)}, recurrence_{std::move(recurrence)},
+      endDateTime_{validateEndDateTime(endDateTime)} {}
+
+[[nodiscard]] auto TaskSeries::getStartDateTime() const -> DateTime {
+    return taskData_.getDateTime();
+}
+
+[[nodiscard]] auto TaskSeries::getEndDateTime() const -> endDateTime_t {
+    return endDateTime_;
+}
+
+[[nodiscard]] auto TaskSeries::getRecurrence() const -> util::Recurrence {
+    return recurrence_;
+}
+
+[[nodiscard]] auto TaskSeries::getTaskData() const -> TaskData {
+    return taskData_;
+}
+
+auto TaskSeries::setTitle(std::string title) -> void {
+    try {
+        taskData_.setTitle(std::move(title));
+    } catch (const std::exception &e) {
+        rethrowTaskDataInvalidArgumentException(e);
+    }
+}
+
+auto TaskSeries::setStartDateTime(DateTime startDateTime) -> void {
+    startDateTime = validateStartDateTime(startDateTime);
+
+    try {
+        taskData_.setDateTime(startDateTime);
+    } catch (const std::exception &e) {
+        rethrowTaskDataInvalidArgumentException(e);
+    }
+}
+
+auto TaskSeries::setDeadline(Deadline deadline) -> void {
+    deadline = validateDeadline(deadline);
+
+    try {
+        taskData_.setDeadline(deadline);
+    } catch (const std::exception &e) {
+        rethrowTaskDataInvalidArgumentException(e);
+    }
+}
+
+auto TaskSeries::setRecurrence(util::Recurrence recurrence) -> void {
+    recurrence_ = std::move(recurrence);
+}
+
+auto TaskSeries::setEndDateTime(endDateTime_t endDateTime) -> void {
+    endDateTime_ = validateEndDateTime(endDateTime);
+}
+
+[[nodiscard]] auto TaskSeries::happensOnDate(DateTime datetime) const -> bool {
+    auto startsAfterDateTime{datetime < getStartDateTime()};
+    auto endsBeforeDateTime{endDateTime_.has_value() &&
+                            datetime > endDateTime_.value()};
+
+    if (startsAfterDateTime || endsBeforeDateTime) {
+        return false;
+    }
+
+    return recurrence_.happensOnDate(datetime);
+}
+
+[[nodiscard]] auto TaskSeries::generateSingularsForDate(DateTime datetime) const
+    -> std::vector<hbt::mods::SingularTask> {
+    auto results{std::vector<mods::SingularTask>{}};
+    auto occurrencesOfDate{recurrence_.getOccurrencesOfDate(datetime)};
+
+    for (const auto &occ : occurrencesOfDate) {
+        auto taskData{taskData_};
+        taskData.setDateTime(occ);
+
+        results.emplace_back(std::move(taskData));
+    }
+
+    return results;
+}
+
+/* ------- JSON ------- */
+[[nodiscard]] auto
+TaskSeries::JSON::containsAllFields(const nlohmann::json &json) -> bool {
+    return std::ranges::all_of(fields, [&json](const auto &field) -> bool {
+        return json.contains(field);
+    });
+}
+
+[[nodiscard]] auto TaskSeries::JSON::encode(const TaskSeries &taskSeries)
+    -> nlohmann::json {
+    auto endDateTime{taskSeries.getEndDateTime()};
+    auto endDateTimeJSON{endDateTime.has_value()
+                             ? endDateTime->toISO8601String()
+                             : endDateTimeNullValue};
+
+    return {
+        {taskDataField, TaskData::JSON::encode(taskSeries.getTaskData())},
+        {recurrenceField,
+         util::Recurrence::JSON::encode(taskSeries.getRecurrence())},
+        {endDateTimeField, endDateTimeJSON},
+    };
+}
+
+[[nodiscard]] auto TaskSeries::JSON::decode(const nlohmann::json &json)
+    -> std::expected<TaskSeries, Error> {
+    if (!containsAllFields(json)) {
+        return std::unexpected(JSON::Error::MissingRequiredField);
+    }
+
+    auto task{TaskData::JSON::decode(json[taskDataField])};
+    if (!task) {
+        return std::unexpected(JSON::Error::FailedToParseTaskData);
+    }
+
+    // TODO maybe validation here?
+    auto stop{DateTime::fromISO8601String(json[endDateTimeField])};
+    if (!stop) {
+        return std::unexpected(JSON::Error::FailedToParseEndDateTime);
+    }
+
+    auto recurrence{util::Recurrence::JSON::decode(json[recurrenceField])};
+    if (!recurrence) {
+        return std::unexpected(JSON::Error::FailedToParseRecurrence);
+    }
+
+    return TaskSeries{task.value(), recurrence.value(), stop.value()};
+}
+} // namespace hbt::mods
