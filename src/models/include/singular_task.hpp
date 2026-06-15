@@ -9,76 +9,32 @@
 
 namespace hbt::mods {
 class SingularTask {
-  public:
-    enum class Error : uint8_t {
-        InvalidDateTime,
-        InvalidDeadline,
+  private:
+    TaskData taskData_;
 
-        JSONMissingRequiredField,
+    bool isCompleted_;
 
-        JSONFailedToParseTaskData,
-        JSONFailedToParseDateTime,
-        JSONFailedToParseDeadline,
-
-        JSONInvalidDateTimeDeadline,
-    };
-
-  public:
-    [[nodiscard]] static constexpr auto errorMessage(Error error)
-        -> std::string {
-        switch (error) {
-        case Error::InvalidDateTime:
-            return "SingularTask: provided datetime is invalid";
-
-        case Error::InvalidDeadline:
-            return "SingularTask: provided deadline is invalid";
-
-        case Error::JSONMissingRequiredField:
-            return "SingularTask: missing required field(s) in JSON";
-
-        case Error::JSONFailedToParseTaskData:
-            return "SingularTask: failed to parse TaskData from JSON";
-
-        case Error::JSONFailedToParseDateTime:
-            return "SingularTask: failed to parse DateTime from JSON";
-
-        case Error::JSONFailedToParseDeadline:
-            return "SingularTask: failed to parse Deadline from JSON";
-
-        case Error::JSONInvalidDateTimeDeadline:
-            return "SingularTask: provided JSON contains deadline that is "
-                   "earlier than (or equal to) the datetime";
-
-        default:
-            std::unreachable();
-        }
+  private:
+    static auto
+    rethrowTaskDataInvalidArgumentException(const std::exception &exception)
+        -> void {
+        throw std::invalid_argument("SingularTask: " +
+                                    std::string(exception.what()));
     }
 
-  private:
-    static constexpr auto jsonTaskField{std::string_view{"task"}};
-    static constexpr auto jsonDateTimeField{std::string_view{"datetime"}};
-    static constexpr auto jsonDeadlineField{std::string_view{"deadline"}};
-
-    static constexpr auto jsonFields{std::array<std::string_view, 3>{
-        jsonTaskField, jsonDateTimeField, jsonDeadlineField}};
-
-  private:
-    TaskData task_;
-
-    /* order must not be changed */
-    DateTime datetime_;
-    Deadline deadline_;
-
-  private:
-    auto validateDateTime(DateTime datetime) -> DateTime;
-
-    auto validateDeadline(Deadline deadline) -> Deadline;
-
-    static auto validateDateTimeDeadline(DateTime datetime, Deadline deadline)
-        -> void;
+  public:
+    SingularTask(TaskData taskData, bool isCompleted = false);
 
   public:
-    SingularTask(TaskData task, DateTime datetime, Deadline deadline);
+    [[nodiscard]] auto getTaskData() const -> TaskData;
+
+    [[nodiscard]] auto getTitle() const -> std::string_view;
+
+    [[nodiscard]] auto getDateTime() const -> DateTime;
+
+    [[nodiscard]] auto getDeadline() const -> Deadline;
+
+    [[nodiscard]] auto isCompleted() const -> bool;
 
   public:
     auto setTitle(std::string title) -> void;
@@ -90,30 +46,51 @@ class SingularTask {
     auto setCompleted(bool completed) -> void;
 
   public:
-    [[nodiscard]] auto getTitle() const -> std::string_view;
-
-    [[nodiscard]] auto getDateTime() const -> DateTime;
-
-    [[nodiscard]] auto getDeadline() const -> Deadline;
-
-    [[nodiscard]] auto isCompleted() const -> bool;
-
-  public:
     [[nodiscard]] virtual auto isForDate(DateTime datetime) const -> bool;
 
     [[nodiscard]] auto hasDeadline() const -> bool;
 
   public:
-    [[nodiscard]] auto operator==(const SingularTask &other) const -> bool;
-
-  private:
-    [[nodiscard]] auto static containsAllJSONFields(const nlohmann::json &json)
-        -> bool;
+    [[nodiscard]] auto operator==(const SingularTask &other) const
+        -> bool = default;
 
   public:
-    [[nodiscard]] auto toJSON() const & -> nlohmann::json;
+    struct JSON {
+        enum class Error : uint8_t {
+            MissingRequiredField,
 
-    [[nodiscard]] static auto fromJSON(const nlohmann::json &json)
-        -> std::expected<SingularTask, Error>;
+            FailedToParseTaskData,
+        };
+
+        [[nodiscard]] static constexpr auto errorMessage(Error error)
+            -> std::string {
+            switch (error) {
+            case Error::MissingRequiredField:
+                return "SingularTask::JSON: missing required field(s)";
+
+            case Error::FailedToParseTaskData:
+                return "SingularTask::JSON: failed to parse TaskData";
+
+            default:
+                std::unreachable();
+            }
+        }
+
+        static constexpr auto taskDataField{std::string_view{"task_data"}};
+        static constexpr auto isCompletedField{
+            std::string_view{"is_completed"}};
+
+        static constexpr auto fields{
+            std::array<std::string_view, 2>{taskDataField, isCompletedField}};
+
+        [[nodiscard]] static auto containsAllFields(const nlohmann::json &json)
+            -> bool;
+
+        [[nodiscard]] static auto encode(const SingularTask &singularTask)
+            -> nlohmann::json;
+
+        [[nodiscard]] static auto decode(const nlohmann::json &json)
+            -> std::expected<SingularTask, JSON::Error>;
+    };
 };
 } // namespace hbt::mods

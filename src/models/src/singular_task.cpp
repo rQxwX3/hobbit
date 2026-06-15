@@ -1,120 +1,89 @@
 #include <singular_task.hpp>
 
 namespace hbt::mods {
-auto SingularTask::validateDateTime(DateTime datetime) -> DateTime {
-    if (deadline_.isDateTime() && datetime >= deadline_.getDateTime()) {
-        throw std::invalid_argument(errorMessage(Error::InvalidDateTime));
-    }
+SingularTask::SingularTask(TaskData taskData, bool isCompleted)
+    : taskData_(std::move(taskData)), isCompleted_{isCompleted} {}
 
-    return datetime;
-}
-
-auto SingularTask::validateDeadline(Deadline deadline) -> Deadline {
-    if (deadline.isDateTime() && datetime_ >= deadline.getDateTime()) {
-        throw std::invalid_argument(errorMessage(Error::InvalidDeadline));
-    }
-
-    return deadline;
-}
-
-auto SingularTask::validateDateTimeDeadline(DateTime datetime,
-                                            Deadline deadline) -> void {
-    if (deadline.isDateTime() && datetime >= deadline.getDateTime()) {
-        throw std::invalid_argument(
-            errorMessage(Error::JSONInvalidDateTimeDeadline));
-    }
-}
-
-SingularTask::SingularTask(TaskData task, DateTime datetime, Deadline deadline)
-    : task_(std::move(task)), datetime_{datetime},
-      deadline_{validateDeadline(deadline)} {}
-
-auto SingularTask::setTitle(std::string title) -> void {
-    task_.setTitle(std::move(title));
-}
-
-auto SingularTask::setDateTime(DateTime datetime) -> void {
-    datetime_ = validateDateTime(datetime);
-}
-
-auto SingularTask::setDeadline(Deadline deadline) -> void {
-    deadline_ = validateDeadline(deadline);
-}
-
-auto SingularTask::setCompleted(bool completed) -> void {
-    task_.setCompleted(completed);
+[[nodiscard]] auto SingularTask::getTaskData() const -> TaskData {
+    return taskData_;
 }
 
 [[nodiscard]] auto SingularTask::getTitle() const -> std::string_view {
-    return task_.getTitle();
-}
-
-[[nodiscard]] auto SingularTask::isCompleted() const -> bool {
-    return task_.isCompleted();
+    return taskData_.getTitle();
 }
 
 [[nodiscard]] auto SingularTask::getDateTime() const -> DateTime {
-    return datetime_;
+    return taskData_.getDateTime();
 }
 
 [[nodiscard]] auto SingularTask::getDeadline() const -> Deadline {
-    return deadline_;
+    return taskData_.getDeadline();
+}
+
+[[nodiscard]] auto SingularTask::isCompleted() const -> bool {
+    return isCompleted_;
+}
+
+auto SingularTask::setTitle(std::string title) -> void {
+    try {
+        taskData_.setTitle(std::move(title));
+    } catch (const std::exception &e) {
+        rethrowTaskDataInvalidArgumentException(e);
+    }
+}
+
+auto SingularTask::setDateTime(DateTime datetime) -> void {
+    try {
+        taskData_.setDateTime(datetime);
+    } catch (const std::exception &e) {
+        rethrowTaskDataInvalidArgumentException(e);
+    }
+}
+
+auto SingularTask::setDeadline(Deadline deadline) -> void {
+    try {
+        taskData_.setDeadline(deadline);
+    } catch (const std::exception &e) {
+        rethrowTaskDataInvalidArgumentException(e);
+    }
+}
+
+auto SingularTask::setCompleted(bool isCompleted) -> void {
+    isCompleted_ = isCompleted;
 }
 
 [[nodiscard]] auto SingularTask::isForDate(DateTime datetime) const -> bool {
-    return datetime_.getDate() == datetime.getDate();
+    return getDateTime().getDate() == datetime.getDate();
 }
 
-[[nodiscard]] auto SingularTask::hasDeadline() const -> bool {
-    return !deadline_.isNull();
-}
-
-[[nodiscard]] auto SingularTask::operator==(const SingularTask &other) const
-    -> bool = default;
-
+/* ------- JSON ------- */
 [[nodiscard]] auto
-SingularTask::containsAllJSONFields(const nlohmann::json &json) -> bool {
-    return std::ranges::all_of(jsonFields, [&json](const auto &field) -> bool {
+SingularTask::JSON::containsAllFields(const nlohmann::json &json) -> bool {
+    return std::ranges::all_of(fields, [&json](const auto &field) -> bool {
         return json.contains(field);
     });
 }
 
-[[nodiscard]] auto SingularTask::toJSON() const & -> nlohmann::json {
-    return {{jsonTaskField, task_.toJSON()},
-            {jsonDateTimeField, datetime_.toISO8601String()},
-            {jsonDeadlineField, deadline_.toJSON()}};
+[[nodiscard]] auto SingularTask::JSON::encode(const SingularTask &singularTask)
+    -> nlohmann::json {
+    return {
+        {taskDataField, TaskData::JSON::encode(singularTask.getTaskData())},
+        {isCompletedField, singularTask.isCompleted()},
+    };
 }
 
-[[nodiscard]] auto SingularTask::fromJSON(const nlohmann::json &json)
+[[nodiscard]] auto SingularTask::JSON::decode(const nlohmann::json &json)
     -> std::expected<SingularTask, Error> {
-    if (!containsAllJSONFields(json)) {
-        return std::unexpected(Error::JSONMissingRequiredField);
+    if (!containsAllFields(json)) {
+        return std::unexpected(Error::MissingRequiredField);
     }
 
-    auto taskFromJSON{TaskData::fromJSON(json[jsonTaskField])};
-    if (!taskFromJSON) {
-        return std::unexpected(Error::JSONFailedToParseTaskData);
+    auto taskDataJSON{TaskData::JSON::decode(json[taskDataField])};
+    if (!taskDataJSON) {
+        return std::unexpected(Error::FailedToParseTaskData);
     }
 
-    auto datetimeFromISO8601{DateTime::fromISO8601String(
-        json[jsonDateTimeField].get<std::string>())};
-    if (!datetimeFromISO8601) {
-        return std::unexpected(Error::JSONFailedToParseDateTime);
-    }
-
-    auto deadlineFromJSON{(Deadline::fromJSON(json[jsonDeadlineField]))};
-    if (!deadlineFromJSON) {
-        return std::unexpected(Error::JSONFailedToParseDeadline);
-    }
-
-    try {
-        validateDateTimeDeadline(datetimeFromISO8601.value(),
-                                 deadlineFromJSON.value());
-    } catch (std::invalid_argument) {
-        return std::unexpected(Error::JSONInvalidDateTimeDeadline);
-    }
-
-    return SingularTask(taskFromJSON.value(), datetimeFromISO8601.value(),
-                        deadlineFromJSON.value());
+    return SingularTask(taskDataJSON.value(),
+                        json[isCompletedField].get<bool>());
 }
 } // namespace hbt::mods
