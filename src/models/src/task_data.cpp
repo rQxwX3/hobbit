@@ -1,36 +1,57 @@
 #include <task_data.hpp>
 
 namespace hbt::mods {
-[[nodiscard]] auto TaskData::validateTitle(const std::string &title)
-    -> std::string {
+auto TaskData::validateTitle(const std::string &title) -> void {
     if (title.empty()) {
         throw std::invalid_argument(errorMessage(Error::EmptyTitle));
     }
+}
+
+auto TaskData::validateDeadlineAgainstDateTime(const Deadline &deadline,
+                                               const DateTime &datetime)
+    -> void {
+    if (deadline.isDateTime() && deadline.getDateTime() <= datetime) {
+        throw std::invalid_argument(errorMessage(Error::InvalidDeadline));
+    }
+}
+
+[[nodiscard]] auto TaskData::validateAndReturnTitle(const std::string &title)
+    -> std::string {
+    validateTitle(title);
 
     return title;
 }
 
-[[nodiscard]] auto TaskData::validateDateTime(const DateTime &datetime) const
+[[nodiscard]] auto
+TaskData::validateAndReturnDateTime(const DateTime &datetime) const
     -> DateTime {
-    if (deadline_.isDateTime() && datetime > deadline_.getDateTime()) {
+    if (deadline_.isDateTime() && datetime >= deadline_.getDateTime()) {
         throw std::invalid_argument(errorMessage(Error::InvalidDateTime));
     }
 
     return datetime;
 }
 
-[[nodiscard]] auto TaskData::validateDeadline(const Deadline &deadline) const
+[[nodiscard]] auto
+TaskData::validateAndReturnDeadline(const Deadline &deadline) const
     -> Deadline {
-    if (deadline.isDateTime() && deadline.getDateTime() < datetime_) {
-        throw std::invalid_argument(errorMessage(Error::InvalidDeadline));
-    }
+    validateDeadlineAgainstDateTime(deadline, datetime_);
 
     return deadline;
 }
 
+TaskData::TaskData(Validated, std::string title, DateTime datetime,
+                   Deadline deadline)
+    : title_{std::move(title)}, datetime_{datetime}, deadline_{deadline} {}
+
+[[nodiscard]] auto TaskData::fromValidated(std::string title, DateTime datetime,
+                                           Deadline deadline) -> TaskData {
+    return TaskData(Validated{}, std::move(title), datetime, deadline);
+}
+
 TaskData::TaskData(std::string title, DateTime datetime, Deadline deadline)
-    : title_{std::move(validateTitle(title))}, datetime_{datetime},
-      deadline_{validateDeadline(deadline)} {}
+    : title_{std::move(validateAndReturnTitle(title))}, datetime_{datetime},
+      deadline_{validateAndReturnDeadline(deadline)} {}
 
 [[nodiscard]] auto TaskData::getTitle() const -> std::string_view {
     return title_;
@@ -45,15 +66,15 @@ TaskData::TaskData(std::string title, DateTime datetime, Deadline deadline)
 }
 
 auto TaskData::setTitle(std::string title) -> void {
-    title_ = std::move(validateTitle(title));
+    title_ = std::move(validateAndReturnTitle(title));
 }
 
 auto TaskData::setDateTime(DateTime datetime) -> void {
-    datetime_ = validateDateTime(datetime);
+    datetime_ = validateAndReturnDateTime(datetime);
 }
 
 auto TaskData::setDeadline(Deadline deadline) -> void {
-    deadline_ = validateDeadline(deadline);
+    deadline_ = validateAndReturnDeadline(deadline);
 }
 
 /* ------- JSON ------- */
@@ -80,17 +101,31 @@ auto TaskData::setDeadline(Deadline deadline) -> void {
         return std::unexpected(Error::MissingRequiredField);
     }
 
-    auto dateTimeFromJSON{DateTime::fromISO8601String(json[dateTimeField])};
-    if (!dateTimeFromJSON) {
+    auto titleJSON{json[titleField].get<std::string>()};
+    try {
+        validateTitle(titleJSON);
+    } catch (std::invalid_argument) {
+        return std::unexpected(JSON::Error::FailedToValidateTitle);
+    }
+
+    auto dateTimeJSON{DateTime::fromISO8601String(json[dateTimeField])};
+    if (!dateTimeJSON) {
         return std::unexpected(JSON::Error::FailedToParseDateTime);
     }
 
-    auto deadlineFromJSON{Deadline::fromJSON(json[deadlineField])};
-    if (!deadlineFromJSON) {
+    auto deadlineJSON{Deadline::fromJSON(json[deadlineField])};
+    if (!deadlineJSON) {
         return std::unexpected(JSON::Error::FailedToParseDeadline);
     }
 
-    return TaskData{json[titleField].get<std::string>(),
-                    dateTimeFromJSON.value(), deadlineFromJSON.value()};
+    try {
+        validateDeadlineAgainstDateTime(deadlineJSON.value(),
+                                        dateTimeJSON.value());
+    } catch (std::invalid_argument) {
+        return std::unexpected(
+            JSON::Error::FailedToValidateDeadlineAgainsDateTime);
+    }
+
+    return fromValidated(titleJSON, dateTimeJSON.value(), deadlineJSON.value());
 }
 } // namespace hbt::mods

@@ -37,15 +37,33 @@ class TaskData {
     }
 
   private:
-  private:
-    [[nodiscard]] static auto validateTitle(const std::string &title)
+    static auto validateTitle(const std::string &title) -> void;
+
+    static auto validateDeadlineAgainstDateTime(const Deadline &deadline,
+                                                const DateTime &datetime)
+        -> void;
+
+    [[nodiscard]] static auto validateAndReturnTitle(const std::string &title)
         -> std::string;
 
-    [[nodiscard]] auto validateDateTime(const DateTime &datetime) const
+    [[nodiscard]] auto validateAndReturnDateTime(const DateTime &datetime) const
         -> DateTime;
 
-    [[nodiscard]] auto validateDeadline(const Deadline &deadline) const
+    [[nodiscard]] auto validateAndReturnDeadline(const Deadline &deadline) const
         -> Deadline;
+
+  private:
+    /* avoid double validation when constructing from JSON (as JSON::decode
+     * validates each field) */
+
+    struct Validated {}; // tag struct to overload ctor
+
+    TaskData(Validated, std::string title, DateTime datetime,
+             Deadline deadline);
+
+    [[nodiscard]] static auto fromValidated(std::string title,
+                                            DateTime datetime,
+                                            Deadline deadline) -> TaskData;
 
   private:
     /* order must not be changed */
@@ -54,7 +72,8 @@ class TaskData {
     Deadline deadline_;
 
   public:
-    TaskData(std::string title, DateTime datetime, Deadline deadline);
+    TaskData(std::string title, DateTime datetime = DateTime::now(),
+             Deadline deadline = Deadline::null());
 
   public:
     [[nodiscard]] auto getTitle() const -> std::string_view;
@@ -81,6 +100,9 @@ class TaskData {
 
             FailedToParseDateTime,
             FailedToParseDeadline,
+
+            FailedToValidateTitle,
+            FailedToValidateDeadlineAgainsDateTime,
         };
 
         [[nodiscard]] static constexpr auto errorMessage(Error error)
@@ -94,6 +116,13 @@ class TaskData {
 
             case Error::FailedToParseDeadline:
                 return "TaskData::JSON: failed to parse Deadline";
+
+            case Error::FailedToValidateTitle:
+                return "TaskData::JSON: failed to validate Title";
+
+            case Error::FailedToValidateDeadlineAgainsDateTime:
+                return "TaskData::JSON: failed to validate Deadline against "
+                       "DateTime";
 
             default:
                 std::unreachable();
