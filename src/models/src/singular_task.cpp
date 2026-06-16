@@ -68,7 +68,9 @@ SingularTask::JSON::containsAllFields(const nlohmann::json &json) -> bool {
     -> nlohmann::json {
     return {
         {taskDataField, TaskData::JSON::encode(singularTask.getTaskData())},
-        {isCompletedField, singularTask.isCompleted()},
+        {isCompletedField, singularTask.isCompleted()
+                               ? JSON::isCompletedTrueValue
+                               : JSON::isCompletedFalseValue},
     };
 }
 
@@ -83,7 +85,12 @@ SingularTask::JSON::containsAllFields(const nlohmann::json &json) -> bool {
         return std::unexpected(Error::FailedToParseTaskData);
     }
 
+    auto isCompletedJSON{json[isCompletedField].get<std::string>()};
+    if (isCompletedJSON != JSON::isCompletedTrueValue &&
+        isCompletedJSON != JSON::isCompletedFalseValue) {
+        return std::unexpected(Error::FailedToParseIsCompleted);
+    }
     return SingularTask(taskDataJSON.value(),
-                        json[isCompletedField].get<bool>());
+                        isCompletedJSON == JSON::isCompletedTrueValue);
 }
 } // namespace hbt::mods

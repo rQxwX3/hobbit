@@ -60,6 +60,7 @@ class SingularTask {
             MissingRequiredField,
 
             FailedToParseTaskData,
+            FailedToParseIsCompleted,
         };
 
         [[nodiscard]] static constexpr auto errorMessage(Error error)
@@ -71,6 +72,9 @@ class SingularTask {
             case Error::FailedToParseTaskData:
                 return "SingularTask::JSON: failed to parse TaskData";
 
+            case Error::FailedToParseIsCompleted:
+                return "SingularTask::JSON: failed to parse isCompleted";
+
             default:
                 std::unreachable();
             }
@@ -79,6 +83,9 @@ class SingularTask {
         static constexpr auto taskDataField{std::string_view{"task_data"}};
         static constexpr auto isCompletedField{
             std::string_view{"is_completed"}};
+
+        static constexpr auto isCompletedTrueValue{std::string_view{"true"}};
+        static constexpr auto isCompletedFalseValue{std::string_view{"false"}};
 
         static constexpr auto fields{
             std::array<std::string_view, 2>{taskDataField, isCompletedField}};
