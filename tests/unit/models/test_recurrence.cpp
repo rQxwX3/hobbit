@@ -25,7 +25,7 @@ TEST(RecurrenceTest, GetPatternType) {
     recurrence = Recurrence(
         WeekdaysRecurrencePattern(DateTime::now(), week, Interval::weeks(1)));
 
-    EXPECT_EQ(recurrence.getPatternType(), Recurrence::PatternType::Weekday);
+    EXPECT_EQ(recurrence.getPatternType(), Recurrence::PatternType::Weekdays);
 }
 
 TEST(RecurrenceTest, GetPattern) {
@@ -35,7 +35,7 @@ TEST(RecurrenceTest, GetPattern) {
     auto recurrence{Recurrence(intervalPattern)};
 
     EXPECT_EQ(recurrence.getIntervalPattern(), intervalPattern);
-    EXPECT_THROW(recurrence.getWeekdayPattern(), std::bad_variant_access);
+    EXPECT_THROW(recurrence.getWeekdaysPattern(), std::bad_variant_access);
 
     /* WeekdaysRecurrencePattern */
     auto week{Week()};
@@ -45,7 +45,7 @@ TEST(RecurrenceTest, GetPattern) {
         WeekdaysRecurrencePattern(DateTime::now(), week, Interval::weeks(1))};
     recurrence = Recurrence(intervalPattern);
 
-    EXPECT_EQ(recurrence.getWeekdayPattern(), weekdaysPattern);
+    EXPECT_EQ(recurrence.getWeekdaysPattern(), weekdaysPattern);
     EXPECT_THROW(recurrence.getIntervalPattern(), std::bad_variant_access);
 }
 

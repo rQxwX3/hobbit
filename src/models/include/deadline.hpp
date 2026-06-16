@@ -18,7 +18,7 @@ class Deadline {
         Null,
     };
 
-    using type_t =
+    using underlying_type_t =
         std::variant<hbt::mods::Interval, hbt::mods::DateTime, std::monostate>;
 
   public:
@@ -92,13 +92,14 @@ class Deadline {
     static constexpr auto jsonTypeNullValue{std::string_view{"null"}};
 
   private:
-    type_t type_;
+    underlying_type_t type_;
 
   public:
-    Deadline(type_t type);
+    Deadline(underlying_type_t underlyingType);
 
   private:
-    [[nodiscard]] static auto validateUnderlyingType(type_t type) -> type_t;
+    [[nodiscard]] static auto validateUnderlyingType(underlying_type_t type)
+        -> underlying_type_t;
 
   public:
     [[nodiscard]] static auto null() -> Deadline;

@@ -84,31 +84,31 @@ auto TaskSeries::setEndDateTime(endDateTime_t endDateTime) -> void {
     endDateTime_ = validateEndDateTime(endDateTime);
 }
 
-[[nodiscard]] auto TaskSeries::happensOnDate(DateTime datetime) const -> bool {
-    auto startsAfterDateTime{datetime < getStartDateTime()};
-    auto endsBeforeDateTime{endDateTime_.has_value() &&
-                            datetime > endDateTime_.value()};
-
-    if (startsAfterDateTime || endsBeforeDateTime) {
-        return false;
-    }
-
-    return recurrence_.happensOnDate(datetime);
-}
-
 [[nodiscard]] auto TaskSeries::generateSingularsForDate(DateTime datetime) const
     -> std::vector<hbt::mods::SingularTask> {
     auto results{std::vector<mods::SingularTask>{}};
-    auto occurrencesOfDate{recurrence_.getOccurrencesOfDate(datetime)};
+    auto timestamps{recurrence_.getOccurrencesOfDate(datetime)};
 
-    for (const auto &occ : occurrencesOfDate) {
+    for (const auto &ts : timestamps) {
+        // TODO: assert ts.getData() = datetime.getData()
+
         auto taskData{taskData_};
-        taskData.setDateTime(occ);
+        taskData.setDateTime(ts);
 
         results.emplace_back(std::move(taskData));
     }
 
     return results;
+}
+
+[[nodiscard]] auto TaskSeries::happensOnDate(DateTime datetime) const -> bool {
+    if (datetime.getDate() < getStartDateTime().getDate() ||
+        (endDateTime_.has_value() &&
+         datetime.getDate() > endDateTime_->getDate())) {
+        return false;
+    }
+
+    return recurrence_.happensOnDate(datetime);
 }
 
 /* ------- JSON ------- */

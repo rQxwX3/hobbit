@@ -9,10 +9,18 @@ Recurrence::Recurrence(pattern_t pattern) : pattern_{std::move(pattern)} {}
     }
 
     if (std::holds_alternative<WeekdaysRecurrencePattern>(pattern_)) {
-        return PatternType::Weekday;
+        return PatternType::Weekdays;
     }
 
     std::unreachable();
+}
+
+[[nodiscard]] auto Recurrence::isIntervalPattern() const -> bool {
+    return getPatternType() == PatternType::Interval;
+}
+
+[[nodiscard]] auto Recurrence::isWeekdaysPattern() const -> bool {
+    return getPatternType() == PatternType::Weekdays;
 }
 
 [[nodiscard]] auto Recurrence::getIntervalPattern() const
@@ -20,7 +28,7 @@ Recurrence::Recurrence(pattern_t pattern) : pattern_{std::move(pattern)} {}
     return std::get<IntervalRecurrencePattern>(pattern_);
 }
 
-[[nodiscard]] auto Recurrence::getWeekdayPattern() const
+[[nodiscard]] auto Recurrence::getWeekdaysPattern() const
     -> WeekdaysRecurrencePattern {
     return std::get<WeekdaysRecurrencePattern>(pattern_);
 }
@@ -55,10 +63,10 @@ Recurrence::JSON::containsAllFields(const nlohmann::json &json) -> bool {
         return {{patternTypeField, intervalPatternTypeValue},
                 {patternField, recurrence.getIntervalPattern().toJSON()}};
 
-    case PatternType::Weekday:
+    case PatternType::Weekdays:
         return {{patternTypeField, weekdayPatternTypeValue},
                 {patternField, WeekdaysRecurrencePattern::JSON::encode(
-                                   recurrence.getWeekdayPattern())}};
+                                   recurrence.getWeekdaysPattern())}};
 
     default:
         throw std::runtime_error(errorMessage(Error::UnsupportedPatternType));

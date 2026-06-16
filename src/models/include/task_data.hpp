@@ -53,14 +53,14 @@ class TaskData {
         -> Deadline;
 
   private:
-    /* avoid double validation when constructing from JSON (as JSON::decode
-     * validates each field) */
+    /* tag struct to overload ctor */
+    struct Validated {};
 
-    struct Validated {}; // tag struct to overload ctor
-
+    /* ctor called by fromValidated() (does not validate) */
     TaskData(Validated, std::string title, DateTime datetime,
              Deadline deadline);
 
+    /* avoid double validation (e.g. JSON::decode validates each field) */
     [[nodiscard]] static auto fromValidated(std::string title,
                                             DateTime datetime,
                                             Deadline deadline) -> TaskData;
@@ -72,6 +72,7 @@ class TaskData {
     Deadline deadline_;
 
   public:
+    /* validating ctor */
     TaskData(std::string title, DateTime datetime = DateTime::now(),
              Deadline deadline = Deadline::null());
 

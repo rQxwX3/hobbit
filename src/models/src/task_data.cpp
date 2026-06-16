@@ -90,7 +90,7 @@ auto TaskData::setDeadline(Deadline deadline) -> void {
     nlohmann::json json = {
         {titleField, taskData.getTitle()},
         {dateTimeField, taskData.getDateTime().toISO8601String()},
-        {dateTimeField, taskData.getDeadline().toJSON()}};
+        {deadlineField, taskData.getDeadline().toJSON()}};
 
     return json;
 }

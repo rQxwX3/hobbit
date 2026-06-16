@@ -40,7 +40,7 @@ class Recurrence {
   public:
     enum class PatternType : uint8_t {
         Interval,
-        Weekday,
+        Weekdays,
     };
 
   private:
@@ -52,9 +52,13 @@ class Recurrence {
   public:
     [[nodiscard]] auto getPatternType() const -> PatternType;
 
+    [[nodiscard]] auto isIntervalPattern() const -> bool;
+
+    [[nodiscard]] auto isWeekdaysPattern() const -> bool;
+
     [[nodiscard]] auto getIntervalPattern() const -> IntervalRecurrencePattern;
 
-    [[nodiscard]] auto getWeekdayPattern() const -> WeekdaysRecurrencePattern;
+    [[nodiscard]] auto getWeekdaysPattern() const -> WeekdaysRecurrencePattern;
 
   public:
     [[nodiscard]] auto happensOnDate(DateTime on) const -> bool;

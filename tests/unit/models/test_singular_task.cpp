@@ -9,12 +9,12 @@ using hbt::mods::Interval;
 using hbt::mods::SingularTask;
 using hbt::mods::TaskData;
 
-const auto taskData{TaskData("Title", false)};
+const auto taskData{TaskData("Title")};
 const auto deadlineInPast{Deadline(DateTime({2000, 1, 1}))};
 const auto deadlineYearFromNow{Deadline(DateTime::now() + Interval::years(1))};
 
 TEST(SingularTaskTest, CtorThrowsOnInvalidDeadline) {
-    EXPECT_THROW(SingularTask(taskData, DateTime::now(), deadlineInPast),
+    EXPECT_THROW(SingularTask(taskData),
                  std::invalid_argument);
 }
 

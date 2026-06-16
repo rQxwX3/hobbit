@@ -1,10 +1,10 @@
 #include <deadline.hpp>
 
 namespace hbt::mods {
-Deadline::Deadline(type_t type)
+Deadline::Deadline(underlying_type_t type)
     : type_{validateUnderlyingType(std::move(type))} {}
 
-[[nodiscard]] auto Deadline::validateUnderlyingType(type_t type) -> type_t {
+[[nodiscard]] auto Deadline::validateUnderlyingType(underlying_type_t type) -> underlying_type_t {
     if (std::holds_alternative<Interval>(type) ||
         std::holds_alternative<DateTime>(type) ||
         std::holds_alternative<std::monostate>(type)) {
