@@ -1,36 +1,13 @@
 #include <task_series.hpp>
 
 namespace hbt::mods {
-auto TaskSeries::validateDeadline(Deadline deadline) -> Deadline {
-    if (!deadline.isInterval()) {
-        throw std::invalid_argument(errorMessage(Error::InvalidDeadline));
-    }
-
-    return deadline;
-}
-
-auto TaskSeries::validateStartDateTime(DateTime startDateTime) const
-    -> DateTime {
-    if (startDateTime >= endDateTime_) {
-        throw std::invalid_argument(errorMessage(Error::InvalidStartDateTime));
-    }
-
-    return startDateTime;
-}
-
-auto TaskSeries::validateEndDateTime(endDateTime_t endDateTime) const
-    -> endDateTime_t {
-    if (endDateTime.has_value() && endDateTime.value() < getStartDateTime()) {
-        throw std::invalid_argument(errorMessage(Error::InvalidEndDateTime));
-    }
-
-    return endDateTime;
-}
-
 TaskSeries::TaskSeries(TaskData taskData, util::Recurrence recurrence,
                        endDateTime_t endDateTime)
     : taskData_{std::move(taskData)}, recurrence_{std::move(recurrence)},
-      endDateTime_{validateEndDateTime(endDateTime)} {}
+      endDateTime_{Validator::Return::endAfterStart(endDateTime,
+                                                    taskData.getDateTime())} {
+    Validator::deadline(taskData.getDeadline());
+}
 
 [[nodiscard]] auto TaskSeries::getStartDateTime() const -> DateTime {
     return taskData_.getDateTime();
@@ -57,7 +34,8 @@ auto TaskSeries::setTitle(std::string title) -> void {
 }
 
 auto TaskSeries::setStartDateTime(DateTime startDateTime) -> void {
-    startDateTime = validateStartDateTime(startDateTime);
+    startDateTime =
+        Validator::Return::startBeforeEnd(startDateTime, getEndDateTime());
 
     try {
         taskData_.setDateTime(startDateTime);
@@ -67,7 +45,7 @@ auto TaskSeries::setStartDateTime(DateTime startDateTime) -> void {
 }
 
 auto TaskSeries::setDeadline(Deadline deadline) -> void {
-    deadline = validateDeadline(deadline);
+    deadline = Validator::Return::deadline(deadline);
 
     try {
         taskData_.setDeadline(deadline);
@@ -81,7 +59,8 @@ auto TaskSeries::setRecurrence(util::Recurrence recurrence) -> void {
 }
 
 auto TaskSeries::setEndDateTime(endDateTime_t endDateTime) -> void {
-    endDateTime_ = validateEndDateTime(endDateTime);
+    endDateTime_ =
+        Validator::Return::endAfterStart(endDateTime, getStartDateTime());
 }
 
 [[nodiscard]] auto TaskSeries::generateSingularsForDate(DateTime datetime) const
@@ -157,5 +136,56 @@ TaskSeries::JSON::containsAllFields(const nlohmann::json &json) -> bool {
     }
 
     return TaskSeries{task.value(), recurrence.value(), stop.value()};
+}
+
+/* ------- Validator ------- */
+auto TaskSeries::Validator::deadline(Deadline deadline) -> void {
+    if (deadline.isDateTime()) {
+        throw std::invalid_argument(errorMessage(Error::InvalidDeadline));
+    }
+}
+
+auto TaskSeries::Validator::endAfterStart(endDateTime_t endDateTime,
+                                          DateTime startDateTime) -> void {
+    if (endDateTime.has_value() && endDateTime.value() <= startDateTime) {
+        throw std::invalid_argument(errorMessage(Error::InvalidEndDateTime));
+    }
+}
+
+auto TaskSeries::Validator::startBeforeEnd(DateTime startDateTime,
+                                           endDateTime_t endDateTime) -> void {
+    if (endDateTime.has_value() && startDateTime >= endDateTime.value()) {
+        throw std::invalid_argument(errorMessage(Error::InvalidStartDateTime));
+    }
+}
+
+auto TaskSeries::Validator::Return::deadline(Deadline deadline) -> Deadline {
+    Validator::deadline(deadline);
+
+    return deadline;
+}
+
+auto TaskSeries::Validator::Return::endAfterStart(endDateTime_t endDateTime,
+                                                  DateTime startDateTime)
+    -> endDateTime_t {
+    Validator::endAfterStart(endDateTime, startDateTime);
+
+    return endDateTime;
+}
+
+auto TaskSeries::Validator::Return::startBeforeEnd(DateTime startDateTime,
+                                                   endDateTime_t endDateTime)
+    -> DateTime {
+    Validator::startBeforeEnd(startDateTime, endDateTime);
+
+    return startDateTime;
+}
+
+auto TaskSeries::Validator::Return::taskData(TaskData taskData,
+                                             endDateTime_t endDateTime)
+    -> TaskData {
+    TaskSeries::Validator::startBeforeEnd(taskData.getDateTime(), endDateTime);
+
+    return taskData;
 }
 } // namespace hbt::mods

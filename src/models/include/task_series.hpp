@@ -24,11 +24,12 @@ class TaskSeries {
         -> std::string {
         switch (error) {
         case Error::InvalidDeadline:
-            return "TaskSeries: only interval-based Deadlines are allowed";
+            return "TaskSeries: DateTime-based Deadlines are not "
+                   "supported";
 
         case Error::InvalidStartDateTime:
-            return "TaskSeries: start DateTime must be earlier than end "
-                   "DateTime";
+            return "TaskSeries: start DateTime must be earlier "
+                   "than end DateTime";
 
         case Error::InvalidEndDateTime:
             return "TaskSeries: end DateTime must be later than start DateTime";
@@ -39,6 +40,7 @@ class TaskSeries {
     }
 
   private:
+    /* order must not be changed */
     TaskData taskData_;
     util::Recurrence recurrence_;
 
@@ -51,13 +53,6 @@ class TaskSeries {
         throw std::invalid_argument("TaskSeries: " +
                                     std::string(exception.what()));
     }
-
-  private:
-    static auto validateDeadline(Deadline deadline) -> Deadline;
-
-    auto validateStartDateTime(DateTime startDateTime) const -> DateTime;
-
-    auto validateEndDateTime(endDateTime_t endDateTime) const -> endDateTime_t;
 
   public:
     TaskSeries(TaskData taskData, util::Recurrence recurrence,
@@ -92,6 +87,30 @@ class TaskSeries {
 
     [[nodiscard]] auto generateSingularsForDate(DateTime datetime) const
         -> std::vector<SingularTask>;
+
+  private:
+    struct Validator {
+        static auto deadline(Deadline deadline) -> void;
+
+        static auto endAfterStart(endDateTime_t endDateTime,
+                                  DateTime startDateTime) -> void;
+
+        static auto startBeforeEnd(DateTime startDateTime,
+                                   endDateTime_t endDateTime) -> void;
+
+        struct Return {
+            static auto deadline(Deadline deadline) -> Deadline;
+
+            static auto endAfterStart(endDateTime_t endDateTime,
+                                      DateTime startDateTime) -> endDateTime_t;
+
+            static auto startBeforeEnd(DateTime startDateTime,
+                                       endDateTime_t endDateTime) -> DateTime;
+
+            static auto taskData(TaskData taskData, endDateTime_t endDateTime)
+                -> TaskData;
+        };
+    };
 
   public:
     struct JSON {
