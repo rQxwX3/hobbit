@@ -90,6 +90,8 @@ class TaskSeries {
 
   private:
     struct Validator {
+        struct Validated {};
+
         static auto deadline(Deadline deadline) -> void;
 
         static auto endAfterStart(endDateTime_t endDateTime,
@@ -111,6 +113,15 @@ class TaskSeries {
                 -> TaskData;
         };
     };
+
+  private:
+    [[nodiscard]] static auto fromValidated(TaskData taskData,
+                                            util::Recurrence recurrence,
+                                            endDateTime_t endDateTime)
+        -> TaskSeries;
+
+    TaskSeries(Validator::Validated, TaskData taskData,
+               util::Recurrence recurrence, endDateTime_t endDateTime);
 
   public:
     struct JSON {

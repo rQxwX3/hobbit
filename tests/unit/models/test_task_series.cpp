@@ -12,7 +12,6 @@ namespace test::mods {
 using hbt::mods::TaskData;
 using hbt::mods::TaskSeries;
 
-using hbt::mods::Date;
 using hbt::mods::DateTime;
 using hbt::mods::Interval;
 

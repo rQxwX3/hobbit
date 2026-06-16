@@ -1,6 +1,19 @@
 #include <task_series.hpp>
 
 namespace hbt::mods {
+[[nodiscard]] auto TaskSeries::fromValidated(TaskData taskData,
+                                             util::Recurrence recurrence,
+                                             endDateTime_t endDateTime)
+    -> TaskSeries {
+    return TaskSeries(Validator::Validated{}, std::move(taskData),
+                      std::move(recurrence), endDateTime);
+}
+
+TaskSeries::TaskSeries(Validator::Validated, TaskData taskData,
+                       util::Recurrence recurrence, endDateTime_t endDateTime)
+    : taskData_{std::move(taskData)}, recurrence_{std::move(recurrence)},
+      endDateTime_{endDateTime} {}
+
 TaskSeries::TaskSeries(TaskData taskData, util::Recurrence recurrence,
                        endDateTime_t endDateTime)
     : taskData_{std::move(taskData)}, recurrence_{std::move(recurrence)},
@@ -119,15 +132,33 @@ TaskSeries::JSON::containsAllFields(const nlohmann::json &json) -> bool {
         return std::unexpected(JSON::Error::MissingRequiredField);
     }
 
-    auto task{TaskData::JSON::decode(json[taskDataField])};
-    if (!task) {
+    auto taskData{TaskData::JSON::decode(json[taskDataField])};
+    if (!taskData) {
         return std::unexpected(JSON::Error::FailedToParseTaskData);
     }
 
-    // TODO maybe validation here?
-    auto stop{DateTime::fromISO8601String(json[endDateTimeField])};
-    if (!stop) {
-        return std::unexpected(JSON::Error::FailedToParseEndDateTime);
+    try {
+        Validator::deadline(taskData->getDeadline());
+    } catch (const std::exception &e) {
+        rethrowTaskDataInvalidArgumentException(e);
+    }
+
+    auto endJSON{json[endDateTimeField]};
+    auto end{endDateTime_t(std::nullopt)};
+    if (endJSON != endDateTimeNullValue) {
+        auto decodedEnd{DateTime::fromISO8601String(endJSON)};
+
+        if (!decodedEnd) {
+            return std::unexpected(JSON::Error::FailedToParseEndDateTime);
+        }
+
+        end = decodedEnd.value();
+    }
+
+    try {
+        Validator::endAfterStart(end, taskData->getDateTime());
+    } catch (const std::exception &e) {
+        rethrowTaskDataInvalidArgumentException(e);
     }
 
     auto recurrence{util::Recurrence::JSON::decode(json[recurrenceField])};
@@ -135,7 +166,7 @@ TaskSeries::JSON::containsAllFields(const nlohmann::json &json) -> bool {
         return std::unexpected(JSON::Error::FailedToParseRecurrence);
     }
 
-    return TaskSeries{task.value(), recurrence.value(), stop.value()};
+    return fromValidated(taskData.value(), recurrence.value(), end);
 }
 
 /* ------- Validator ------- */
