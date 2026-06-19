@@ -12,6 +12,7 @@ add_library(models_lib STATIC
 	src/week.cpp
 	src/calendar.cpp
 	src/weekdays_pattern.cpp
+	src/null_pattern.cpp
 	# src/task_override.cpp NOT TO BE ADDED IN ALPHA
 )
 
