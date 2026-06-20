@@ -1,29 +1,34 @@
 #include <task_series.hpp>
 
 namespace hbt::mods {
-[[nodiscard]] auto TaskSeries::fromValidated(TaskData taskData,
-                                             util::Recurrence recurrence,
-                                             endDateTime_t endDateTime)
-    -> TaskSeries {
-    return TaskSeries(Validator::Validated{}, std::move(taskData),
-                      std::move(recurrence), endDateTime);
+[[nodiscard]] auto
+TaskSeries::fromValidated(std::string title, DateTime startDateTime,
+                          util::Recurrence recurrence, Deadline deadline,
+                          endDateTime_t endDateTime) -> TaskSeries {
+    return TaskSeries(Validator::Validated{}, std::move(title), startDateTime,
+                      std::move(recurrence), deadline, endDateTime);
 }
 
-TaskSeries::TaskSeries(Validator::Validated, TaskData taskData,
-                       util::Recurrence recurrence, endDateTime_t endDateTime)
-    : taskData_{std::move(taskData)}, recurrence_{std::move(recurrence)},
-      endDateTime_{endDateTime} {}
+TaskSeries::TaskSeries(Validator::Validated, std::string title,
+                       DateTime startDateTime, util::Recurrence recurrence,
+                       Deadline deadline, endDateTime_t endDateTime)
+    : title_{std::move(Validator::Return::title(title))},
+      startDateTime_{startDateTime}, recurrence_{std::move(recurrence)},
+      deadline_{
+          Validator::Return::deadline(deadline, recurrence, startDateTime)},
+      endDateTime_{Validator::Return::end(endDateTime, startDateTime)} {}
 
-TaskSeries::TaskSeries(TaskData taskData, util::Recurrence recurrence,
+TaskSeries::TaskSeries(std::string title, DateTime startDateTime,
+                       util::Recurrence recurrence, Deadline deadline,
                        endDateTime_t endDateTime)
-    : taskData_{std::move(taskData)}, recurrence_{std::move(recurrence)},
-      endDateTime_{Validator::Return::endAfterStart(endDateTime,
-                                                    taskData.getDateTime())} {
-    Validator::deadline(taskData.getDeadline());
-}
+    : title_{std::move(Validator::Return::title(title))},
+      startDateTime_{startDateTime}, recurrence_{std::move(recurrence)},
+      deadline_{
+          Validator::Return::deadline(deadline, recurrence, startDateTime)},
+      endDateTime_{Validator::Return::end(endDateTime, startDateTime)} {}
 
 [[nodiscard]] auto TaskSeries::getStartDateTime() const -> DateTime {
-    return taskData_.getDateTime();
+    return startDateTime_;
 }
 
 [[nodiscard]] auto TaskSeries::getEndDateTime() const -> endDateTime_t {
@@ -34,64 +39,46 @@ TaskSeries::TaskSeries(TaskData taskData, util::Recurrence recurrence,
     return recurrence_;
 }
 
-[[nodiscard]] auto TaskSeries::getTaskData() const -> TaskData {
-    return taskData_;
+auto TaskSeries::setTitle(const std::string &title) -> void {
+    title_ = Validator::Return::title(title);
 }
 
-auto TaskSeries::setTitle(std::string title) -> void {
-    try {
-        taskData_.setTitle(std::move(title));
-    } catch (const std::exception &e) {
-        rethrowTaskDataInvalidArgumentException(e);
-    }
+auto TaskSeries::setStartDateTime(const DateTime &startDateTime) -> void {
+    startDateTime_ = Validator::Return::startDateTime(
+        startDateTime, getEndDateTime(), getDeadline());
 }
 
-auto TaskSeries::setStartDateTime(DateTime startDateTime) -> void {
-    startDateTime =
-        Validator::Return::startBeforeEnd(startDateTime, getEndDateTime());
-
-    try {
-        taskData_.setDateTime(startDateTime);
-    } catch (const std::exception &e) {
-        rethrowTaskDataInvalidArgumentException(e);
-    }
+auto TaskSeries::setRecurrence(const util::Recurrence &recurrence) -> void {
+    recurrence_ =
+        std::move(Validator::Return::recurrence(recurrence, getDeadline()));
 }
 
-auto TaskSeries::setDeadline(Deadline deadline) -> void {
-    deadline = Validator::Return::deadline(deadline);
-
-    try {
-        taskData_.setDeadline(deadline);
-    } catch (const std::exception &e) {
-        rethrowTaskDataInvalidArgumentException(e);
-    }
+auto TaskSeries::setDeadline(const Deadline &deadline) -> void {
+    deadline_ = Validator::Return::deadline(deadline, getRecurrence(),
+                                            getStartDateTime());
 }
 
-auto TaskSeries::setRecurrence(util::Recurrence recurrence) -> void {
-    recurrence_ = std::move(recurrence);
+auto TaskSeries::setEndDateTime(const endDateTime_t &endDateTime) -> void {
+    endDateTime_ = Validator::Return::end(endDateTime, getStartDateTime());
 }
 
-auto TaskSeries::setEndDateTime(endDateTime_t endDateTime) -> void {
-    endDateTime_ =
-        Validator::Return::endAfterStart(endDateTime, getStartDateTime());
-}
-
-[[nodiscard]] auto TaskSeries::generateSingularsForDate(DateTime datetime) const
-    -> std::vector<hbt::mods::SingularTask> {
-    auto results{std::vector<mods::SingularTask>{}};
-    auto timestamps{recurrence_.getOccurrencesOfDate(datetime)};
-
-    for (const auto &ts : timestamps) {
-        // TODO: assert ts.getData() = datetime.getData()
-
-        auto taskData{taskData_};
-        taskData.setDateTime(ts);
-
-        results.emplace_back(std::move(taskData));
-    }
-
-    return results;
-}
+// [[nodiscard]] auto TaskSeries::generateSingularsForDate(DateTime datetime)
+// const
+//     -> std::vector<hbt::mods::SingularTask> {
+//     auto results{std::vector<mods::SingularTask>{}};
+//     auto timestamps{recurrence_.getOccurrencesOfDate(datetime)};
+//
+//     for (const auto &ts : timestamps) {
+//         // TODO: assert ts.getData() = datetime.getData()
+//
+//         auto taskData{taskData_};
+//         taskData.setDateTime(ts);
+//
+//         results.emplace_back(std::move(taskData));
+//     }
+//
+//     return results;
+// }
 
 [[nodiscard]] auto TaskSeries::happensOnDate(DateTime datetime) const -> bool {
     if (datetime.getDate() < getStartDateTime().getDate() ||
@@ -170,53 +157,97 @@ TaskSeries::JSON::containsAllFields(const nlohmann::json &json) -> bool {
 }
 
 /* ------- Validator ------- */
-auto TaskSeries::Validator::deadline(Deadline deadline) -> void {
-    if (deadline.isDateTime()) {
-        throw std::invalid_argument(errorMessage(Error::InvalidDeadline));
+auto TaskSeries::Validator::deadlineCompatibleWithRecurrence(
+    const Deadline &deadline, const Recurrence &recurrence) -> void {
+    if (!recurrence.isNullPattern() && deadline.isDateTime()) {
+        throw std::invalid_argument(
+            errorMessage(Error::DeadlineIncompatibleWithRecurrence));
     }
 }
 
-auto TaskSeries::Validator::endAfterStart(endDateTime_t endDateTime,
-                                          DateTime startDateTime) -> void {
+auto TaskSeries::Validator::recurrenceCompatibleWithDeadline(
+    const util::Recurrence &recurrence, const Deadline &deadline) -> void {
+    if (deadline.isDateTime() && !recurrence.isNullPattern()) {
+        throw std::invalid_argument(
+            errorMessage(Error::RecurrenceIncompatibleWithDeadline));
+    }
+}
+
+auto TaskSeries::Validator::deadlineAfterStartDateTime(
+    const Deadline &deadline, const DateTime &startDateTime) -> void {
+    if (deadline.isDateTime() && deadline.getDateTime() <= startDateTime) {
+        throw std::invalid_argument(
+            errorMessage(Error::DeadlineBeforeStartDateTime));
+    }
+}
+
+auto TaskSeries::Validator::endAfterStart(const endDateTime_t &endDateTime,
+                                          const DateTime &startDateTime)
+    -> void {
     if (endDateTime.has_value() && endDateTime.value() <= startDateTime) {
-        throw std::invalid_argument(errorMessage(Error::InvalidEndDateTime));
+        throw std::invalid_argument(
+            errorMessage(Error::EndDateTimeBeforeStartDateTime));
     }
 }
 
-auto TaskSeries::Validator::startBeforeEnd(DateTime startDateTime,
-                                           endDateTime_t endDateTime) -> void {
+auto TaskSeries::Validator::startBeforeEnd(const DateTime &startDateTime,
+                                           const endDateTime_t &endDateTime)
+    -> void {
     if (endDateTime.has_value() && startDateTime >= endDateTime.value()) {
-        throw std::invalid_argument(errorMessage(Error::InvalidStartDateTime));
+        throw std::invalid_argument(
+            errorMessage(Error::StartDateTimeAfterEndDateTime));
     }
 }
 
-auto TaskSeries::Validator::Return::deadline(Deadline deadline) -> Deadline {
-    Validator::deadline(deadline);
-
-    return deadline;
+auto TaskSeries::Validator::startBeforeDeadline(const DateTime &startDateTime,
+                                                const Deadline &deadline)
+    -> void {
+    if (deadline.isDateTime() && startDateTime >= deadline.getDateTime()) {
+        throw std::invalid_argument(
+            errorMessage(Error::StartDateTimeAfterDeadline));
+    }
 }
 
-auto TaskSeries::Validator::Return::endAfterStart(endDateTime_t endDateTime,
-                                                  DateTime startDateTime)
-    -> endDateTime_t {
-    Validator::endAfterStart(endDateTime, startDateTime);
+[[nodiscard]] auto
+TaskSeries::Validator::Return::title(const std::string &title) -> std::string {
+    if (title.empty()) {
+        throw std::invalid_argument(errorMessage(Error::TitleEmpty));
+    }
 
-    return endDateTime;
+    return title;
 }
 
-auto TaskSeries::Validator::Return::startBeforeEnd(DateTime startDateTime,
-                                                   endDateTime_t endDateTime)
-    -> DateTime {
+[[nodiscard]] auto TaskSeries::Validator::Return::startDateTime(
+    const DateTime &startDateTime, const endDateTime_t &endDateTime,
+    const Deadline &deadline) -> DateTime {
     Validator::startBeforeEnd(startDateTime, endDateTime);
+    Validator::startBeforeDeadline(startDateTime, deadline);
 
     return startDateTime;
 }
 
-auto TaskSeries::Validator::Return::taskData(TaskData taskData,
-                                             endDateTime_t endDateTime)
-    -> TaskData {
-    TaskSeries::Validator::startBeforeEnd(taskData.getDateTime(), endDateTime);
+[[nodiscard]] auto TaskSeries::Validator::Return::recurrence(
+    const Recurrence &recurrence, const Deadline &deadline) -> Recurrence {
+    Validator::recurrenceCompatibleWithDeadline(recurrence, deadline);
 
-    return taskData;
+    return recurrence;
+}
+
+auto TaskSeries::Validator::Return::deadline(const Deadline &deadline,
+                                             const Recurrence &recurrence,
+                                             const DateTime &startDateTime)
+    -> Deadline {
+    Validator::deadlineCompatibleWithRecurrence(deadline, recurrence);
+    Validator::deadlineAfterStartDateTime(deadline, startDateTime);
+
+    return deadline;
+}
+
+auto TaskSeries::Validator::Return::end(const endDateTime_t &endDateTime,
+                                        const DateTime &startDateTime)
+    -> endDateTime_t {
+    Validator::endAfterStart(endDateTime, startDateTime);
+
+    return endDateTime;
 }
 } // namespace hbt::mods

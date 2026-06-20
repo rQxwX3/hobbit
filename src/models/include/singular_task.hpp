@@ -2,7 +2,6 @@
 
 #include <datetime.hpp>
 #include <deadline.hpp>
-#include <task_data.hpp>
 
 #include <array>
 #include <string>
@@ -10,8 +9,6 @@
 namespace hbt::mods {
 class SingularTask {
   private:
-    TaskData taskData_;
-
     bool isCompleted_;
 
   private:

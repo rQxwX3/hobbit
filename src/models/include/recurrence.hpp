@@ -2,6 +2,7 @@
 
 #include <datetime.hpp>
 #include <interval_pattern.hpp>
+#include <null_pattern.hpp>
 #include <weekdays_pattern.hpp>
 
 #include <nlohmann/json.hpp>
@@ -15,7 +16,8 @@ namespace hbt::mods::util {
 class Recurrence {
   public:
     using pattern_t =
-        std::variant<IntervalRecurrencePattern, WeekdaysRecurrencePattern>;
+        std::variant<NullRecurrencePattern, IntervalRecurrencePattern,
+                     WeekdaysRecurrencePattern>;
 
     using occurrences_t = RecurrencePattern::occurrences_t;
 
@@ -41,6 +43,7 @@ class Recurrence {
     enum class PatternType : uint8_t {
         Interval,
         Weekdays,
+        Null,
     };
 
   private:
@@ -50,11 +53,16 @@ class Recurrence {
     Recurrence(pattern_t pattern);
 
   public:
+    [[nodiscard]] static auto null() -> Recurrence;
+
+  public:
     [[nodiscard]] auto getPatternType() const -> PatternType;
 
     [[nodiscard]] auto isIntervalPattern() const -> bool;
 
     [[nodiscard]] auto isWeekdaysPattern() const -> bool;
+
+    [[nodiscard]] auto isNullPattern() const -> bool;
 
     [[nodiscard]] auto getIntervalPattern() const -> IntervalRecurrencePattern;
 

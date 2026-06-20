@@ -7,7 +7,6 @@ add_library(models_lib STATIC
 	src/interval_pattern.cpp
 	src/task_series.cpp
 	src/singular_task.cpp
-	src/task_data.cpp
 	src/recurrence.cpp
 	src/week.cpp
 	src/calendar.cpp

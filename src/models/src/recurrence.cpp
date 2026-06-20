@@ -3,6 +3,10 @@
 namespace hbt::mods::util {
 Recurrence::Recurrence(pattern_t pattern) : pattern_{std::move(pattern)} {}
 
+[[nodiscard]] auto Recurrence::null() -> Recurrence {
+    return {NullRecurrencePattern()};
+}
+
 [[nodiscard]] auto Recurrence::getPatternType() const -> PatternType {
     if (std::holds_alternative<IntervalRecurrencePattern>(pattern_)) {
         return PatternType::Interval;
@@ -21,6 +25,10 @@ Recurrence::Recurrence(pattern_t pattern) : pattern_{std::move(pattern)} {}
 
 [[nodiscard]] auto Recurrence::isWeekdaysPattern() const -> bool {
     return getPatternType() == PatternType::Weekdays;
+}
+
+[[nodiscard]] auto Recurrence::isNullPattern() const -> bool {
+    return getPatternType() == PatternType::Null;
 }
 
 [[nodiscard]] auto Recurrence::getIntervalPattern() const

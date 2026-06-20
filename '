@@ -17,49 +17,29 @@ class TaskSeries {
     using endDateTime_t = std::optional<DateTime>;
 
     enum class Error : uint8_t {
-        TitleEmpty,
-
-        DeadlineIncompatibleWithRecurrence,
-        DeadlineBeforeStartDateTime,
-
-        RecurrenceIncompatibleWithDeadline,
-
-        EndDateTimeBeforeStartDateTime,
-
-        StartDateTimeAfterEndDateTime,
-        StartDateTimeAfterDeadline,
+        InvalidDeadline,
+        InvalidStartDateTime,
+        InvalidEndDateTime,
+        EmptyTitle,
     };
 
   public:
     [[nodiscard]] static constexpr auto errorMessage(Error error)
         -> std::string {
         switch (error) {
-        case Error::TitleEmpty:
-            return "task::Template: Template's title cannot be empty";
+        case Error::InvalidDeadline: // TODO: update
+            return "TaskSeries: DateTime-based Deadlines are not "
+                   "supported";
 
-        case Error::DeadlineIncompatibleWithRecurrence:
-            return "task::Template: provided Deadline is not compatible with "
-                   "Template's recurrence pattern";
+        case Error::InvalidStartDateTime: // TODO: update
+            return "TaskSeries: start DateTime must be earlier "
+                   "than end DateTime";
 
-        case Error::DeadlineBeforeStartDateTime:
-            return "task::Template: non-recurrent Template's Deadline cannot "
-                   "appear before its instance";
+        case Error::InvalidEndDateTime: // TODO: update
+            return "TaskSeries: end DateTime must be later than start DateTime";
 
-        case Error::RecurrenceIncompatibleWithDeadline:
-            return "task::Template: a Template with DateTime deadline cannot "
-                   "be recurrent";
-
-        case Error::EndDateTimeBeforeStartDateTime:
-            return "task::Template: recurrent Template's end DateTime cannot "
-                   "appear before its start DateTime";
-
-        case Error::StartDateTimeAfterEndDateTime:
-            return "task::Template: recurrent Template's start DateTime cannot "
-                   "appear after its end DateTime";
-
-        case Error::StartDateTimeAfterDeadline:
-            return "task::Template: non-recurrent Template's start DateTime "
-                   "cannot appear after its Deadline";
+        case Error::EmptyTitle:
+            return "TaskData: provided title is an empty string";
 
         default:
             std::unreachable();
@@ -69,7 +49,7 @@ class TaskSeries {
   private:
     /* order must not be changed */
     std::string title_;
-    DateTime startDateTime_;
+    DateTime datetime_;
     Deadline deadline_;
 
     Recurrence recurrence_;
@@ -94,15 +74,15 @@ class TaskSeries {
     [[nodiscard]] auto getEndDateTime() const -> endDateTime_t;
 
   public:
-    auto setTitle(const std::string &title) -> void;
+    auto setTitle(std::string title) -> void;
 
-    auto setStartDateTime(const DateTime &startDateTime) -> void;
+    auto setStartDateTime(DateTime startDateTime) -> void;
 
-    auto setDeadline(const Deadline &deadline) -> void;
+    auto setDeadline(Deadline deadline) -> void;
 
-    auto setRecurrence(const Recurrence &recurrence) -> void;
+    auto setRecurrence(Recurrence recurrence) -> void;
 
-    auto setEndDateTime(const endDateTime_t &endDateTime) -> void;
+    auto setEndDateTime(endDateTime_t endDateTime) -> void;
 
   public:
     [[nodiscard]] auto happensOnDate(DateTime datetime) const -> bool;
@@ -115,50 +95,36 @@ class TaskSeries {
     struct Validator {
         struct Validated {};
 
+        static auto deadline(Deadline deadline) -> void;
+
+        static auto endAfterStart(endDateTime_t endDateTime,
+                                  DateTime startDateTime) -> void;
+
+        static auto startBeforeEnd(DateTime startDateTime,
+                                   endDateTime_t endDateTime) -> void;
+
+        static auto deadlineAfterStart(const Deadline &deadline,
+                                       const DateTime &datetime) -> void;
+
         static auto title(const std::string &title) -> void;
 
-        static auto
-        deadlineCompatibleWithRecurrence(const Deadline &deadline,
-                                         const Recurrence &recurrence) -> void;
-
-        static auto
-        recurrenceCompatibleWithDeadline(const Recurrence &recurrence,
-                                         const Deadline &deadline) -> void;
-
-        static auto deadlineAfterStartDateTime(const Deadline &deadline,
-                                               const DateTime &startDateTime)
-            -> void;
-
-        static auto endAfterStart(const endDateTime_t &endDateTime,
-                                  const DateTime &startDateTime) -> void;
-
-        static auto startBeforeEnd(const DateTime &startDateTime,
-                                   const endDateTime_t &endDateTime) -> void;
-
-        static auto startBeforeDeadline(const DateTime &startDateTime,
-                                        const Deadline &deadline) -> void;
-
         struct Return {
+            static auto deadline(Deadline deadline) -> Deadline;
+
+            static auto endAfterStart(endDateTime_t endDateTime,
+                                      DateTime startDateTime) -> endDateTime_t;
+
+            static auto startBeforeEnd(DateTime startDateTime,
+                                       endDateTime_t endDateTime) -> DateTime;
+
             [[nodiscard]] static auto title(const std::string &title)
                 -> std::string;
 
-            [[nodiscard]] static auto
-            startDateTime(const DateTime &startDateTime,
-                          const endDateTime_t &endDateTime,
-                          const Deadline &deadline) -> DateTime;
+            [[nodiscard]] auto start(const DateTime &datetime) const
+                -> DateTime;
 
-            [[nodiscard]] static auto recurrence(const Recurrence &recurrence,
-                                                 const Deadline &deadline)
-                -> Recurrence;
-
-            [[nodiscard]] static auto deadline(const Deadline &deadline,
-                                               const Recurrence &recurrence,
-                                               const DateTime &startDateTime)
+            [[nodiscard]] auto deadline(const Deadline &deadline) const
                 -> Deadline;
-
-            [[nodiscard]] static auto end(const endDateTime_t &endDateTime,
-                                          const DateTime &startDateTime)
-                -> endDateTime_t;
         };
     };
 

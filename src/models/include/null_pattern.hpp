@@ -3,9 +3,9 @@
 #include <recurrence_pattern.hpp>
 
 namespace hbt::mods::util {
-class NullRecurrencePattern : RecurrencePattern {
-  private:
-    DateTime dateTime_;
+class NullRecurrencePattern : public RecurrencePattern {
+  public:
+    NullRecurrencePattern() = default;
 
   public:
     [[nodiscard]] auto getOccurrencesOfDate(DateTime on) const
