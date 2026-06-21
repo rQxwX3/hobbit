@@ -29,7 +29,8 @@ class RecurrencePattern {
     virtual ~RecurrencePattern() = default;
 
   public:
-    [[nodiscard]] virtual auto getOccurrencesOfDate(DateTime on) const
+    [[nodiscard]] virtual auto getOccurrencesOfDate(DateTime date,
+                                                    DateTime start) const
         -> occurrences_t = 0;
 };
 } // namespace hbt::mods::util

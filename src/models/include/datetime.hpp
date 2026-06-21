@@ -9,6 +9,7 @@
 #include <expected>
 
 namespace hbt::mods {
+
 class DateTime {
   public:
     using duration_t = std::chrono::minutes;

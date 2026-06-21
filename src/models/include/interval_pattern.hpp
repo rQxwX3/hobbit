@@ -6,11 +6,6 @@ namespace hbt::mods::util {
 class IntervalRecurrencePattern : public RecurrencePattern {
   public:
     enum class Error : uint8_t {
-        JSONMissingRequiredField,
-        JSONFailedToParseStart,
-        JSONFailedToParseInterval,
-        JSONInvalidInterval,
-
         InvalidInterval,
     };
 
@@ -18,21 +13,9 @@ class IntervalRecurrencePattern : public RecurrencePattern {
     [[nodiscard]] static constexpr auto errorMessage(Error error)
         -> std::string {
         switch (error) {
-        case Error::JSONMissingRequiredField:
-            return "IntervalRecurrencePattern: missing required field(s) in "
-                   "JSON";
-
-        case Error::JSONFailedToParseStart:
-            return "IntervalRecurrencePattern: failed to parse start DateTime "
-                   "from JSON";
-
-        case Error::JSONFailedToParseInterval:
-            return "IntervalRecurrencePattern: failed to parse Interval from "
-                   "JSON";
-
         case Error::InvalidInterval:
-            return "IntervalRecurrencePattern: cannot instantiate recurrence "
-                   "pattern from zero Interval";
+            return "IntervalRecurrencePattern: cannot instantiate from zero "
+                   "Interval";
 
         default:
             std::unreachable();
@@ -40,48 +23,76 @@ class IntervalRecurrencePattern : public RecurrencePattern {
     }
 
   private:
-    static constexpr auto jsonStartField{std::string_view{"start"}};
-    static constexpr auto jsonIntervalField{std::string_view{"interval"}};
-
-    static constexpr auto jsonFields{
-        std::array<std::string_view, 2>{jsonStartField, jsonIntervalField}};
-
-  private:
     static auto validateInterval(const Interval &interval) -> Interval;
 
   private:
-    DateTime start_;
     Interval interval_;
 
   public:
-    IntervalRecurrencePattern(DateTime start, Interval interval);
+    IntervalRecurrencePattern(Interval interval);
 
   public:
     [[nodiscard]] auto getInterval() const -> Interval;
 
   public:
-    [[nodiscard]] auto happensOnDate(DateTime on) const -> bool;
+    [[nodiscard]] auto happensOnDate(DateTime date, DateTime start) const
+        -> bool;
 
   public:
-    [[nodiscard]] auto getFirstOccurrenceOfDate(DateTime on) const
+    [[nodiscard]] auto getFirstOccurrenceOfDate(DateTime date,
+                                                DateTime start) const
         -> std::optional<occurrence_t>;
 
   public:
-    [[nodiscard]] auto getOccurrencesOfDate(DateTime on) const
+    [[nodiscard]] auto getOccurrencesOfDate(DateTime date, DateTime start) const
         -> occurrences_t override;
 
   public:
     [[nodiscard]] auto operator==(const IntervalRecurrencePattern &other) const
         -> bool;
 
-  private:
-    [[nodiscard]] static auto containsAllJSONFields(const nlohmann::json &json)
-        -> bool;
-
   public:
-    [[nodiscard]] auto toJSON() const -> nlohmann::json;
+    struct JSON {
+        enum class Error : uint8_t {
+            MissingRequiredField,
 
-    [[nodiscard]] auto static fromJSON(const nlohmann::json &json)
-        -> std::expected<IntervalRecurrencePattern, Error>;
+            FailedToParseInterval,
+            ParsedIntervalZero,
+        };
+
+        [[nodiscard]] static constexpr auto errorMessage(Error error)
+            -> std::string {
+            switch (error) {
+            case Error::MissingRequiredField:
+                return "IntervalRecurrencePattern::JSON: missing required "
+                       "field(s)";
+
+            case Error::FailedToParseInterval:
+                return "IntervalRecurrencePattern::JSON: failed to parse "
+                       "Interval";
+
+            case Error::ParsedIntervalZero:
+                return "IntervalRecurrencePattern::JSON: parsed Interval is a "
+                       "zero-interval";
+
+            default:
+                std::unreachable();
+            }
+        }
+
+        static constexpr auto intervalField{std::string_view{"interval"}};
+
+        static constexpr auto fields{
+            std::array<std::string_view, 1>{intervalField}};
+
+        [[nodiscard]] static auto containsAllFields(const nlohmann::json &json)
+            -> bool;
+
+        [[nodiscard]] static auto
+        encode(const IntervalRecurrencePattern &pattern) -> nlohmann::json;
+
+        [[nodiscard]] auto static decode(const nlohmann::json &json)
+            -> std::expected<IntervalRecurrencePattern, JSON::Error>;
+    };
 };
 } // namespace hbt::mods::util

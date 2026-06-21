@@ -13,61 +13,6 @@
 #include <variant>
 
 namespace hbt::mods::util {
-struct OptDateTime {
-  public:
-    using opt_datetime_t = std::optional<DateTime>;
-
-  private:
-    opt_datetime_t optDateTime_;
-
-  public:
-    OptDateTime(opt_datetime_t optDateTime) : optDateTime_{optDateTime} {}
-
-  public:
-    [[nodiscard]] auto operator==(const OptDateTime &other) const
-        -> bool = default;
-
-  public:
-    [[nodiscard]] auto hasValue() const -> bool {
-        return optDateTime_.has_value();
-    }
-
-    [[nodiscard]] auto getValue() const -> DateTime { return *optDateTime_; }
-
-  public:
-    struct JSON {
-        enum class Error : uint8_t {
-            FailedToParseDateTime,
-        };
-
-        static constexpr auto nullValue{std::string_view("none")};
-
-        static auto encode(const OptDateTime &optDateTime) -> nlohmann::json {
-            if (optDateTime.hasValue()) {
-                return optDateTime.getValue().toISO8601String();
-            }
-
-            return nullValue;
-        }
-
-        static auto decode(const nlohmann::json &json)
-            -> std::expected<OptDateTime, Error> {
-            const auto optDateTimeJSON{json.get<std::string>()};
-
-            if (optDateTimeJSON == nullValue) {
-                return OptDateTime(std::nullopt);
-            }
-
-            auto dateTimeFromJSON{DateTime::fromISO8601String(optDateTimeJSON)};
-            if (!dateTimeFromJSON) {
-                return std::unexpected(Error::FailedToParseDateTime);
-            }
-
-            return OptDateTime(dateTimeFromJSON.value());
-        }
-    };
-};
-
 class Recurrence {
   public:
     using pattern_t =

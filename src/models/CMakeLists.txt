@@ -1,6 +1,7 @@
 add_library(models_lib STATIC
     src/user.cpp
 	src/datetime.cpp
+	src/opt_datetime.cpp
 	src/deadline.cpp
 	src/interval.cpp
 	src/interval_parser.cpp
