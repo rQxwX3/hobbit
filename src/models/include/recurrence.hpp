@@ -13,6 +13,61 @@
 #include <variant>
 
 namespace hbt::mods::util {
+struct OptDateTime {
+  public:
+    using opt_datetime_t = std::optional<DateTime>;
+
+  private:
+    opt_datetime_t optDateTime_;
+
+  public:
+    OptDateTime(opt_datetime_t optDateTime) : optDateTime_{optDateTime} {}
+
+  public:
+    [[nodiscard]] auto operator==(const OptDateTime &other) const
+        -> bool = default;
+
+  public:
+    [[nodiscard]] auto hasValue() const -> bool {
+        return optDateTime_.has_value();
+    }
+
+    [[nodiscard]] auto getValue() const -> DateTime { return *optDateTime_; }
+
+  public:
+    struct JSON {
+        enum class Error : uint8_t {
+            FailedToParseDateTime,
+        };
+
+        static constexpr auto nullValue{std::string_view("none")};
+
+        static auto encode(const OptDateTime &optDateTime) -> nlohmann::json {
+            if (optDateTime.hasValue()) {
+                return optDateTime.getValue().toISO8601String();
+            }
+
+            return nullValue;
+        }
+
+        static auto decode(const nlohmann::json &json)
+            -> std::expected<OptDateTime, Error> {
+            const auto optDateTimeJSON{json.get<std::string>()};
+
+            if (optDateTimeJSON == nullValue) {
+                return OptDateTime(std::nullopt);
+            }
+
+            auto dateTimeFromJSON{DateTime::fromISO8601String(optDateTimeJSON)};
+            if (!dateTimeFromJSON) {
+                return std::unexpected(Error::FailedToParseDateTime);
+            }
+
+            return OptDateTime(dateTimeFromJSON.value());
+        }
+    };
+};
+
 class Recurrence {
   public:
     using pattern_t =
@@ -41,22 +96,29 @@ class Recurrence {
 
   public:
     enum class PatternType : uint8_t {
+        Null,
         Interval,
         Weekdays,
-        Null,
     };
 
   private:
     pattern_t pattern_;
+    DateTime startDateTime_;
+    OptDateTime endDateTime_;
 
   public:
-    Recurrence(pattern_t pattern);
+    Recurrence(pattern_t pattern, DateTime startDateTime,
+               OptDateTime endDateTime);
 
   public:
-    [[nodiscard]] static auto null() -> Recurrence;
+    [[nodiscard]] static auto null(DateTime startDateTime) -> Recurrence;
 
   public:
     [[nodiscard]] auto getPatternType() const -> PatternType;
+
+    [[nodiscard]] auto getStartDateTime() const -> DateTime;
+
+    [[nodiscard]] auto getEndDateTime() const -> OptDateTime;
 
     [[nodiscard]] auto isIntervalPattern() const -> bool;
 
@@ -83,10 +145,14 @@ class Recurrence {
     struct JSON {
         static constexpr auto patternTypeField{std::string_view{"type"}};
         static constexpr auto patternField{std::string_view{"pattern"}};
+        static constexpr auto startDateTimeField{std::string_view{"start"}};
+        static constexpr auto endDateTimeField{std::string_view{"end"}};
 
-        static constexpr auto fields{
-            std::array<std::string_view, 2>{patternTypeField, patternField}};
+        static constexpr auto fields{std::array<std::string_view, 4>{
+            patternTypeField, patternField, startDateTimeField,
+            endDateTimeField}};
 
+        static constexpr auto nullPatternTypeValue{std::string_view{"null"}};
         static constexpr auto intervalPatternTypeValue{
             std::string_view{"interval"}};
         static constexpr auto weekdayPatternTypeValue{
@@ -95,10 +161,14 @@ class Recurrence {
         enum class Error : uint8_t {
             MissingRequiredField,
 
+            FailedToParseNullPattern,
             FailedToParseIntervalPattern,
             FailedToParseWeekdayPattern,
 
             UnsupportedPatternType,
+
+            FailedToParseStartDateTime,
+            FailedToParseEndDateTime,
         };
 
         [[nodiscard]] static auto containsAllFields(const nlohmann::json &json)
@@ -116,6 +186,10 @@ class Recurrence {
             case JSON::Error::MissingRequiredField:
                 return "Recurrence::JSON: missing required field(s)";
 
+            case JSON::Error::FailedToParseNullPattern:
+                return "Recurrence::JSON: failed to parse "
+                       "NullRecurrencePattern";
+
             case JSON::Error::FailedToParseIntervalPattern:
                 return "Recurrence::JSON: failed to parse "
                        "IntervalRecurrencePattern";
@@ -126,6 +200,12 @@ class Recurrence {
 
             case JSON::Error::UnsupportedPatternType:
                 return "Recurrence::JSON: unsupported pattern type";
+
+            case JSON::Error::FailedToParseStartDateTime:
+                return "Recurrence::JSON: failed to parse start DateTime";
+
+            case JSON::Error::FailedToParseEndDateTime:
+                return "Recurrence::JSON: failed to parse end OptDateTime";
 
             default:
                 std::unreachable();

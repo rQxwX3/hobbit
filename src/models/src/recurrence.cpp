@@ -1,13 +1,20 @@
 #include <recurrence.hpp>
 
 namespace hbt::mods::util {
-Recurrence::Recurrence(pattern_t pattern) : pattern_{std::move(pattern)} {}
+Recurrence::Recurrence(pattern_t pattern, DateTime startDateTime,
+                       OptDateTime endDateTime)
+    : pattern_{std::move(pattern)}, startDateTime_{startDateTime},
+      endDateTime_{endDateTime} {}
 
-[[nodiscard]] auto Recurrence::null() -> Recurrence {
-    return {NullRecurrencePattern()};
+[[nodiscard]] auto Recurrence::null(DateTime startDateTime) -> Recurrence {
+    return {NullRecurrencePattern(), startDateTime, OptDateTime(std::nullopt)};
 }
 
 [[nodiscard]] auto Recurrence::getPatternType() const -> PatternType {
+    if (std::holds_alternative<NullRecurrencePattern>(pattern_)) {
+        return PatternType::Null;
+    }
+
     if (std::holds_alternative<IntervalRecurrencePattern>(pattern_)) {
         return PatternType::Interval;
     }
@@ -17,6 +24,14 @@ Recurrence::Recurrence(pattern_t pattern) : pattern_{std::move(pattern)} {}
     }
 
     std::unreachable();
+}
+
+[[nodiscard]] auto Recurrence::getStartDateTime() const -> DateTime {
+    return startDateTime_;
+}
+
+[[nodiscard]] auto Recurrence::getEndDateTime() const -> OptDateTime {
+    return endDateTime_;
 }
 
 [[nodiscard]] auto Recurrence::isIntervalPattern() const -> bool {
@@ -66,15 +81,29 @@ Recurrence::JSON::containsAllFields(const nlohmann::json &json) -> bool {
 
 [[nodiscard]] auto Recurrence::JSON::encode(const Recurrence &recurrence)
     -> nlohmann::json {
+    auto startDateTimeJSON{recurrence.getStartDateTime().toISO8601String()};
+    auto endDateTimeJSON{
+        OptDateTime::JSON::encode(recurrence.getEndDateTime())};
+
     switch (recurrence.getPatternType()) {
+    case PatternType::Null:
+        return {{patternTypeField, nullPatternTypeValue},
+                {patternField, nullPatternTypeValue},
+                {startDateTimeField, startDateTimeJSON},
+                {endDateTimeField, endDateTimeJSON}};
+
     case PatternType::Interval:
         return {{patternTypeField, intervalPatternTypeValue},
-                {patternField, recurrence.getIntervalPattern().toJSON()}};
+                {patternField, recurrence.getIntervalPattern().toJSON()},
+                {startDateTimeField, startDateTimeJSON},
+                {endDateTimeField, endDateTimeJSON}};
 
     case PatternType::Weekdays:
         return {{patternTypeField, weekdayPatternTypeValue},
                 {patternField, WeekdaysRecurrencePattern::JSON::encode(
-                                   recurrence.getWeekdaysPattern())}};
+                                   recurrence.getWeekdaysPattern())},
+                {startDateTimeField, startDateTimeJSON},
+                {endDateTimeField, endDateTimeJSON}};
 
     default:
         throw std::runtime_error(errorMessage(Error::UnsupportedPatternType));
@@ -87,7 +116,34 @@ Recurrence::JSON::containsAllFields(const nlohmann::json &json) -> bool {
         return std::unexpected(JSON::Error::MissingRequiredField);
     }
 
+    auto startDateTimeFromJSON{DateTime::fromISO8601String(
+        json[startDateTimeField].get<std::string>())};
+    if (!startDateTimeFromJSON) {
+        return std::unexpected(Error::FailedToParseStartDateTime);
+    }
+
+    auto endDateTimeFromJSON{
+        OptDateTime::JSON::decode(json[endDateTimeField].get<std::string>())};
+    if (!endDateTimeFromJSON) {
+        return std::unexpected(Error::FailedToParseEndDateTime);
+    }
+
     auto patternType{json[patternTypeField].get<std::string>()};
+
+    if (patternType == nullPatternTypeValue) {
+        // TODO
+        //  auto
+        //  pattern{NullRecurrencePattern::JSON::decode(json[patternField])};
+        //
+        auto pattern{NullRecurrencePattern()};
+
+        // if (!pattern) {
+        //     return std::unexpected(JSON::Error::FailedToParseNullPattern);
+        // }
+
+        return Recurrence(pattern, startDateTimeFromJSON.value(),
+                          endDateTimeFromJSON.value());
+    }
 
     if (patternType == intervalPatternTypeValue) {
         auto pattern{IntervalRecurrencePattern::fromJSON(json[patternField])};
@@ -96,7 +152,8 @@ Recurrence::JSON::containsAllFields(const nlohmann::json &json) -> bool {
             return std::unexpected(JSON::Error::FailedToParseIntervalPattern);
         }
 
-        return Recurrence(pattern.value());
+        return Recurrence(pattern.value(), startDateTimeFromJSON.value(),
+                          endDateTimeFromJSON.value());
     }
 
     if (patternType == weekdayPatternTypeValue) {
@@ -107,7 +164,8 @@ Recurrence::JSON::containsAllFields(const nlohmann::json &json) -> bool {
             return std::unexpected(JSON::Error::FailedToParseWeekdayPattern);
         }
 
-        return Recurrence(pattern.value());
+        return Recurrence(pattern.value(), startDateTimeFromJSON.value(),
+                          endDateTimeFromJSON.value());
     }
 
     return std::unexpected(JSON::Error::UnsupportedPatternType);
