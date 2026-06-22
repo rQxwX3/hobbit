@@ -10,8 +10,11 @@ class NullRecurrencePattern : public RecurrencePattern {
     NullRecurrencePattern() = default;
 
   public:
-    [[nodiscard]] auto getOccurrencesOfDate(DateTime on) const
+    [[nodiscard]] auto getOccurrencesOfDate(DateTime date, DateTime start) const
         -> occurrences_t override;
+
+    [[nodiscard]] auto happensOnDate(DateTime date, DateTime start) const
+        -> bool override;
 
   public:
     struct JSON {

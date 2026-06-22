@@ -4,7 +4,8 @@ namespace hbt::mods::util {
 Recurrence::Recurrence(pattern_t pattern, DateTime startDateTime,
                        OptDateTime endDateTime)
     : pattern_{std::move(pattern)}, startDateTime_{startDateTime},
-      endDateTime_{endDateTime} {}
+      endDateTime_{
+          Validator::Return::endAfterStart(endDateTime, startDateTime)} {}
 
 [[nodiscard]] auto Recurrence::null(DateTime startDateTime) -> Recurrence {
     return {NullRecurrencePattern(), startDateTime, OptDateTime(std::nullopt)};
@@ -34,6 +35,20 @@ Recurrence::Recurrence(pattern_t pattern, DateTime startDateTime,
     return endDateTime_;
 }
 
+auto Recurrence::setPatternType(pattern_t pattern) -> void {
+    pattern_ = std::move(pattern);
+}
+
+auto Recurrence::setStartDateTime(DateTime startDateTime) -> void {
+    startDateTime_ =
+        Validator::Return::startBeforeEnd(startDateTime, getEndDateTime());
+}
+
+auto Recurrence::setEndDateTime(OptDateTime endDateTime) -> void {
+    endDateTime_ =
+        Validator::Return::endAfterStart(endDateTime, getStartDateTime());
+}
+
 [[nodiscard]] auto Recurrence::isIntervalPattern() const -> bool {
     return getPatternType() == PatternType::Interval;
 }
@@ -56,9 +71,11 @@ Recurrence::Recurrence(pattern_t pattern, DateTime startDateTime,
     return std::get<WeekdaysRecurrencePattern>(pattern_);
 }
 
-[[nodiscard]] auto Recurrence::happensOnDate(DateTime on) const -> bool {
+[[nodiscard]] auto Recurrence::happensOnDate(DateTime date) const -> bool {
     return std::visit(
-        [&](const auto &pattern) -> bool { return pattern.happensOnDate(on); },
+        [&](const auto &pattern) -> bool {
+            return pattern.happensOnDate(date, startDateTime_);
+        },
         pattern_);
 }
 
@@ -66,9 +83,35 @@ Recurrence::Recurrence(pattern_t pattern, DateTime startDateTime,
     -> occurrences_t {
     return std::visit(
         [&](const auto &pattern) -> auto {
-            return pattern.getOccurrencesOfDate(datetime);
+            return pattern.getOccurrencesOfDate(datetime, startDateTime_);
         },
         pattern_);
+}
+
+/* ------- Validator ------- */
+auto Recurrence::Validator::endAfterStart(OptDateTime end, DateTime start)
+    -> void {
+    if (end.hasValue() && end.getValue() <= start) {
+        throw std::invalid_argument(errorMessage(Error::EndBeforeStart));
+    }
+}
+
+[[nodiscard]] auto Recurrence::Validator::Return::endAfterStart(OptDateTime end,
+                                                                DateTime start)
+    -> OptDateTime {
+    Validator::endAfterStart(end, start);
+
+    return end;
+}
+
+[[nodiscard]] auto
+Recurrence::Validator::Return::startBeforeEnd(DateTime start, OptDateTime end)
+    -> DateTime {
+    if (end.hasValue() && start >= end.getValue()) {
+        throw std::invalid_argument(errorMessage(Error::StartAfterEnd));
+    }
+
+    return start;
 }
 
 /* ------- JSON ------- */
@@ -94,7 +137,8 @@ Recurrence::JSON::containsAllFields(const nlohmann::json &json) -> bool {
 
     case PatternType::Interval:
         return {{patternTypeField, intervalPatternTypeValue},
-                {patternField, recurrence.getIntervalPattern().toJSON()},
+                {patternField, IntervalRecurrencePattern::JSON::encode(
+                                   recurrence.getIntervalPattern())},
                 {startDateTimeField, startDateTimeJSON},
                 {endDateTimeField, endDateTimeJSON}};
 
@@ -128,25 +172,29 @@ Recurrence::JSON::containsAllFields(const nlohmann::json &json) -> bool {
         return std::unexpected(Error::FailedToParseEndDateTime);
     }
 
+    try {
+        Validator::endAfterStart(endDateTimeFromJSON.value(),
+                                 startDateTimeFromJSON.value());
+    } catch (std::invalid_argument) {
+        return std::unexpected(Error::ParsedEndDateTimeBeforeStartDateTime);
+    }
+
     auto patternType{json[patternTypeField].get<std::string>()};
 
     if (patternType == nullPatternTypeValue) {
-        // TODO
-        //  auto
-        //  pattern{NullRecurrencePattern::JSON::decode(json[patternField])};
-        //
-        auto pattern{NullRecurrencePattern()};
+        auto pattern{NullRecurrencePattern::JSON::decode(json[patternField])};
 
-        // if (!pattern) {
-        //     return std::unexpected(JSON::Error::FailedToParseNullPattern);
-        // }
+        if (!pattern) {
+            return std::unexpected(JSON::Error::FailedToParseNullPattern);
+        }
 
-        return Recurrence(pattern, startDateTimeFromJSON.value(),
+        return Recurrence(pattern.value(), startDateTimeFromJSON.value(),
                           endDateTimeFromJSON.value());
     }
 
     if (patternType == intervalPatternTypeValue) {
-        auto pattern{IntervalRecurrencePattern::fromJSON(json[patternField])};
+        auto pattern{
+            IntervalRecurrencePattern::JSON::decode(json[patternField])};
 
         if (!pattern) {
             return std::unexpected(JSON::Error::FailedToParseIntervalPattern);

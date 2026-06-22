@@ -2,13 +2,19 @@
 
 namespace hbt::mods::util {
 [[nodiscard]] auto
-NullRecurrencePattern::getOccurrencesOfDate(DateTime on) const
+NullRecurrencePattern::getOccurrencesOfDate(DateTime date, DateTime start) const
     -> occurrences_t {
-    if (on == dateTime_) {
-        return {on};
+    if (happensOnDate(date, start)) {
+        return {date};
     }
 
     return {};
+}
+
+[[nodiscard]] auto NullRecurrencePattern::happensOnDate(DateTime date,
+                                                        DateTime start) const
+    -> bool {
+    return date == start;
 }
 
 [[nodiscard]] auto NullRecurrencePattern::JSON::encode() -> nlohmann::json {

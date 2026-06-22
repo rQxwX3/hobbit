@@ -3,6 +3,7 @@
 #include <datetime.hpp>
 #include <interval_pattern.hpp>
 #include <null_pattern.hpp>
+#include <opt_datetime.hpp>
 #include <weekdays_pattern.hpp>
 
 #include <nlohmann/json.hpp>
@@ -24,6 +25,9 @@ class Recurrence {
   private:
     enum class Error : uint8_t {
         UnsupportedPatternType,
+
+        EndBeforeStart,
+        StartAfterEnd,
     };
 
   public:
@@ -33,6 +37,14 @@ class Recurrence {
         case Error::UnsupportedPatternType:
             return "Recurrence: invalid object state (unsupported pattern "
                    "type)";
+
+        case Error::EndBeforeStart:
+            return "Recurrence: end DateTime cannot appear before "
+                   "start DateTime";
+
+        case Error::StartAfterEnd:
+            return "Recurrence: start DateTime cannot appear after end "
+                   "DateTime";
 
         default:
             std::unreachable();
@@ -59,32 +71,55 @@ class Recurrence {
     [[nodiscard]] static auto null(DateTime startDateTime) -> Recurrence;
 
   public:
+    [[nodiscard]] auto getOccurrencesOfDate(DateTime datetime) const
+        -> occurrences_t;
+
+    [[nodiscard]] auto happensOnDate(DateTime date) const -> bool;
+
+  public:
     [[nodiscard]] auto getPatternType() const -> PatternType;
 
     [[nodiscard]] auto getStartDateTime() const -> DateTime;
 
     [[nodiscard]] auto getEndDateTime() const -> OptDateTime;
 
+  public:
+    auto setPatternType(pattern_t pattern) -> void;
+
+    auto setStartDateTime(DateTime startDateTime) -> void;
+
+    auto setEndDateTime(OptDateTime endDateTime) -> void;
+
+  public:
     [[nodiscard]] auto isIntervalPattern() const -> bool;
 
     [[nodiscard]] auto isWeekdaysPattern() const -> bool;
 
     [[nodiscard]] auto isNullPattern() const -> bool;
 
+  public:
     [[nodiscard]] auto getIntervalPattern() const -> IntervalRecurrencePattern;
 
     [[nodiscard]] auto getWeekdaysPattern() const -> WeekdaysRecurrencePattern;
 
   public:
-    [[nodiscard]] auto happensOnDate(DateTime on) const -> bool;
-
-  public:
-    [[nodiscard]] auto getOccurrencesOfDate(DateTime datetime) const
-        -> occurrences_t;
-
-  public:
     [[nodiscard]] auto operator==(const Recurrence &recurrence) const
         -> bool = default;
+
+  private:
+    struct Validator {
+        static auto endAfterStart(OptDateTime end, DateTime start) -> void;
+
+        struct Return {
+            [[nodiscard]] static auto endAfterStart(OptDateTime end,
+                                                    DateTime start)
+                -> OptDateTime;
+
+            [[nodiscard]] static auto startBeforeEnd(DateTime start,
+                                                     OptDateTime end)
+                -> DateTime;
+        };
+    };
 
   public:
     struct JSON {
@@ -114,6 +149,8 @@ class Recurrence {
 
             FailedToParseStartDateTime,
             FailedToParseEndDateTime,
+
+            ParsedEndDateTimeBeforeStartDateTime,
         };
 
         [[nodiscard]] static auto containsAllFields(const nlohmann::json &json)
@@ -151,6 +188,10 @@ class Recurrence {
 
             case JSON::Error::FailedToParseEndDateTime:
                 return "Recurrence::JSON: failed to parse end OptDateTime";
+
+            case JSON::Error::ParsedEndDateTimeBeforeStartDateTime:
+                return "Recurrence::JSON: parsed end DateTime appears after "
+                       "start DateTime";
 
             default:
                 std::unreachable();

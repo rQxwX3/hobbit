@@ -71,11 +71,10 @@ WeekdaysRecurrencePattern::WeekdaysRecurrencePattern(
            (on > firstInstanceOfWeekday && daysDiff.isMultipleOf(interval_));
 }
 
-[[nodiscard]] auto
-WeekdaysRecurrencePattern::getOccurrencesOfDate(DateTime on) const
-    -> occurrences_t {
-    if (happensOnDate(on)) {
-        return {DateTime(on)};
+[[nodiscard]] auto WeekdaysRecurrencePattern::getOccurrencesOfDate(
+    DateTime date, DateTime start) const -> occurrences_t {
+    if (happensOnDate(date)) {
+        return {DateTime(date)};
     }
 
     return {};

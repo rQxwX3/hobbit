@@ -34,6 +34,21 @@ class WeekdaysRecurrencePattern : public RecurrencePattern {
     Interval interval_;
     Week week_;
 
+  public:
+    WeekdaysRecurrencePattern(DateTime start, Week week, Interval interval);
+
+    WeekdaysRecurrencePattern(clndr::Week firstCalendarWeek, Week week,
+                              Interval interval);
+
+  public:
+    [[nodiscard]] auto
+    getOccurrencesOfDate(DateTime date, DateTime start = DateTime::now()) const
+        -> occurrences_t override;
+
+    [[nodiscard]] auto happensOnDate(DateTime date,
+                                     DateTime start = DateTime::now()) const
+        -> bool override;
+
   private:
     static auto validateInterval(const Interval &interval) -> Interval;
 
@@ -44,24 +59,11 @@ class WeekdaysRecurrencePattern : public RecurrencePattern {
         -> DateTime;
 
   public:
-    WeekdaysRecurrencePattern(DateTime start, Week week, Interval interval);
-
-    WeekdaysRecurrencePattern(clndr::Week firstCalendarWeek, Week week,
-                              Interval interval);
-
-  public:
     [[nodiscard]] auto getInterval() const -> Interval;
 
     [[nodiscard]] auto getFirstCalendarWeek() const -> clndr::Week;
 
     [[nodiscard]] auto getWeek() const -> Week;
-
-  public:
-    [[nodiscard]] auto happensOnDate(DateTime on) const -> bool;
-
-  public:
-    [[nodiscard]] auto getOccurrencesOfDate(DateTime on) const
-        -> occurrences_t override;
 
   public:
     struct JSON {
