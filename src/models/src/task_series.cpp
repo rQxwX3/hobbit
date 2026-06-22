@@ -66,7 +66,7 @@ auto TaskSeries::setEndDateTime(const OptDateTime &endDateTime) -> void {
 [[nodiscard]] auto TaskSeries::generateInstancesForDate(DateTime datetime) const
     -> std::vector<task::Instance> {
     auto result{std::vector<task::Instance>{}};
-    auto datetimes{recurrence_.getOccurrencesOfDate(datetime)};
+    auto datetimes{recurrence_.getDateTimesOfDate(datetime)};
 
     for (auto dt : datetimes) {
         result.emplace_back(getUUID(), dt, false);

@@ -20,8 +20,6 @@ class Recurrence {
         std::variant<NullRecurrencePattern, IntervalRecurrencePattern,
                      WeekdaysRecurrencePattern>;
 
-    using occurrences_t = RecurrencePattern::occurrences_t;
-
   private:
     enum class Error : uint8_t {
         UnsupportedPatternType,
@@ -72,8 +70,8 @@ class Recurrence {
         -> Recurrence;
 
   public:
-    [[nodiscard]] auto getOccurrencesOfDate(DateTime datetime) const
-        -> occurrences_t;
+    [[nodiscard]] auto getDateTimesOfDate(DateTime datetime) const
+        -> std::vector<DateTime>;
 
     [[nodiscard]] auto happensOnDate(DateTime date) const -> bool;
 
@@ -109,6 +107,8 @@ class Recurrence {
 
   private:
     struct Validator {
+        struct Validated {};
+
         static auto endAfterStart(OptDateTime end, DateTime start) -> void;
 
         struct Return {
@@ -121,6 +121,14 @@ class Recurrence {
                 -> DateTime;
         };
     };
+
+  public:
+    Recurrence(Validator::Validated, pattern_t pattern, DateTime startDateTime,
+               OptDateTime endDateTime);
+
+    [[nodiscard]] static auto fromValidated(pattern_t pattern,
+                                            DateTime startDateTime,
+                                            OptDateTime endDateTime);
 
   public:
     struct JSON {
