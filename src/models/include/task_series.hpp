@@ -2,6 +2,7 @@
 
 #include <datetime.hpp>
 #include <deadline.hpp>
+#include <instance.hpp>
 #include <null_pattern.hpp>
 #include <opt_datetime.hpp>
 #include <recurrence.hpp>
@@ -15,6 +16,7 @@ class TaskSeries {
     using Deadline = mods::Deadline;
     using DateTime = mods::DateTime;
     using OptDateTime = util::OptDateTime;
+    using uuid_t = core::uuid::uuid_t;
 
     enum class Error : uint8_t {
         TitleEmpty,
@@ -59,17 +61,24 @@ class TaskSeries {
 
   private:
     /* order must not be changed */
+    uuid_t uuid_;
     std::string title_;
     Deadline deadline_;
     Recurrence recurrence_;
-
-    core::uuid::uuid_t uuid_;
 
   public:
     TaskSeries(std::string title, Recurrence recurrence = Recurrence::null(),
                Deadline deadline = Deadline::null());
 
   public:
+    [[nodiscard]] auto happensOnDate(DateTime datetime) const -> bool;
+
+    [[nodiscard]] auto generateInstancesForDate(DateTime datetime) const
+        -> std::vector<task::Instance>;
+
+  public:
+    [[nodiscard]] auto getUUID() const -> uuid_t;
+
     [[nodiscard]] auto getTitle() const -> std::string;
 
     [[nodiscard]] auto getRecurrence() const -> Recurrence;
@@ -91,15 +100,10 @@ class TaskSeries {
 
     auto setEndDateTime(const OptDateTime &endDateTime) -> void;
 
-  public:
-    [[nodiscard]] auto happensOnDate(DateTime datetime) const -> bool;
-
-    // TODO: change to generateInstancesForDate(dt::Date date);
-    // [[nodiscard]] auto generateSingularsForDate(DateTime datetime) const
-    //     -> std::vector<SingularTask>;
-
   private:
     struct Validator {
+        // TODO: add validation for UUID
+
         struct Validated {};
 
         static auto title(const std::string &title) -> void;
@@ -127,11 +131,11 @@ class TaskSeries {
     };
 
   private:
-    [[nodiscard]] static auto fromValidated(std::string title,
+    [[nodiscard]] static auto fromValidated(uuid_t uuid, std::string title,
                                             util::Recurrence recurrence,
                                             Deadline deadline) -> TaskSeries;
 
-    TaskSeries(Validator::Validated, std::string title,
+    TaskSeries(Validator::Validated, uuid_t uuid, std::string title,
                util::Recurrence recurrence, Deadline deadline);
 
   public:
@@ -170,12 +174,12 @@ class TaskSeries {
         }
 
         static constexpr auto titleField{std::string_view{"title"}};
-
         static constexpr auto recurrenceField{std::string_view{"recurrence"}};
         static constexpr auto deadlineField{std::string_view{"deadline"}};
+        static constexpr auto uuidField{std::string_view{"uuid"}};
 
-        static constexpr auto fields{std::array<std::string_view, 3>{
-            titleField, recurrenceField, deadlineField}};
+        static constexpr auto fields{std::array<std::string_view, 4>{
+            titleField, recurrenceField, deadlineField, uuidField}};
 
         [[nodiscard]] static auto containsAllFields(const nlohmann::json &json)
             -> bool;

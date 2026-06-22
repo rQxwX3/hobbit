@@ -1,23 +1,26 @@
 #include <task_series.hpp>
 
 namespace hbt::mods {
-[[nodiscard]] auto TaskSeries::fromValidated(std::string title,
+[[nodiscard]] auto TaskSeries::fromValidated(uuid_t uuid, std::string title,
                                              util::Recurrence recurrence,
                                              Deadline deadline) -> TaskSeries {
-    return TaskSeries(Validator::Validated{}, std::move(title),
+    return TaskSeries(Validator::Validated{}, std::move(uuid), std::move(title),
                       std::move(recurrence), deadline);
 }
 
-TaskSeries::TaskSeries(Validator::Validated, std::string title,
+TaskSeries::TaskSeries(Validator::Validated, uuid_t uuid, std::string title,
                        util::Recurrence recurrence, Deadline deadline)
-    : title_{std::move(title)}, recurrence_{std::move(recurrence)},
-      deadline_{deadline} {}
+    : uuid_{std::move(uuid)}, title_{std::move(title)},
+      recurrence_{std::move(recurrence)}, deadline_{deadline} {}
 
 TaskSeries::TaskSeries(std::string title, util::Recurrence recurrence,
                        Deadline deadline)
-    : title_{std::move(Validator::Return::title(title))},
+    : uuid_{core::uuid::generateUUID()},
+      title_{std::move(Validator::Return::title(title))},
       recurrence_{std::move(recurrence)},
       deadline_{Validator::Return::deadline(deadline, recurrence)} {}
+
+[[nodiscard]] auto TaskSeries::getUUID() const -> uuid_t { return uuid_; }
 
 [[nodiscard]] auto TaskSeries::getStartDateTime() const -> DateTime {
     return recurrence_.getStartDateTime();
@@ -60,23 +63,17 @@ auto TaskSeries::setEndDateTime(const OptDateTime &endDateTime) -> void {
     }
 }
 
-// [[nodiscard]] auto TaskSeries::generateSingularsForDate(DateTime datetime)
-// const
-//     -> std::vector<hbt::mods::SingularTask> {
-//     auto results{std::vector<mods::SingularTask>{}};
-//     auto timestamps{recurrence_.getOccurrencesOfDate(datetime)};
-//
-//     for (const auto &ts : timestamps) {
-//         // TODO: assert ts.getData() = datetime.getData()
-//
-//         auto taskData{taskData_};
-//         taskData.setDateTime(ts);
-//
-//         results.emplace_back(std::move(taskData));
-//     }
-//
-//     return results;
-// }
+[[nodiscard]] auto TaskSeries::generateInstancesForDate(DateTime datetime) const
+    -> std::vector<task::Instance> {
+    auto result{std::vector<task::Instance>{}};
+    auto datetimes{recurrence_.getOccurrencesOfDate(datetime)};
+
+    for (auto dt : datetimes) {
+        result.emplace_back(getUUID(), dt, false);
+    }
+
+    return result;
+}
 
 [[nodiscard]] auto TaskSeries::happensOnDate(DateTime datetime) const -> bool {
     return recurrence_.happensOnDate(datetime);
@@ -93,6 +90,7 @@ TaskSeries::JSON::containsAllFields(const nlohmann::json &json) -> bool {
 [[nodiscard]] auto TaskSeries::JSON::encode(const TaskSeries &taskSeries)
     -> nlohmann::json {
     return {
+        {uuidField, taskSeries.uuid_},
         {titleField, taskSeries.getTitle()},
         {recurrenceField, Recurrence::JSON::encode(taskSeries.getRecurrence())},
         {deadlineField, taskSeries.getDeadline().toJSON()}};
@@ -104,7 +102,9 @@ TaskSeries::JSON::containsAllFields(const nlohmann::json &json) -> bool {
         return std::unexpected(Error::MissingRequiredField);
     }
 
-    auto title{json.get<std::string>()};
+    auto uuid{json[uuidField].get<std::string>()};
+
+    auto title{json[titleField].get<std::string>()};
     try {
         Validator::title(title);
     } catch (const std::exception &e) {
@@ -128,7 +128,7 @@ TaskSeries::JSON::containsAllFields(const nlohmann::json &json) -> bool {
         return std::unexpected(Error::FailedToValidateDeadline);
     }
 
-    return fromValidated(title, recurrence.value(), deadline.value());
+    return fromValidated(uuid, title, recurrence.value(), deadline.value());
 }
 
 /* ------- Validator ------- */
