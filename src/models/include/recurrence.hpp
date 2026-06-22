@@ -68,7 +68,8 @@ class Recurrence {
                OptDateTime endDateTime);
 
   public:
-    [[nodiscard]] static auto null(DateTime startDateTime) -> Recurrence;
+    [[nodiscard]] static auto null(DateTime startDateTime = DateTime::now())
+        -> Recurrence;
 
   public:
     [[nodiscard]] auto getOccurrencesOfDate(DateTime datetime) const
