@@ -15,6 +15,7 @@ class TaskSeries {
     using Recurrence = mods::util::Recurrence;
     using Deadline = mods::Deadline;
     using DateTime = mods::DateTime;
+    using Date = mods::Date;
     using OptDateTime = util::OptDateTime;
     using uuid_t = core::uuid::uuid_t;
 
@@ -71,9 +72,9 @@ class TaskSeries {
                Deadline deadline = Deadline::null());
 
   public:
-    [[nodiscard]] auto happensOnDate(DateTime datetime) const -> bool;
+    [[nodiscard]] auto happensOnDate(Date date) const -> bool;
 
-    [[nodiscard]] auto generateInstancesForDate(DateTime datetime) const
+    [[nodiscard]] auto generateInstancesForDate(Date date) const
         -> std::vector<task::Instance>;
 
   public:

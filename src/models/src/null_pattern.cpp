@@ -2,7 +2,7 @@
 
 namespace hbt::mods::util {
 [[nodiscard]] auto
-NullRecurrencePattern::getOccurrencesOfDate(DateTime date, DateTime start) const
+NullRecurrencePattern::getOccurrencesOfDate(Date date, DateTime start) const
     -> occurrences_t {
     if (happensOnDate(date, start)) {
         return {date};
@@ -11,7 +11,7 @@ NullRecurrencePattern::getOccurrencesOfDate(DateTime date, DateTime start) const
     return {};
 }
 
-[[nodiscard]] auto NullRecurrencePattern::happensOnDate(DateTime date,
+[[nodiscard]] auto NullRecurrencePattern::happensOnDate(Date date,
                                                         DateTime start) const
     -> bool {
     return date == start;

@@ -63,10 +63,10 @@ auto TaskSeries::setEndDateTime(const OptDateTime &endDateTime) -> void {
     }
 }
 
-[[nodiscard]] auto TaskSeries::generateInstancesForDate(DateTime datetime) const
+[[nodiscard]] auto TaskSeries::generateInstancesForDate(Date date) const
     -> std::vector<task::Instance> {
     auto result{std::vector<task::Instance>{}};
-    auto datetimes{recurrence_.getDateTimesOfDate(datetime)};
+    auto datetimes{recurrence_.getDateTimesOfDate(date)};
 
     for (auto dt : datetimes) {
         result.emplace_back(getUUID(), dt, false);
@@ -75,8 +75,8 @@ auto TaskSeries::setEndDateTime(const OptDateTime &endDateTime) -> void {
     return result;
 }
 
-[[nodiscard]] auto TaskSeries::happensOnDate(DateTime datetime) const -> bool {
-    return recurrence_.happensOnDate(datetime);
+[[nodiscard]] auto TaskSeries::happensOnDate(Date date) const -> bool {
+    return recurrence_.happensOnDate(date);
 }
 
 /* ------- JSON ------- */

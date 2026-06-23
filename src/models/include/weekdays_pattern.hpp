@@ -42,10 +42,10 @@ class WeekdaysRecurrencePattern : public RecurrencePattern {
 
   public:
     [[nodiscard]] auto
-    getOccurrencesOfDate(DateTime date, DateTime start = DateTime::now()) const
+    getOccurrencesOfDate(Date date, DateTime start = DateTime::now()) const
         -> occurrences_t override;
 
-    [[nodiscard]] auto happensOnDate(DateTime date,
+    [[nodiscard]] auto happensOnDate(Date date,
                                      DateTime start = DateTime::now()) const
         -> bool override;
 

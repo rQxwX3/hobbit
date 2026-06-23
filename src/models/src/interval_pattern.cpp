@@ -18,7 +18,7 @@ IntervalRecurrencePattern::IntervalRecurrencePattern(Interval interval)
 }
 
 [[nodiscard]] auto
-IntervalRecurrencePattern::happensOnDate(DateTime date, DateTime start) const
+IntervalRecurrencePattern::happensOnDate(Date date, DateTime start) const
     -> bool {
     if (interval_.isZero()) {
         return DateTime::equalDate(start, date);
@@ -30,7 +30,7 @@ IntervalRecurrencePattern::happensOnDate(DateTime date, DateTime start) const
 
     // TODO: for day-based intervals use math instead of a loop
 
-    for (auto dt{start}; dt.getDate() <= date.getDate(); dt += interval_) {
+    for (auto dt{start}; dt.getDate() <= date; dt += interval_) {
         if (DateTime::equalDate(dt, date)) {
             return true;
         }
@@ -40,8 +40,8 @@ IntervalRecurrencePattern::happensOnDate(DateTime date, DateTime start) const
 }
 
 [[nodiscard]] auto IntervalRecurrencePattern::getFirstOccurrenceOfDate(
-    DateTime date, DateTime start) const -> std::optional<occurrence_t> {
-    for (auto dt{start}; dt.getDate() <= date.getDate(); dt += interval_) {
+    Date date, DateTime start) const -> std::optional<occurrence_t> {
+    for (auto dt{start}; dt.getDate() <= date; dt += interval_) {
         if (DateTime::equalDate(dt, date)) {
             return dt;
         }
@@ -50,8 +50,9 @@ IntervalRecurrencePattern::happensOnDate(DateTime date, DateTime start) const
     return std::nullopt;
 }
 
-[[nodiscard]] auto IntervalRecurrencePattern::getOccurrencesOfDate(
-    DateTime date, DateTime start) const -> occurrences_t {
+[[nodiscard]] auto
+IntervalRecurrencePattern::getOccurrencesOfDate(Date date, DateTime start) const
+    -> occurrences_t {
     auto result{occurrences_t{}};
 
     auto firstOccurrence{getFirstOccurrenceOfDate(date, start)};

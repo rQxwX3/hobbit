@@ -32,18 +32,17 @@ class IntervalRecurrencePattern : public RecurrencePattern {
     IntervalRecurrencePattern(Interval interval);
 
   public:
-    [[nodiscard]] auto getOccurrencesOfDate(DateTime date, DateTime start) const
+    [[nodiscard]] auto getOccurrencesOfDate(Date date, DateTime start) const
         -> occurrences_t override;
 
-    [[nodiscard]] auto happensOnDate(DateTime date, DateTime start) const
+    [[nodiscard]] auto happensOnDate(Date date, DateTime start) const
         -> bool override;
 
   public:
     [[nodiscard]] auto getInterval() const -> Interval;
 
   public:
-    [[nodiscard]] auto getFirstOccurrenceOfDate(DateTime date,
-                                                DateTime start) const
+    [[nodiscard]] auto getFirstOccurrenceOfDate(Date date, DateTime start) const
         -> std::optional<occurrence_t>;
 
   public:

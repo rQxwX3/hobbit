@@ -10,10 +10,10 @@ class NullRecurrencePattern : public RecurrencePattern {
     NullRecurrencePattern() = default;
 
   public:
-    [[nodiscard]] auto getOccurrencesOfDate(DateTime date, DateTime start) const
+    [[nodiscard]] auto getOccurrencesOfDate(Date date, DateTime start) const
         -> occurrences_t override;
 
-    [[nodiscard]] auto happensOnDate(DateTime date, DateTime start) const
+    [[nodiscard]] auto happensOnDate(Date date, DateTime start) const
         -> bool override;
 
   public:

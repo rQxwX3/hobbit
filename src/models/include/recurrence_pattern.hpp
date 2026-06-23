@@ -29,11 +29,11 @@ class RecurrencePattern {
     virtual ~RecurrencePattern() = default;
 
   public:
-    [[nodiscard]] virtual auto getOccurrencesOfDate(DateTime date,
+    [[nodiscard]] virtual auto getOccurrencesOfDate(Date date,
                                                     DateTime start) const
         -> occurrences_t = 0;
 
-    [[nodiscard]] virtual auto happensOnDate(DateTime date,
-                                             DateTime start) const -> bool = 0;
+    [[nodiscard]] virtual auto happensOnDate(Date date, DateTime start) const
+        -> bool = 0;
 };
 } // namespace hbt::mods::util

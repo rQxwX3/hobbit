@@ -70,10 +70,10 @@ class Recurrence {
         -> Recurrence;
 
   public:
-    [[nodiscard]] auto getDateTimesOfDate(DateTime datetime) const
+    [[nodiscard]] auto getDateTimesOfDate(Date date) const
         -> std::vector<DateTime>;
 
-    [[nodiscard]] auto happensOnDate(DateTime date) const -> bool;
+    [[nodiscard]] auto happensOnDate(Date date) const -> bool;
 
   public:
     [[nodiscard]] auto getPatternType() const -> PatternType;

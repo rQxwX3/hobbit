@@ -83,7 +83,7 @@ auto Recurrence::setEndDateTime(OptDateTime endDateTime) -> void {
     return std::get<WeekdaysRecurrencePattern>(pattern_);
 }
 
-[[nodiscard]] auto Recurrence::happensOnDate(DateTime date) const -> bool {
+[[nodiscard]] auto Recurrence::happensOnDate(Date date) const -> bool {
     return std::visit(
         [&](const auto &pattern) -> bool {
             return pattern.happensOnDate(date, startDateTime_);
@@ -91,11 +91,11 @@ auto Recurrence::setEndDateTime(OptDateTime endDateTime) -> void {
         pattern_);
 }
 
-[[nodiscard]] auto Recurrence::getDateTimesOfDate(DateTime datetime) const
+[[nodiscard]] auto Recurrence::getDateTimesOfDate(Date date) const
     -> std::vector<DateTime> {
     return std::visit(
         [&](const auto &pattern) -> auto {
-            return pattern.getOccurrencesOfDate(datetime, startDateTime_);
+            return pattern.getOccurrencesOfDate(date, startDateTime_);
         },
         pattern_);
 }

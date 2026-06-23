@@ -56,23 +56,25 @@ WeekdaysRecurrencePattern::WeekdaysRecurrencePattern(
     return firstOccurrence;
 }
 
-[[nodiscard]] auto WeekdaysRecurrencePattern::happensOnDate(DateTime on) const
-    -> bool {
-    const auto onWD{on.getWeekday()};
+[[nodiscard]] auto
+WeekdaysRecurrencePattern::happensOnDate(Date date,
+                                         DateTime startDateTime) const -> bool {
+    const auto dateWD{date.getWeekday()};
 
-    if (!week_.containsWeekday(onWD)) {
+    if (!week_.containsWeekday(dateWD)) {
         return false;
     }
 
-    auto firstInstanceOfWeekday(firstCalendarWeek_[onWD]);
-    auto daysDiff{DateTime::daysDiff(firstInstanceOfWeekday, on)};
+    auto firstInstanceOfWeekday(firstCalendarWeek_[dateWD]);
+    auto daysDiff{DateTime::daysDiff(firstInstanceOfWeekday, date)};
 
     return daysDiff.isZero() ||
-           (on > firstInstanceOfWeekday && daysDiff.isMultipleOf(interval_));
+           (date > firstInstanceOfWeekday && daysDiff.isMultipleOf(interval_));
 }
 
-[[nodiscard]] auto WeekdaysRecurrencePattern::getOccurrencesOfDate(
-    DateTime date, DateTime start) const -> occurrences_t {
+[[nodiscard]] auto
+WeekdaysRecurrencePattern::getOccurrencesOfDate(Date date, DateTime start) const
+    -> occurrences_t {
     if (happensOnDate(date)) {
         return {DateTime(date)};
     }
