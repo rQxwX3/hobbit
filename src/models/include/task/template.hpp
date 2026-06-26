@@ -2,21 +2,21 @@
 
 #include <datetime.hpp>
 #include <deadline.hpp>
-#include <instance.hpp>
 #include <null_pattern.hpp>
 #include <opt_datetime.hpp>
 #include <recurrence.hpp>
+#include <task/instance.hpp>
 #include <task_override.hpp>
 #include <uuid.hpp>
 
-namespace hbt::mods {
-class TaskSeries {
+namespace hbt::mods::task {
+class Template {
   public:
     using Recurrence = mods::util::Recurrence;
     using Deadline = mods::Deadline;
     using DateTime = mods::DateTime;
     using Date = mods::Date;
-    using OptDateTime = util::OptDateTime;
+    using OptDateTime = mods::util::OptDateTime;
     using uuid_t = core::uuid::uuid_t;
 
     enum class Error : uint8_t {
@@ -68,14 +68,14 @@ class TaskSeries {
     Recurrence recurrence_;
 
   public:
-    TaskSeries(std::string title, Recurrence recurrence = Recurrence::null(),
-               Deadline deadline = Deadline::null());
+    Template(std::string title, Recurrence recurrence = Recurrence::null(),
+             Deadline deadline = Deadline::null());
 
   public:
     [[nodiscard]] auto happensOnDate(Date date) const -> bool;
 
     [[nodiscard]] auto generateInstancesForDate(Date date) const
-        -> std::vector<task::Instance>;
+        -> std::vector<Instance>;
 
   public:
     [[nodiscard]] auto getUUID() const -> uuid_t;
@@ -134,10 +134,10 @@ class TaskSeries {
   private:
     [[nodiscard]] static auto fromValidated(uuid_t uuid, std::string title,
                                             util::Recurrence recurrence,
-                                            Deadline deadline) -> TaskSeries;
+                                            Deadline deadline) -> Template;
 
-    TaskSeries(Validator::Validated, uuid_t uuid, std::string title,
-               util::Recurrence recurrence, Deadline deadline);
+    Template(Validator::Validated, uuid_t uuid, std::string title,
+             util::Recurrence recurrence, Deadline deadline);
 
   public:
     struct JSON {
@@ -185,11 +185,11 @@ class TaskSeries {
         [[nodiscard]] static auto containsAllFields(const nlohmann::json &json)
             -> bool;
 
-        [[nodiscard]] static auto encode(const TaskSeries &taskSeries)
+        [[nodiscard]] static auto encode(const Template &taskSeries)
             -> nlohmann::json;
 
         [[nodiscard]] static auto decode(const nlohmann::json &json)
-            -> std::expected<TaskSeries, Error>;
+            -> std::expected<Template, Error>;
     };
 };
-} // namespace hbt::mods
+} // namespace hbt::mods::task

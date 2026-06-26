@@ -6,8 +6,8 @@ add_library(models_lib STATIC
 	src/interval.cpp
 	src/interval_parser.cpp
 	src/interval_pattern.cpp
-	src/task_series.cpp
-	src/singular_task.cpp
+	src/task/instance.cpp
+	src/task/template.cpp
 	src/recurrence.cpp
 	src/week.cpp
 	src/calendar.cpp

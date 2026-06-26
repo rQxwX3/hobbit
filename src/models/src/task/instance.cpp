@@ -1,4 +1,4 @@
-#include <instance.hpp>
+#include <task/instance.hpp>
 
 namespace hbt::mods::task {
 Instance::Instance(uuid_t templateUUID, DateTime datetime, bool completed)

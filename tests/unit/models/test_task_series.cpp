@@ -3,14 +3,13 @@
 #include <datetime.hpp>
 #include <interval.hpp>
 #include <recurrence.hpp>
-#include <task_data.hpp>
-#include <task_series.hpp>
+#include <template.hpp>
 
 #include <chrono>
 
 namespace test::mods {
 using hbt::mods::TaskData;
-using hbt::mods::TaskSeries;
+using hbt::mods::Template;
 
 using hbt::mods::DateTime;
 using hbt::mods::Interval;
