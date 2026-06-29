@@ -8,6 +8,6 @@ target_include_directories(core_lib PUBLIC include)
 target_link_libraries(core_lib PUBLIC 
 	stduuid
 	ui_lib
-	models_lib
+	calendar_lib
 	repositories_lib
 )
