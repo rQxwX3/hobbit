@@ -4,10 +4,10 @@
 #include <event/deadline.hpp>
 #include <json.hpp>
 
-namespace clndr::codec::json {
+namespace clndr::codec::json::ev {
 struct Deadline : core::codec::json::Base<Deadline> {
     struct Error : core::err::Base<Error> {
-        static constexpr auto className{std::string_view{"JSON::Deadline"}};
+        static constexpr auto className{std::string_view{"JSON::ev::Deadline"}};
 
         enum class Code : uint8_t {
             MissingRequiredTypeField,
@@ -53,18 +53,19 @@ struct Deadline : core::codec::json::Base<Deadline> {
     enum class Field : size_t { type, interval, datetime, count_ };
 
     static constexpr auto fields{
-        std::array<std::string_view, 3>{"type", "interval", "datetime"}};
+        std::array<std::string_view, static_cast<size_t>(Field::count_)>{
+            "type", "interval", "datetime"}};
 
     static constexpr auto typeIntervalValue{std::string_view{"interval"}};
     static constexpr auto typeDateTimeValue{std::string_view{"datetime"}};
     static constexpr auto typeNullValue{std::string_view{"null"}};
 
-    [[nodiscard]] static auto encode(const ev::Deadline &deadline)
+    [[nodiscard]] static auto encode(const clndr::ev::Deadline &deadline)
         -> nlohmann::json;
 
     [[nodiscard]] static auto decode(const nlohmann::json &json)
-        -> std::expected<ev::Deadline, Error::Code>;
+        -> std::expected<clndr::ev::Deadline, Error::Code>;
 };
 
-static_assert(core::codec::json::Concept<Deadline, ev::Deadline>);
-}; // namespace clndr::codec::json
+static_assert(core::codec::json::Concept<Deadline, clndr::ev::Deadline>);
+}; // namespace clndr::codec::json::ev

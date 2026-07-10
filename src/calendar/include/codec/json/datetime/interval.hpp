@@ -7,10 +7,10 @@
 #include <error.hpp>
 #include <json.hpp>
 
-namespace clndr::codec::json {
+namespace clndr::codec::json::dt {
 struct Interval : core::codec::json::Base<Interval> {
     struct Error : core::err::Base<Error> {
-        static constexpr auto className{std::string_view{"JSON::Interval"}};
+        static constexpr auto className{std::string_view{"JSON::dt::Interval"}};
 
         enum class Code : uint8_t {
             MissingRequiredField,
@@ -48,14 +48,15 @@ struct Interval : core::codec::json::Base<Interval> {
     };
 
     static constexpr auto fields{
-        std::array<std::string_view, 2>{"duration", "month_handling"}};
+        std::array<std::string_view, static_cast<size_t>(Field::count_)>{
+            "duration", "month_handling"}};
 
-    [[nodiscard]] static auto encode(const dt::Interval &interval)
+    [[nodiscard]] static auto encode(const clndr::dt::Interval &interval)
         -> nlohmann::json;
 
     [[nodiscard]] static auto decode(const nlohmann::json &json)
-        -> std::expected<dt::Interval, Error::Code>;
+        -> std::expected<clndr::dt::Interval, Error::Code>;
 };
 
-static_assert(core::codec::json::Concept<Interval, dt::Interval>);
-} // namespace clndr::codec::json
+static_assert(core::codec::json::Concept<Interval, clndr::dt::Interval>);
+} // namespace clndr::codec::json::dt

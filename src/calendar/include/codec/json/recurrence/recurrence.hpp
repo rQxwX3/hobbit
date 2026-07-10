@@ -4,10 +4,11 @@
 #include <json.hpp>
 #include <recurrence/recurrence.hpp>
 
-namespace clndr::codec::json {
+namespace clndr::codec::json::rec {
 struct Recurrence : core::codec::json::Base<Recurrence> {
     struct Error : core::err::Base<Error> {
-        static constexpr auto className{std::string_view{"JSON::Recurrence"}};
+        static constexpr auto className{
+            std::string_view{"JSON::rec::Recurrence"}};
 
         enum class Code : uint8_t {
             MissingRequiredField,
@@ -71,12 +72,12 @@ struct Recurrence : core::codec::json::Base<Recurrence> {
         std::string_view{"interval"}};
     static constexpr auto weekdayPatternTypeValue{std::string_view{"weekday"}};
 
-    [[nodiscard]] static auto encode(const rec::Recurrence &recurrence)
+    [[nodiscard]] static auto encode(const clndr::rec::Recurrence &recurrence)
         -> nlohmann::json;
 
     [[nodiscard]] static auto decode(const nlohmann::json &json)
-        -> std::expected<rec::Recurrence, Error::Code>;
+        -> std::expected<clndr::rec::Recurrence, Error::Code>;
 };
 
-static_assert(core::codec::json::Concept<Recurrence, rec::Recurrence>);
-}; // namespace clndr::codec::json
+static_assert(core::codec::json::Concept<Recurrence, clndr::rec::Recurrence>);
+}; // namespace clndr::codec::json::rec

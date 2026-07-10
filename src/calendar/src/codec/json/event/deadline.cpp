@@ -1,23 +1,23 @@
 #include <codec/iso8601/datetime.hpp>
-#include <codec/json/deadline.hpp>
-#include <codec/json/interval.hpp>
+#include <codec/json/datetime/interval.hpp>
+#include <codec/json/event/deadline.hpp>
 
-namespace clndr::codec::json {
-[[nodiscard]] auto Deadline::encode(const ev::Deadline &deadline)
+namespace clndr::codec::json::ev {
+[[nodiscard]] auto Deadline::encode(const clndr::ev::Deadline &deadline)
     -> nlohmann::json {
     const auto type{deadline.getUnderlyingType()};
 
-    if (std::holds_alternative<dt::Interval>(type)) {
+    if (std::holds_alternative<clndr::dt::Interval>(type)) {
         auto intervalJSON =
-            json::Interval::encode(std::get<dt::Interval>(type));
+            json::dt::Interval::encode(std::get<clndr::dt::Interval>(type));
 
         return {{getFieldName(Field::type), typeIntervalValue},
                 {getFieldName(Field::interval), intervalJSON}};
     }
 
-    if (std::holds_alternative<dt::DateTime>(type)) {
+    if (std::holds_alternative<clndr::dt::DateTime>(type)) {
         auto datetimeISO8601{
-            iso8601::DateTime::encode(std::get<dt::DateTime>(type))};
+            iso8601::DateTime::encode(std::get<clndr::dt::DateTime>(type))};
         return {{getFieldName(Field::type), typeDateTimeValue},
                 {getFieldName(Field::datetime), datetimeISO8601}};
     }
@@ -26,7 +26,7 @@ namespace clndr::codec::json {
 }
 
 [[nodiscard]] auto Deadline::decode(const nlohmann::json &json)
-    -> std::expected<ev::Deadline, Error::Code> {
+    -> std::expected<clndr::ev::Deadline, Error::Code> {
     if (!json.contains(getFieldName(Field::type))) {
         return std::unexpected(Error::Code::MissingRequiredTypeField);
     }
@@ -37,12 +37,12 @@ namespace clndr::codec::json {
         }
 
         auto intervalFromJSON{
-            json::Interval::decode(json[getFieldName(Field::interval)])};
+            json::dt::Interval::decode(json[getFieldName(Field::interval)])};
         if (!intervalFromJSON) {
             return std::unexpected(Error::Code::FailedToParseInterval);
         }
 
-        return Deadline{intervalFromJSON.value()};
+        return clndr::ev::Deadline{intervalFromJSON.value()};
     }
 
     if (json[getFieldName(Field::type)] == typeDateTimeValue) {
@@ -56,13 +56,13 @@ namespace clndr::codec::json {
             return std::unexpected(Error::Code::FailedToParseDateTime);
         }
 
-        return Deadline{dateTimeFromJSON.value()};
+        return clndr::ev::Deadline{dateTimeFromJSON.value()};
     }
 
     if (json[getFieldName(Field::type)] == typeNullValue) {
-        return Deadline(std::monostate());
+        return clndr::ev::Deadline(std::monostate());
     }
 
     return std::unexpected(Error::Code::UnsupportedType);
 }
-}; // namespace clndr::codec::json
+}; // namespace clndr::codec::json::ev

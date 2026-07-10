@@ -6,11 +6,11 @@
 #include <json.hpp>
 #include <recurrence/selected_weekdays.hpp>
 
-namespace clndr::codec::json {
+namespace clndr::codec::json::rec {
 struct SelectedWeekdays : core::codec::json::Base<SelectedWeekdays> {
     struct Error : core::err::Base<Error> {
         static constexpr auto className{
-            std::string_view{"JSON::SelectedWeekdays"}};
+            std::string_view{"JSON::rec::SelectedWeekdays"}};
 
         enum class Code : uint8_t {
             NotString,
@@ -42,12 +42,13 @@ struct SelectedWeekdays : core::codec::json::Base<SelectedWeekdays> {
         std::array<std::string_view, static_cast<size_t>(Field::count_)>{}};
 
     [[nodiscard]] static auto
-    encode(const rec::SelectedWeekdays &selectedWeekdays) -> nlohmann::json;
+    encode(const clndr::rec::SelectedWeekdays &selectedWeekdays)
+        -> nlohmann::json;
 
     [[nodiscard]] static auto decode(const nlohmann::json &json)
-        -> std::expected<rec::SelectedWeekdays, Error::Code>;
+        -> std::expected<clndr::rec::SelectedWeekdays, Error::Code>;
 };
 
 static_assert(
-    core::codec::json::Concept<SelectedWeekdays, rec::SelectedWeekdays>);
-} // namespace clndr::codec::json
+    core::codec::json::Concept<SelectedWeekdays, clndr::rec::SelectedWeekdays>);
+} // namespace clndr::codec::json::rec

@@ -4,11 +4,11 @@
 #include <json.hpp>
 #include <recurrence/interval_pattern.hpp>
 
-namespace clndr::codec::json {
+namespace clndr::codec::json::rec {
 struct IntervalPattern : core::codec::json::Base<rec::IntervalPattern> {
     struct Error : core::err::Base<Error> {
         static constexpr auto className{
-            std::string_view{"JSON::IntervalPattern"}};
+            std::string_view{"JSON::rec::IntervalPattern"}};
 
         enum class Code : uint8_t {
             MissingRequiredField,
@@ -43,13 +43,13 @@ struct IntervalPattern : core::codec::json::Base<rec::IntervalPattern> {
         std::array<std::string_view, static_cast<size_t>(Field::count_)>{
             "interval"}};
 
-    [[nodiscard]] static auto encode(const rec::IntervalPattern &pattern)
+    [[nodiscard]] static auto encode(const clndr::rec::IntervalPattern &pattern)
         -> nlohmann::json;
 
     [[nodiscard]] static auto decode(const nlohmann::json &json)
-        -> std::expected<rec::IntervalPattern, Error::Code>;
+        -> std::expected<clndr::rec::IntervalPattern, Error::Code>;
 };
 
 static_assert(
-    core::codec::json::Concept<IntervalPattern, rec::IntervalPattern>);
-}; // namespace clndr::codec::json
+    core::codec::json::Concept<IntervalPattern, clndr::rec::IntervalPattern>);
+}; // namespace clndr::codec::json::rec

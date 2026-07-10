@@ -4,10 +4,10 @@
 #include <event/template.hpp>
 #include <json.hpp>
 
-namespace clndr::codec::json {
+namespace clndr::codec::json::ev {
 struct Template : core::codec::json::Base<Template> {
     struct Error : core::err::Base<Error> {
-        static constexpr auto className{std::string_view{"JSON::Template"}};
+        static constexpr auto className{std::string_view{"JSON::ev::Template"}};
 
         enum class Code : uint8_t {
             MissingRequiredField,
@@ -53,12 +53,12 @@ struct Template : core::codec::json::Base<Template> {
         std::array<std::string_view, static_cast<size_t>(Field::count_)>{
             "uuid", "title", "deadline", "recurrence"}};
 
-    [[nodiscard]] static auto encode(const ev::Template &eventTemplate)
+    [[nodiscard]] static auto encode(const clndr::ev::Template &eventTemplate)
         -> nlohmann::json;
 
     [[nodiscard]] static auto decode(const nlohmann::json &json)
-        -> std::expected<ev::Template, Error::Code>;
+        -> std::expected<clndr::ev::Template, Error::Code>;
 
-    static_assert(core::codec::json::Concept<Template, ev::Template>);
+    static_assert(core::codec::json::Concept<Template, clndr::ev::Template>);
 };
-} // namespace clndr::codec::json
+} // namespace clndr::codec::json::ev
