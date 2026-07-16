@@ -1,13 +1,12 @@
 #pragma once
 
 #include <algorithm>
-#include <array>
 
 namespace core {
 template <std::size_t N> struct FixedString {
-    std::array<char, N> value;
+    char value[N];
 
-    constexpr FixedString(const std::array<char, N> &string) {
+    constexpr FixedString(const char (&string)[N]) {
         std::copy_n(string, N, value);
     }
 };
