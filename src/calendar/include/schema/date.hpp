@@ -1,6 +1,7 @@
 #pragma once
 
 #include <datetime/date.hpp>
+#include <fields.hpp>
 #include <schema.hpp>
 #include <validation.hpp>
 
@@ -31,6 +32,7 @@ struct Date {
     using Model = dt::Date;
 
     using Fields = core::schema::Fields<
+        FieldID,
         core::schema::Field<FieldID::year, "year", Model::year_t,
                             core::validation::FieldRules<>>,
         core::schema::Field<FieldID::month, "month", Model::month_t,
