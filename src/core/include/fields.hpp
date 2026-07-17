@@ -4,10 +4,12 @@
 #include <validation.hpp>
 
 namespace core::schema {
-template <auto fieldID, core::FixedString string, typename T, typename... Rules>
+template <auto fieldID, core::FixedString string, auto Getter, typename T,
+          typename... Rules>
 struct Field {
     static constexpr auto id{fieldID};
     static constexpr auto name{string};
+    static constexpr auto getter{Getter};
 
     using type = T;
 
@@ -17,13 +19,18 @@ struct Field {
 template <typename ID_t, typename... Fs> struct Fields {
     using tuple = std::tuple<Fs...>;
 
-  private:
     template <ID_t id>
     using field = std::tuple_element_t<static_cast<std::size_t>(id), tuple>;
 
-  public:
+    template <ID_t id> using name = typename field<id>::name;
+
     template <ID_t id> using type = typename field<id>::type;
+
     template <ID_t id> using rules = typename field<id>::rules;
-    template <ID_t id> static constexpr auto name{field<id>::name};
+
+    template <typename Model>
+    [[nodiscard]] static constexpr auto validate(const Model &obj) -> bool {
+        return (Fs::rules::validate((obj.*Fs::getter)()) && ...);
+    }
 };
 }; // namespace core::schema
