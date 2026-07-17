@@ -15,11 +15,16 @@ struct Interval : core::schema::Base<Interval, dt::Interval> {
 
     using Fields = core::schema::Fields<
         FieldID,
-        core::schema::Field<FieldID::array, "array", &Model::getArray,
-                            Model::array_t,
-                            core::validation::Less<dt::Interval::maxValue>>,
+        core::schema::Field<
+            FieldID::array, "array", &Model::getArray, Model::array_t,
+            core::validation::Each<
+                core::validation::Less<dt::Interval::maxValue>>>,
+
         core::schema::Field<FieldID::monthHandling, "month_handling",
-                            &Model::getMonthHandling, Model::MonthHandling>>;
+                            &Model::getMonthHandling, Model::MonthHandling,
+                            core::validation::EnumRange<
+                                Model::MonthHandling::WrapAround,
+                                Model::MonthHandling::PreserveRelative>>>;
 
     using Rules = core::validation::ModelRules<Model>;
 };

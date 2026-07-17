@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <concepts>
 
 namespace core::validation {
@@ -13,15 +14,29 @@ concept ModelRule = requires(M const &object) {
     { R::check(object) } -> std::same_as<bool>;
 };
 
-template <typename... Rs> struct FieldRules;
+template <typename... Rs> struct FieldRules {
+    template <typename T> static auto validate(T const &value) -> bool {
+        return (Rs::check(value) && ...);
+    }
+};
 
 template <typename Model, typename... Rs> struct ModelRules {
-    template <typename F> static constexpr auto forEach(F &&f) -> void {
-        (f.template operator()<Rs>(), ...);
-    }
-
     static auto validate(Model const &model) -> bool {
         return (Rs::check(model) && ...);
+    }
+};
+
+template <typename Rule> struct Each {
+    template <typename Container> static bool check(const Container &c) {
+        return std::ranges::all_of(
+            c, [](const auto &value) -> auto { return Rule::check(value); });
+    }
+};
+
+template <auto Max> struct Less {
+    template <typename T>
+    [[nodiscard]] static auto check(const T &value) -> bool {
+        return value < Max;
     }
 };
 
@@ -29,6 +44,17 @@ template <auto Min, auto Max> struct Range {
     template <typename T>
     [[nodiscard]] static auto check(const T &value) -> bool {
         return Min <= value && value <= Max;
+    }
+};
+
+template <auto Min, auto Max> struct EnumRange {
+    template <typename E>
+        requires std::is_enum_v<E>
+
+    static constexpr auto check(E value) -> bool {
+        using U = std::underlying_type_t<E>;
+        auto v = static_cast<U>(value);
+        return v >= static_cast<U>(Min) && v <= static_cast<U>(Max);
     }
 };
 

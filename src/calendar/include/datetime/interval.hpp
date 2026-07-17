@@ -16,7 +16,7 @@ namespace clndr::dt {
 class Interval {
   public:
     struct Error : core::err::Base<Error> {
-        static constexpr auto className{std::string_view{"Interval"}};
+        static constexpr auto className{std::string_view{"dt::Interval"}};
 
         enum class Code : uint8_t {
             InvalidMonthHandling,
@@ -110,17 +110,7 @@ class Interval {
 
     static constexpr auto defaultMonthHandling{MonthHandling::WrapAround};
 
-    [[nodiscard]] static auto validateMonthHandling(MonthHandling monthHandling)
-        -> MonthHandling;
-
   public:
-    static constexpr auto daysInWeek{value_t{7}};
-    static constexpr auto monthsInYear{value_t{12}};
-    static constexpr auto minutesInHour{value_t{60}};
-    static constexpr auto hoursInDay{value_t{24}};
-
-    static constexpr auto minutesInDay{minutesInHour * hoursInDay};
-
   public:
     static constexpr auto units{
         std::array<Unit, Unit::COUNT_>{Unit::YEAR, Unit::MONTH, Unit::WEEK,
@@ -137,6 +127,9 @@ class Interval {
 
     explicit Interval(const struct_t &units,
                       MonthHandling = defaultMonthHandling);
+
+  public:
+    [[nodiscard]] auto ok() const -> bool;
 
   public:
     [[nodiscard]] auto convertUnitsDownwards() const -> Interval;
@@ -161,6 +154,8 @@ class Interval {
     auto addUnit(Unit unit, value_t value) -> void;
 
   public:
+    [[nodiscard]] auto getArray() const -> array_t;
+
     [[nodiscard]] auto getUnitsStruct() const -> struct_t;
 
     [[nodiscard]] auto getNonZeroUnitValuePairs() const
@@ -194,7 +189,7 @@ class Interval {
 
   public:
     [[nodiscard]] static auto fromNaturalLanguage(const std::string &input)
-        -> std::expected<Interval, Error>;
+        -> std::expected<Interval, Error::Code>;
 
     [[nodiscard]] auto toNaturalLanguage() const -> std::string;
 };

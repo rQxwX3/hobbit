@@ -1,35 +1,24 @@
 #include <datetime/datetime.hpp>
 #include <datetime/interval.hpp>
 #include <datetime/parsing/interval.hpp>
+#include <datetime/schema/interval.hpp>
 
 #include <algorithm>
 #include <string>
 
 namespace clndr::dt {
-[[nodiscard]] auto Interval::validateMonthHandling(MonthHandling monthHandling)
-    -> MonthHandling {
-    switch (monthHandling) {
-    case MonthHandling::PreserveRelative:
-        /* intentionally empty */
-    case MonthHandling::WrapAround:
-        return monthHandling;
-
-    default:
-        throw std::invalid_argument(
-            Error::getMessage(Error::Code::InvalidMonthHandling));
-    }
-}
-
 Interval::Interval(MonthHandling monthHandling)
-    : units_{array_t{}}, monthHandling_{validateMonthHandling(monthHandling)} {}
+    : units_{array_t{}}, monthHandling_{monthHandling} {}
 
 Interval::Interval(array_t unitsArray, MonthHandling monthHandling)
-    : units_{unitsArray}, monthHandling_{validateMonthHandling(monthHandling)} {
-}
+    : units_{unitsArray}, monthHandling_{monthHandling} {}
 
 Interval::Interval(const struct_t &unitsStruct, MonthHandling monthHandling)
-    : units_{unitsStruct.toArray()},
-      monthHandling_{validateMonthHandling(monthHandling)} {};
+    : units_{unitsStruct.toArray()}, monthHandling_{monthHandling} {};
+
+[[nodiscard]] auto Interval::ok() const -> bool {
+    return clndr::dt::schema::Interval::validate(*this);
+}
 
 [[nodiscard]] auto Interval::convertUnitsDownwards() const -> Interval {
     auto copy{*this};
@@ -41,10 +30,10 @@ Interval::Interval(const struct_t &unitsStruct, MonthHandling monthHandling)
             copy.units_[from] = 0;
         }};
 
-    convertDownwards(Unit::YEAR, Unit::MONTH, monthsInYear);
-    convertDownwards(Unit::WEEK, Unit::DAY, daysInWeek);
-    convertDownwards(Unit::DAY, Unit::HOUR, hoursInDay);
-    convertDownwards(Unit::HOUR, Unit::MINUTE, minutesInHour);
+    convertDownwards(Unit::YEAR, Unit::MONTH, dt::constants::monthsInYear);
+    convertDownwards(Unit::WEEK, Unit::DAY, dt::constants::daysInWeek);
+    convertDownwards(Unit::DAY, Unit::HOUR, dt::constants::hoursInDay);
+    convertDownwards(Unit::HOUR, Unit::MINUTE, dt::constants::minutesInHour);
 
     return copy;
 }
@@ -80,6 +69,8 @@ Interval::Interval(const struct_t &unitsStruct, MonthHandling monthHandling)
     return fromUnit(Unit::MINUTE, value);
 }
 
+[[nodiscard]] auto Interval::getArray() const -> array_t { return units_; }
+
 [[nodiscard]] auto Interval::getNonZeroUnitValuePairs() const
     -> std::vector<unitValuePair_t> {
     std::vector<unitValuePair_t> result;
@@ -99,7 +90,7 @@ Interval::Interval(const struct_t &unitsStruct, MonthHandling monthHandling)
 }
 
 auto Interval::setMonthHandling(MonthHandling monthHandling) -> void {
-    monthHandling_ = validateMonthHandling(monthHandling);
+    monthHandling_ = monthHandling;
 }
 
 auto Interval::addUnit(Unit unit, value_t value) -> void {
@@ -205,9 +196,10 @@ auto Interval::addUnit(Unit unit, value_t value) -> void {
 }
 
 [[nodiscard]] auto Interval::fromNaturalLanguage(const std::string &input)
-    -> std::expected<Interval, Error> {
+    -> std::expected<Interval, Error::Code> {
     auto interval{
-        util::IntervalParser<util::NaturalLanguageParser>::parse(input)};
+        dt::parsing::IntervalParser<dt::parsing::NaturalLanguageParser>::parse(
+            input)};
 
     if (!interval) {
         return std::unexpected(Error::Code::NaturalLanguageFailedToParse);
@@ -217,6 +209,7 @@ auto Interval::addUnit(Unit unit, value_t value) -> void {
 }
 
 [[nodiscard]] auto Interval::toNaturalLanguage() const -> std::string {
-    return util::IntervalParser<util::NaturalLanguageParser>::format(*this);
+    return dt::parsing::IntervalParser<
+        dt::parsing::NaturalLanguageParser>::format(*this);
 }
 } // namespace clndr::dt
