@@ -34,11 +34,10 @@ struct Date : core::schema::Base<Date, dt::Date> {
     using Fields = core::schema::Fields<
         FieldID,
         core::schema::Field<FieldID::year, "year", &Model::getYear,
-                            Model::year_t, core::validation::FieldRules<>>,
+                            Model::year_t>,
         core::schema::Field<FieldID::month, "month", &Model::getMonth,
-                            Model::month_t, core::validation::FieldRules<>>,
-        core::schema::Field<FieldID::day, "day", &Model::getDay, Model::day_t,
-                            core::validation::FieldRules<>>>;
+                            Model::month_t>,
+        core::schema::Field<FieldID::day, "day", &Model::getDay, Model::day_t>>;
 
     using Rules =
         core::validation::ModelRules<Model, RuleSet::ValidYearMonthDate>;

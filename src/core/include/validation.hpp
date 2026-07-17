@@ -92,5 +92,17 @@ struct ConsecutivelyAscending {
     }
 };
 
+template <typename Model> struct ValidOptional {
+    template <typename Optional>
+        requires std::same_as<Optional, std::optional<Model>>
+    static constexpr auto check(const Optional &opt) -> bool {
+        if (opt.has_value()) {
+            return opt->ok();
+        }
+
+        return true;
+    }
+};
+
 static_assert(TypeRule<Range<0, 10>, int>);
 }; // namespace core::validation
