@@ -9,21 +9,18 @@
 #include <validation.hpp>
 
 namespace clndr::dt::schema {
-struct DateTime {
+struct DateTime : core::schema::Base<DateTime, dt::DateTime> {
+    struct RuleSet {};
+
     enum class FieldID : size_t { value };
 
     using Model = dt::DateTime;
 
     using Fields = core::schema::Fields<
-        FieldID, core::schema::Field<FieldID::value, "value", Model::value_t>>;
-
-    struct RuleSet {};
+        FieldID, core::schema::Field<FieldID::value, "value", &Model::getValue,
+                                     Model::value_t>>;
 
     using Rules = core::validation::ModelRules<Model>;
-
-    [[nodiscard]] static auto validate(const Model &obj) -> bool {
-        return Date::validate(obj.getDate()) && Time::validate(obj.getTime());
-    }
 };
 
 static_assert(core::schema::Concept<DateTime, dt::DateTime>);

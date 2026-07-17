@@ -6,7 +6,7 @@
 #include <validation.hpp>
 
 namespace clndr::dt::schema {
-struct Date {
+struct Date : core::schema::Base<Date, dt::Date> {
     struct RuleSet {
         struct ValidYearMonthDate {
             [[nodiscard]] static auto check(const dt::Date &date) -> bool {
@@ -33,19 +33,15 @@ struct Date {
 
     using Fields = core::schema::Fields<
         FieldID,
-        core::schema::Field<FieldID::year, "year", Model::year_t,
-                            core::validation::FieldRules<>>,
-        core::schema::Field<FieldID::month, "month", Model::month_t,
-                            core::validation::FieldRules<>>,
-        core::schema::Field<FieldID::day, "day", Model::day_t,
+        core::schema::Field<FieldID::year, "year", &Model::getYear,
+                            Model::year_t, core::validation::FieldRules<>>,
+        core::schema::Field<FieldID::month, "month", &Model::getMonth,
+                            Model::month_t, core::validation::FieldRules<>>,
+        core::schema::Field<FieldID::day, "day", &Model::getDay, Model::day_t,
                             core::validation::FieldRules<>>>;
 
     using Rules =
         core::validation::ModelRules<Model, RuleSet::ValidYearMonthDate>;
-
-    [[nodiscard]] static auto validate(const Model &obj) -> bool {
-        return Rules::validate(obj);
-    }
 };
 
 static_assert(core::schema::Concept<Date, dt::Date>);
