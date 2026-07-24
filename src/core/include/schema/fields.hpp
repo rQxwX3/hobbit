@@ -1,6 +1,5 @@
 #pragma once
 
-#include <string_view>
 #include <tuple>
 
 #include <concepts.hpp>
@@ -12,8 +11,6 @@ namespace concepts {
 template <typename F, typename Model>
 concept Field = requires(const Model &obj) {
     { F::accessor(obj) } -> std::same_as<typename F::type>;
-
-    { F::name } -> std::same_as<std::string_view>;
 
     typename F::type;
 };
@@ -31,11 +28,10 @@ template <typename FT, typename Model>
 concept FieldTuple = impl::FieldTuple<FT, Model>::value;
 } // namespace concepts
 
-template <typename Model, typename T, auto Accessor, core::FixedString Name>
-struct Field {
-    static constexpr auto accessor{Accessor};
-    static constexpr auto name{Name};
-
+template <typename T, typename Model, auto Accessor> struct Field {
     using type = T;
+    using model = Model;
+
+    static constexpr auto accessor{Accessor};
 };
 } // namespace core::schema::fields

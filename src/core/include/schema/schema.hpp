@@ -1,29 +1,25 @@
 #pragma once
 
-#include <concepts>
 #include <schema/fields.hpp>
-
 #include <schema/rules.hpp>
 
 namespace core::schema {
-namespace concepts {
-template <typename S, typename Model>
-concept Schema =
-    std::same_as<typename S::Model, Model> && requires(const Model &obj) {
-        requires core::schema::fields::concepts::FieldTuple<typename S::fields,
-                                                            Model>;
-
-        requires core::schema::rules::concepts::RuleTuple<
-            typename S::rules, Model, typename S::fields>;
-
-        typename S::RuleSet;
-
-        { S::validate(obj) } -> std::same_as<bool>;
-    };
-}; // namespace concepts
-
 namespace meta {
 template <typename Field, typename Rules> struct RulesForField;
+
+/* declaration */
+template <typename... Tuples> struct Join;
+
+/* base case */
+template <> struct Join<> {
+    using type = std::tuple<>;
+};
+
+/* recursive case */
+template <typename... Ts, typename... Us, typename... Rest>
+struct Join<std::tuple<Ts...>, std::tuple<Us...>, Rest...> {
+    using type = typename Join<std::tuple<Ts..., Us...>, Rest...>::type;
+};
 
 template <typename Field, typename... Rules>
 struct RulesForField<Field, std::tuple<Rules...>> {
@@ -32,34 +28,34 @@ struct RulesForField<Field, std::tuple<Rules...>> {
         std::conditional_t<rules::concepts::RuleContainsField<Rule, Field>,
                            std::tuple<Rule>, std::tuple<>>;
 
-    template <typename... Ts> struct Join;
-
-    template <typename... Ts> struct Join<std::tuple<Ts...>> {
-        using type = std::tuple<Ts...>;
-    };
-
     using type = typename Join<Match<Rules>...>::type;
 };
 } // namespace meta
 
-template <typename Derived, typename Model> struct Base {
+template <typename Model, typename Fields, typename Rules>
+    requires fields::concepts::FieldTuple<Fields, Model> &&
+             rules::concepts::RuleTuple<Rules, Model, Fields>
+struct Schema {
+    using model = Model;
+    using fields = Fields;
+    using rules = Rules;
+
     [[nodiscard]] static auto validate(const Model &obj) -> bool {
         return std::apply(
             [&](auto... rules) -> bool {
                 return (decltype(rules)::check(obj) && ...);
             },
-            typename Derived::rules{});
+            rules{});
     }
 
     template <typename Field>
-        requires core::concepts::TupleContains<typename Derived::fields, Field>
+        requires core::concepts::TupleContains<Field, Fields>
     [[nodiscard]] static auto validateField(const Model &obj) -> bool {
         return std::apply(
             [&](auto... rules) -> bool {
                 return (decltype(rules)::check(obj) && ...);
             },
-            typename meta::RulesForField<Field,
-                                         typename Derived::rules>::type{});
+            typename meta::RulesForField<Field, rules>::type{});
     }
 };
 }; // namespace core::schema
