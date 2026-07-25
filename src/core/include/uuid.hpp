@@ -5,7 +5,7 @@
 #include <random>
 #include <string>
 
-namespace hbt::core::uuid {
+namespace core {
 using uuid_t = std::string;
 
 [[nodiscard]] inline auto generateUUID() -> uuid_t {
@@ -15,4 +15,4 @@ using uuid_t = std::string;
 
     return uuids::to_string(uuidGen());
 }
-}; // namespace hbt::core::uuid
+}; // namespace core

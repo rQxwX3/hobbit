@@ -4,7 +4,6 @@
 
 #include <concepts.hpp>
 #include <fixed_string.hpp>
-#include <model.hpp>
 
 namespace core::schema::fields {
 namespace concepts {
@@ -28,10 +27,12 @@ template <typename FT, typename Model>
 concept FieldTuple = impl::FieldTuple<FT, Model>::value;
 } // namespace concepts
 
-template <typename T, typename Model, auto Accessor> struct Field {
+template <typename T, typename Model, auto Accessor, FixedString Name>
+struct Field {
     using type = T;
     using model = Model;
 
     static constexpr auto accessor{Accessor};
+    static constexpr auto name{Name};
 };
 } // namespace core::schema::fields

@@ -40,7 +40,7 @@ struct Schema {
     using fields = Fields;
     using rules = Rules;
 
-    [[nodiscard]] static auto validate(const Model &obj) -> bool {
+    [[nodiscard]] static auto validate(const model &obj) -> bool {
         return std::apply(
             [&](auto... rules) -> bool {
                 return (decltype(rules)::check(obj) && ...);
@@ -49,8 +49,8 @@ struct Schema {
     }
 
     template <typename Field>
-        requires core::concepts::TupleContains<Field, Fields>
-    [[nodiscard]] static auto validateField(const Model &obj) -> bool {
+        requires core::concepts::TupleContains<Field, fields>
+    [[nodiscard]] static auto validateField(const model &obj) -> bool {
         return std::apply(
             [&](auto... rules) -> bool {
                 return (decltype(rules)::check(obj) && ...);

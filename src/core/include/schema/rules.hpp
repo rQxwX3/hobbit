@@ -24,6 +24,7 @@ template <typename... Rs, typename Model, typename... Fields>
 struct RuleTuple<std::tuple<Rs...>, Model, std::tuple<Fields...>>
     : std::bool_constant<(Rule<Rs, Model, Fields...> && ...)> {};
 } // namespace impl
+
 template <typename Rule, typename Field>
 concept RuleContainsField =
     core::concepts::TupleContains<Field, typename Rule::fields>;

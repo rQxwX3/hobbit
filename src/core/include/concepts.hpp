@@ -25,7 +25,7 @@ struct NonEmptyTuple<std::tuple<Ts...>>
     : std::bool_constant<(sizeof...(Ts) > 0)> {};
 } // namespace impl
 
-template <typename Tuple, typename T>
+template <typename T, typename Tuple>
 concept TupleContains = impl::TupleContains<T, Tuple>::value;
 
 template <typename Subset, typename Superset>
