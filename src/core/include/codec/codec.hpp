@@ -11,7 +11,7 @@ namespace concepts {
 template <typename T, typename Model, typename Representation>
 concept Codec =
     err::Concept<typename T::Error> && requires(Model obj, Representation rep) {
-        requires fields::concepts::FieldTuple<typename T::fields, Model>;
+        requires fields::concepts::FieldTuple<typename T::fields>;
 
         { T::encode(obj) } -> std::same_as<Representation>;
         {
