@@ -1,28 +1,39 @@
 #pragma once
 
 #include <datetime/opt_datetime.hpp>
-#include <fields.hpp>
-#include <schema.hpp>
-#include <validation.hpp>
+#include <datetime/schema/datetime.hpp>
+#include <schema/fields.hpp>
+#include <schema/rules.hpp>
+#include <schema/schema.hpp>
 
-namespace clndr::dt::schema {
-struct OptDateTime : core::schema::Base<OptDateTime, dt::OptDateTime> {
-    struct RuleSet {};
+namespace clndr::dt::schema::opt_datetime {
+namespace fields {
+using namespace core::schema::fields;
+using Value =
+    Field<dt::OptDateTime::value_t, dt::OptDateTime,
+          [](const dt::OptDateTime &opt_datetime) -> dt::OptDateTime::value_t {
+              return opt_datetime.getValue();
+          },
+          "opt_datetime">;
 
-    enum class FieldID : size_t {
-        value,
-    };
+using all = Fields<Value>;
+}; // namespace fields
 
-    using Model = dt::OptDateTime;
+namespace rules {
+using namespace core::schema::rules;
+using ValidValue = Rule<[](const dt::OptDateTime &opt_datetime) -> bool {
+    const auto value{fields::Value::accessor(opt_datetime)};
 
-    using Fields = core::schema::Fields<
-        FieldID,
-        core::schema::Field<FieldID::value, "value", &Model::getOptional,
-                            Model::value_t,
-                            core::validation::ValidOptional<dt::DateTime>>>;
+    if (!value.has_value()) {
+        return true;
+    }
 
-    using Rules = core::validation::ModelRules<Model>;
-};
+    return schema::datetime::Schema::validate(value.value());
+},
+                        fields::Value>;
 
-static_assert(core::schema::Concept<OptDateTime, dt::OptDateTime>);
-}; // namespace clndr::dt::schema
+using all = Rules<ValidValue>;
+}; // namespace rules
+
+using Schema = core::schema::Schema<dt::OptDateTime, fields::all, rules::all>;
+}; // namespace clndr::dt::schema::opt_datetime
