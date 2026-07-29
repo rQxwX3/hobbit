@@ -1,47 +1,48 @@
 #pragma once
 
 #include <datetime/date.hpp>
-#include <fields.hpp>
-#include <schema.hpp>
-#include <validation.hpp>
+#include <schema/fields.hpp>
+#include <schema/rules.hpp>
+#include <schema/schema.hpp>
 
 namespace clndr::dt::schema {
-struct Date : core::schema::Base<Date, dt::Date> {
-    struct RuleSet {
-        struct ValidYearMonthDate {
-            [[nodiscard]] static auto check(const dt::Date &date) -> bool {
-                auto ymd{std::chrono::year_month_day(
-                    std::chrono::year(date.getYear()),
-                    std::chrono::month(date.getMonth()),
-                    std::chrono::day(date.getDay()))};
+namespace fields {
+using namespace core::schema::fields;
+using YearField = Field<dt::Date::year_t, dt::Date,
+                        [](const dt::Date &date) -> dt::Date::year_t {
+                            return date.getYear();
+                        },
+                        "year">;
 
-                return ymd.ok();
-            }
-        };
+using MonthField = Field<dt::Date::month_t, dt::Date,
+                         [](const dt::Date &date) -> dt::Date::month_t {
+                             return date.getMonth();
+                         },
+                         "month">;
 
-        static_assert(
-            core::validation::ModelRule<ValidYearMonthDate, dt::Date>);
-    };
+using DayField =
+    Field<dt::Date::day_t, dt::Date,
+          [](const dt::Date &date) -> dt::Date::day_t { return date.getDay(); },
+          "day">;
 
-    enum class FieldID : size_t {
-        year,
-        month,
-        day,
-    };
+using Fields = Fields<YearField, MonthField, DayField>;
+}; // namespace fields
 
-    using Model = dt::Date;
+namespace rules {
+using namespace core::schema::rules;
 
-    using Fields = core::schema::Fields<
-        FieldID,
-        core::schema::Field<FieldID::year, "year", &Model::getYear,
-                            Model::year_t>,
-        core::schema::Field<FieldID::month, "month", &Model::getMonth,
-                            Model::month_t>,
-        core::schema::Field<FieldID::day, "day", &Model::getDay, Model::day_t>>;
+using ValidYearMonth = Rule<[](const dt::Date &date) -> bool {
+    auto ymd{std::chrono::year_month_day(
+        std::chrono::year(fields::YearField::accessor(date)),
+        std::chrono::month(fields::MonthField::accessor(date)),
+        std::chrono::day(fields::DayField::accessor(date)))};
 
-    using Rules =
-        core::validation::ModelRules<Model, RuleSet::ValidYearMonthDate>;
-};
+    return ymd.ok();
+},
+                            fields::Fields>;
 
-static_assert(core::schema::Concept<Date, dt::Date>);
+using Rules = Rules<ValidYearMonth>;
+}; // namespace rules
+
+using DateSchema = core::schema::Schema<dt::Date, fields::Fields, rules::Rules>;
 }; // namespace clndr::dt::schema
