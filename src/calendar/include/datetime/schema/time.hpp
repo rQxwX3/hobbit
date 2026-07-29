@@ -6,7 +6,7 @@
 #include <schema/rules.hpp>
 #include <schema/schema.hpp>
 
-namespace clndr::dt::schema {
+namespace clndr::dt::schema::time {
 namespace fields {
 using namespace core::schema::fields;
 using Hour = Field<dt::Time::hour_t, dt::Time,
@@ -21,7 +21,7 @@ using Minute = Field<dt::Time::minute_t, dt::Time,
                      },
                      "minute">;
 
-using Fields = Fields<Hour, Minute>;
+using all = Fields<Hour, Minute>;
 }; // namespace fields
 
 namespace rules {
@@ -42,8 +42,8 @@ using ValidMinute = Rule<[](const dt::Time &time) -> bool {
 },
                          fields::Minute>;
 
-using Rules = Rules<ValidHour, ValidHour>;
+using all = Rules<ValidHour, ValidHour>;
 }; // namespace rules
 
-using Time = core::schema::Schema<dt::Time, fields::Fields, rules::Rules>;
-}; // namespace clndr::dt::schema
+using Schema = core::schema::Schema<dt::Time, fields::all, rules::all>;
+}; // namespace clndr::dt::schema::time

@@ -5,7 +5,7 @@
 #include <schema/rules.hpp>
 #include <schema/schema.hpp>
 
-namespace clndr::dt::schema {
+namespace clndr::dt::schema::date {
 namespace fields {
 using namespace core::schema::fields;
 using Year = Field<dt::Date::year_t, dt::Date,
@@ -25,7 +25,7 @@ using Day =
           [](const dt::Date &date) -> dt::Date::day_t { return date.getDay(); },
           "day">;
 
-using Fields = Fields<Year, Month, Day>;
+using all = Fields<Year, Month, Day>;
 }; // namespace fields
 
 namespace rules {
@@ -39,10 +39,10 @@ using ValidYearMonth = Rule<[](const dt::Date &date) -> bool {
 
     return ymd.ok();
 },
-                            fields::Fields>;
+                            fields::all>;
 
-using Rules = Rules<ValidYearMonth>;
+using all = Rules<ValidYearMonth>;
 }; // namespace rules
 
-using Date = core::schema::Schema<dt::Date, fields::Fields, rules::Rules>;
-}; // namespace clndr::dt::schema
+using Schema = core::schema::Schema<dt::Date, fields::all, rules::all>;
+}; // namespace clndr::dt::schema::date

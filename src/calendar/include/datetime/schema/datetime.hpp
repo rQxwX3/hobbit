@@ -1,27 +1,44 @@
 #pragma once
 
-#include <datetime/constants.hpp>
 #include <datetime/datetime.hpp>
 #include <datetime/schema/date.hpp>
 #include <datetime/schema/time.hpp>
-#include <fields.hpp>
-#include <schema.hpp>
-#include <validation.hpp>
+#include <schema/fields.hpp>
+#include <schema/rules.hpp>
+#include <schema/schema.hpp>
 
-namespace clndr::dt::schema {
-struct DateTime : core::schema::Base<DateTime, dt::DateTime> {
-    struct RuleSet {};
+namespace clndr::dt::schema::datetime {
+namespace fields {
+using namespace core::schema::fields;
+using Date = Field<dt::Date, dt::DateTime,
+                   [](const dt::DateTime &datetime) -> dt::Date {
+                       return datetime.getDate();
+                   },
+                   "date">;
 
-    enum class FieldID : size_t { value };
+using Time = Field<dt::Time, dt::DateTime,
+                   [](const dt::DateTime &datetime) -> dt::Time {
+                       return datetime.getTime();
+                   },
+                   "time">;
 
-    using Model = dt::DateTime;
+using all = Fields<Date, Time>;
+}; // namespace fields
 
-    using Fields = core::schema::Fields<
-        FieldID, core::schema::Field<FieldID::value, "value", &Model::getValue,
-                                     Model::value_t>>;
+namespace rules {
+using namespace core::schema::rules;
+using ValidDate = Rule<[](const dt::DateTime &datetime) -> bool {
+    return dt::schema::date::Schema::validate(fields::Date::accessor(datetime));
+},
+                       fields::Date>;
 
-    using Rules = core::validation::ModelRules<Model>;
-};
+using ValidTime = Rule<[](const dt::DateTime &datetime) -> bool {
+    return dt::schema::time::Schema::validate(fields::Time::accessor(datetime));
+},
+                       fields::Time>;
 
-static_assert(core::schema::Concept<DateTime, dt::DateTime>);
-}; // namespace clndr::dt::schema
+using all = Rules<ValidDate, ValidTime>;
+}; // namespace rules
+
+using Schema = core::schema::Schema<dt::DateTime, fields::all, rules::all>;
+}; // namespace clndr::dt::schema::datetime
