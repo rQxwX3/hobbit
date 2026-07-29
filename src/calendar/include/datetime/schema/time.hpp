@@ -2,47 +2,48 @@
 
 #include <datetime/constants.hpp>
 #include <datetime/time.hpp>
-#include <fields.hpp>
-#include <schema.hpp>
-#include <validation.hpp>
+#include <schema/fields.hpp>
+#include <schema/rules.hpp>
+#include <schema/schema.hpp>
 
 namespace clndr::dt::schema {
-struct Time : core::schema::Base<Time, dt::Time> {
-    struct RuleSet {
-        struct ValidHourMinute {
-            [[nodiscard]] static auto check(const dt::Time &time) -> bool {
-                return Fields::template rules<FieldID::hour>::validate(
-                           time.getHour()) &&
-                       Fields::template rules<FieldID::minute>::validate(
-                           time.getMinute());
-            }
-        };
-    };
+namespace fields {
+using namespace core::schema::fields;
+using Hour = Field<dt::Time::hour_t, dt::Time,
+                   [](const dt::Time &time) -> dt::Time::hour_t {
+                       return time.getHour();
+                   },
+                   "hour">;
 
-    enum class FieldID : size_t {
-        hour,
-        minute,
-    };
+using Minute = Field<dt::Time::minute_t, dt::Time,
+                     [](const dt::Time &time) -> dt::Time::minute_t {
+                         return time.getMinute();
+                     },
+                     "minute">;
 
-    using Model = dt::Time;
+using Fields = Fields<Hour, Minute>;
+}; // namespace fields
 
-    using Fields = core::schema::Fields<
-        FieldID,
+namespace rules {
+using namespace core::schema::rules;
+using ValidHour = Rule<[](const dt::Time &time) -> bool {
+    const auto value{fields::Hour::accessor(time)};
 
-        core::schema::Field<
-            FieldID::hour, "hour", &Model::getHour, Model::hour_t,
-            core::validation::Range<dt::constants::minHourValue,
-                                    dt::constants::maxHourValue>>,
+    return dt::constants::minHourValue <= value &&
+           value <= dt::constants::maxHourValue;
+},
+                       fields::Hour>;
 
-        core::schema::Field<
-            FieldID::minute, "minute", &Model::getMinute, Model::minute_t,
-            core::validation::Range<dt::constants::minMinuteValue,
-                                    dt::constants::maxMinuteValue>>
+using ValidMinute = Rule<[](const dt::Time &time) -> bool {
+    const auto value{fields::Minute::accessor(time)};
 
-        >;
+    return dt::constants::minMinuteValue <= value &&
+           value <= dt::constants::maxMinuteValue;
+},
+                         fields::Minute>;
 
-    using Rules = core::validation::ModelRules<Model, RuleSet::ValidHourMinute>;
-};
+using Rules = Rules<ValidHour, ValidHour>;
+}; // namespace rules
 
-static_assert(core::schema::Concept<Time, dt::Time>);
+using Time = core::schema::Schema<dt::Time, fields::Fields, rules::Rules>;
 }; // namespace clndr::dt::schema

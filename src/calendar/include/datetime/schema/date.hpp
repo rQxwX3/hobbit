@@ -8,24 +8,24 @@
 namespace clndr::dt::schema {
 namespace fields {
 using namespace core::schema::fields;
-using YearField = Field<dt::Date::year_t, dt::Date,
-                        [](const dt::Date &date) -> dt::Date::year_t {
-                            return date.getYear();
-                        },
-                        "year">;
+using Year = Field<dt::Date::year_t, dt::Date,
+                   [](const dt::Date &date) -> dt::Date::year_t {
+                       return date.getYear();
+                   },
+                   "year">;
 
-using MonthField = Field<dt::Date::month_t, dt::Date,
-                         [](const dt::Date &date) -> dt::Date::month_t {
-                             return date.getMonth();
-                         },
-                         "month">;
+using Month = Field<dt::Date::month_t, dt::Date,
+                    [](const dt::Date &date) -> dt::Date::month_t {
+                        return date.getMonth();
+                    },
+                    "month">;
 
-using DayField =
+using Day =
     Field<dt::Date::day_t, dt::Date,
           [](const dt::Date &date) -> dt::Date::day_t { return date.getDay(); },
           "day">;
 
-using Fields = Fields<YearField, MonthField, DayField>;
+using Fields = Fields<Year, Month, Day>;
 }; // namespace fields
 
 namespace rules {
@@ -33,9 +33,9 @@ using namespace core::schema::rules;
 
 using ValidYearMonth = Rule<[](const dt::Date &date) -> bool {
     auto ymd{std::chrono::year_month_day(
-        std::chrono::year(fields::YearField::accessor(date)),
-        std::chrono::month(fields::MonthField::accessor(date)),
-        std::chrono::day(fields::DayField::accessor(date)))};
+        std::chrono::year(fields::Year::accessor(date)),
+        std::chrono::month(fields::Month::accessor(date)),
+        std::chrono::day(fields::Day::accessor(date)))};
 
     return ymd.ok();
 },
@@ -44,5 +44,5 @@ using ValidYearMonth = Rule<[](const dt::Date &date) -> bool {
 using Rules = Rules<ValidYearMonth>;
 }; // namespace rules
 
-using DateSchema = core::schema::Schema<dt::Date, fields::Fields, rules::Rules>;
+using Date = core::schema::Schema<dt::Date, fields::Fields, rules::Rules>;
 }; // namespace clndr::dt::schema

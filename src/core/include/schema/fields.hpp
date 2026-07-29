@@ -35,4 +35,6 @@ struct Field {
     static constexpr auto accessor{Accessor};
     static constexpr auto name{Name};
 };
+
+template <typename... Fs> using Fields = std::tuple<Fs...>;
 } // namespace core::schema::fields

@@ -33,7 +33,24 @@ template <typename RT, typename Model, typename Fields>
 concept RuleTuple = impl::RuleTuple<RT, Model, Fields>::value;
 } // namespace concepts
 
-template <typename Fields> struct Rule {
-    using fields = Fields;
+template <auto Validator, typename... Fields> struct Rule {
+    using fields = std::tuple<Fields...>;
+
+    template <typename Model>
+    static constexpr auto check(const Model &obj) -> bool {
+        return Validator(obj);
+    }
 };
+
+template <auto Validator, typename... Fields>
+struct Rule<Validator, std::tuple<Fields...>> {
+    using fields = std::tuple<Fields...>;
+
+    template <typename Model>
+    static constexpr auto check(const Model &obj) -> bool {
+        return Validator(obj);
+    }
+};
+
+template <typename... Rs> using Rules = std::tuple<Rs...>;
 } // namespace core::schema::rules
