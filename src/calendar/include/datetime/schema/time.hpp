@@ -12,14 +12,12 @@ using namespace core::schema::fields;
 using Hour = Field<dt::Time::hour_t, dt::Time,
                    [](const dt::Time &time) -> dt::Time::hour_t {
                        return time.getHour();
-                   },
-                   "hour">;
+                   }>;
 
 using Minute = Field<dt::Time::minute_t, dt::Time,
                      [](const dt::Time &time) -> dt::Time::minute_t {
                          return time.getMinute();
-                     },
-                     "minute">;
+                     }>;
 
 using all = Fields<Hour, Minute>;
 }; // namespace fields

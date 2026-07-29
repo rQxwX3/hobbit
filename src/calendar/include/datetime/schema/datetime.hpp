@@ -10,17 +10,15 @@
 namespace clndr::dt::schema::datetime {
 namespace fields {
 using namespace core::schema::fields;
-using Date = Field<dt::Date, dt::DateTime,
-                   [](const dt::DateTime &datetime) -> dt::Date {
-                       return datetime.getDate();
-                   },
-                   "date">;
+using Date =
+    Field<dt::Date, dt::DateTime, [](const dt::DateTime &datetime) -> dt::Date {
+        return datetime.getDate();
+    }>;
 
-using Time = Field<dt::Time, dt::DateTime,
-                   [](const dt::DateTime &datetime) -> dt::Time {
-                       return datetime.getTime();
-                   },
-                   "time">;
+using Time =
+    Field<dt::Time, dt::DateTime, [](const dt::DateTime &datetime) -> dt::Time {
+        return datetime.getTime();
+    }>;
 
 using all = Fields<Date, Time>;
 }; // namespace fields

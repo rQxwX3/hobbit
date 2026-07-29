@@ -13,8 +13,7 @@ using Value =
     Field<dt::OptDateTime::value_t, dt::OptDateTime,
           [](const dt::OptDateTime &opt_datetime) -> dt::OptDateTime::value_t {
               return opt_datetime.getValue();
-          },
-          "opt_datetime">;
+          }>;
 
 using all = Fields<Value>;
 }; // namespace fields

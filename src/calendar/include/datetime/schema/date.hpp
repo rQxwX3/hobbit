@@ -11,19 +11,17 @@ using namespace core::schema::fields;
 using Year = Field<dt::Date::year_t, dt::Date,
                    [](const dt::Date &date) -> dt::Date::year_t {
                        return date.getYear();
-                   },
-                   "year">;
+                   }>;
 
 using Month = Field<dt::Date::month_t, dt::Date,
                     [](const dt::Date &date) -> dt::Date::month_t {
                         return date.getMonth();
-                    },
-                    "month">;
+                    }>;
 
-using Day =
-    Field<dt::Date::day_t, dt::Date,
-          [](const dt::Date &date) -> dt::Date::day_t { return date.getDay(); },
-          "day">;
+using Day = Field<dt::Date::day_t, dt::Date,
+                  [](const dt::Date &date) -> dt::Date::day_t {
+                      return date.getDay();
+                  }>;
 
 using all = Fields<Year, Month, Day>;
 }; // namespace fields
