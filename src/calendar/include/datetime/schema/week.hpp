@@ -7,7 +7,7 @@
 #include <schema/rules.hpp>
 #include <schema/schema.hpp>
 
-namespace clndr::dt::schema {
+namespace clndr::dt::schema::week {
 namespace fields {
 using namespace core::schema::fields;
 using Array = Field<dt::Week::array_t, dt::Week,
@@ -36,4 +36,4 @@ using all = Rules<ValidArray>;
 }; // namespace rules
 
 using Schema = core::schema::Schema<dt::Week, fields::all, rules::all>;
-}; // namespace clndr::dt::schema
+}; // namespace clndr::dt::schema::week
