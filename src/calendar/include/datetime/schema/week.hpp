@@ -1,29 +1,39 @@
 #pragma once
 
+#include <algorithm>
+#include <datetime/schema/date.hpp>
 #include <datetime/week.hpp>
-#include <fields.hpp>
-#include <schema.hpp>
-#include <validation.hpp>
+#include <schema/fields.hpp>
+#include <schema/rules.hpp>
+#include <schema/schema.hpp>
 
 namespace clndr::dt::schema {
-struct Week : core::schema::Base<Week, dt::Week> {
-    struct RuleSet {};
+namespace fields {
+using namespace core::schema::fields;
+using Array = Field<dt::Week::array_t, dt::Week,
+                    [](const dt::Week &week) -> dt::Week::array_t {
+                        return week.toArray();
+                    }>;
 
-    enum class FieldID : size_t {
-        array,
-    };
+using all = Fields<Array>;
+}; // namespace fields
 
-    using Model = dt::Week;
+namespace rules {
+using namespace core::schema::rules;
+using ValidArray = Rule<[](const dt::Week &week) -> bool {
+    const auto array{week.toArray()};
 
-    using Fields = core::schema::Fields<
-        FieldID,
+    return std::ranges::all_of(
+               array,
+               [](const dt::Date &date) -> bool {
+                   return clndr::dt::schema::date::Schema::validate(date);
+               }) &&
+           std::ranges::is_sorted(array.begin(), array.end());
+},
+                        fields::Array>;
 
-        core::schema::Field<FieldID::array, "array", &Model::toArray,
-                            Model::array_t,
-                            core::validation::ConsecutivelyAscending>>;
+using all = Rules<ValidArray>;
+}; // namespace rules
 
-    using Rules = core::validation::ModelRules<Model>;
-};
-
-static_assert(core::schema::Concept<Week, dt::Week>);
+using Schema = core::schema::Schema<dt::Week, fields::all, rules::all>;
 }; // namespace clndr::dt::schema
