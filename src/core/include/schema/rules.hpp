@@ -22,33 +22,25 @@ struct RuleTuple : std::bool_constant<false> {};
 
 template <typename... Rs, typename Model, typename... Fields>
 struct RuleTuple<std::tuple<Rs...>, Model, std::tuple<Fields...>>
-    : std::bool_constant<(Rule<Rs, Model, Fields...> && ...)> {};
+    : std::bool_constant<(concepts::Rule<Rs, Model, Fields...> && ...)> {};
 } // namespace impl
-
-template <typename Rule, typename Field>
-concept RuleContainsField =
-    core::concepts::TupleContains<Field, typename Rule::fields>;
 
 template <typename RT, typename Model, typename Fields>
 concept RuleTuple = impl::RuleTuple<RT, Model, Fields>::value;
+
+template <typename ModelRule, typename Field>
+concept RuleContainsField =
+    core::concepts::TupleContains<Field, typename ModelRule::fields>;
 } // namespace concepts
 
-template <auto Validator, typename... Fields> struct Rule {
+template <typename Model, auto Checker, typename... Fields> struct Rule {};
+
+template <typename Model, auto Checker, typename... Fields>
+struct Rule<Model, Checker, std::tuple<Fields...>> {
     using fields = std::tuple<Fields...>;
 
-    template <typename Model>
     static constexpr auto check(const Model &obj) -> bool {
-        return Validator(obj);
-    }
-};
-
-template <auto Validator, typename... Fields>
-struct Rule<Validator, std::tuple<Fields...>> {
-    using fields = std::tuple<Fields...>;
-
-    template <typename Model>
-    static constexpr auto check(const Model &obj) -> bool {
-        return Validator(obj);
+        return Checker(obj);
     }
 };
 

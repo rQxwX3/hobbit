@@ -34,7 +34,7 @@ struct RulesForField<Field, std::tuple<Rules...>> {
 
 template <typename Model, typename Fields, typename Rules>
     requires fields::concepts::FieldTuple<Fields, Model> &&
-             rules::concepts::RuleTuple<Rules, Model, Fields>
+             schema::rules::concepts::RuleTuple<Rules, Model, Fields>
 struct Schema {
     using model = Model;
     using fields = Fields;
@@ -50,7 +50,7 @@ struct Schema {
 
     template <typename Field>
         requires core::concepts::TupleContains<Field, fields>
-    [[nodiscard]] static auto validateField(const model &obj) -> bool {
+    [[nodiscard]] static auto validateAffectedRules(const model &obj) -> bool {
         return std::apply(
             [&](auto... rules) -> bool {
                 return (decltype(rules)::check(obj) && ...);
