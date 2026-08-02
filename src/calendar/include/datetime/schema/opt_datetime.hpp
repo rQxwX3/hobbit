@@ -10,7 +10,7 @@ namespace clndr::dt::schema::opt_datetime {
 namespace fields {
 using namespace core::schema::fields;
 using Value =
-    Field<dt::OptDateTime::value_t, dt::OptDateTime,
+    Field<dt::OptDateTime::value_t,
           [](const dt::OptDateTime &opt_datetime) -> dt::OptDateTime::value_t {
               return opt_datetime.getValue();
           }>;

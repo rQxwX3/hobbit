@@ -8,20 +8,19 @@
 namespace clndr::dt::schema::date {
 namespace fields {
 using namespace core::schema::fields;
-using Year = Field<dt::Date::year_t, dt::Date,
-                   [](const dt::Date &date) -> dt::Date::year_t {
-                       return date.getYear();
-                   }>;
+using Year =
+    Field<dt::Date::year_t, [](const dt::Date &date) -> dt::Date::year_t {
+        return date.getYear();
+    }>;
 
-using Month = Field<dt::Date::month_t, dt::Date,
-                    [](const dt::Date &date) -> dt::Date::month_t {
-                        return date.getMonth();
-                    }>;
+using Month =
+    Field<dt::Date::month_t, [](const dt::Date &date) -> dt::Date::month_t {
+        return date.getMonth();
+    }>;
 
-using Day = Field<dt::Date::day_t, dt::Date,
-                  [](const dt::Date &date) -> dt::Date::day_t {
-                      return date.getDay();
-                  }>;
+using Day = Field<dt::Date::day_t, [](const dt::Date &date) -> dt::Date::day_t {
+    return date.getDay();
+}>;
 
 using all = Fields<Year, Month, Day>;
 }; // namespace fields

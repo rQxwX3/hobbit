@@ -10,10 +10,10 @@
 namespace clndr::dt::schema::week {
 namespace fields {
 using namespace core::schema::fields;
-using Array = Field<dt::Week::array_t, dt::Week,
-                    [](const dt::Week &week) -> dt::Week::array_t {
-                        return week.toArray();
-                    }>;
+using Array =
+    Field<dt::Week::array_t, [](const dt::Week &week) -> dt::Week::array_t {
+        return week.toArray();
+    }>;
 
 using all = Fields<Array>;
 }; // namespace fields

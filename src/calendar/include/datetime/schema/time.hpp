@@ -9,15 +9,15 @@
 namespace clndr::dt::schema::time {
 namespace fields {
 using namespace core::schema::fields;
-using Hour = Field<dt::Time::hour_t, dt::Time,
-                   [](const dt::Time &time) -> dt::Time::hour_t {
-                       return time.getHour();
-                   }>;
+using Hour =
+    Field<dt::Time::hour_t, [](const dt::Time &time) -> dt::Time::hour_t {
+        return time.getHour();
+    }>;
 
-using Minute = Field<dt::Time::minute_t, dt::Time,
-                     [](const dt::Time &time) -> dt::Time::minute_t {
-                         return time.getMinute();
-                     }>;
+using Minute =
+    Field<dt::Time::minute_t, [](const dt::Time &time) -> dt::Time::minute_t {
+        return time.getMinute();
+    }>;
 
 using all = Fields<Hour, Minute>;
 }; // namespace fields
@@ -27,20 +27,20 @@ using namespace core::schema::rules;
 using ValidHour = Rule<[](const dt::Time &time) -> bool {
     const auto value{fields::Hour::accessor(time)};
 
-    return dt::constants::minHourValue <= value &&
-           value <= dt::constants::maxHourValue;
+    return (dt::constants::minHourValue <= value) &&
+           (value <= dt::constants::maxHourValue);
 },
                        fields::Hour>;
 
 using ValidMinute = Rule<[](const dt::Time &time) -> bool {
     const auto value{fields::Minute::accessor(time)};
 
-    return dt::constants::minMinuteValue <= value &&
-           value <= dt::constants::maxMinuteValue;
+    return (dt::constants::minMinuteValue <= value) &&
+           (value <= dt::constants::maxMinuteValue);
 },
                          fields::Minute>;
 
-using all = Rules<ValidHour, ValidHour>;
+using all = Rules<ValidHour, ValidMinute>;
 }; // namespace rules
 
 using Schema = core::schema::Schema<dt::Time, fields::all, rules::all>;
