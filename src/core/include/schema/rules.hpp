@@ -33,12 +33,20 @@ concept RuleContainsField =
     core::concepts::TupleContains<Field, typename ModelRule::fields>;
 } // namespace concepts
 
-template <typename Model, auto Checker, typename... Fields> struct Rule {};
-
-template <typename Model, auto Checker, typename... Fields>
-struct Rule<Model, Checker, std::tuple<Fields...>> {
+template <auto Checker, typename... Fields> struct Rule {
     using fields = std::tuple<Fields...>;
 
+    template <typename Model>
+    static constexpr auto check(const Model &obj) -> bool {
+        return Checker(obj);
+    }
+};
+
+template <auto Checker, typename... Fields>
+struct Rule<Checker, std::tuple<Fields...>> {
+    using fields = std::tuple<Fields...>;
+
+    template <typename Model>
     static constexpr auto check(const Model &obj) -> bool {
         return Checker(obj);
     }

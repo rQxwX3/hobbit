@@ -28,9 +28,8 @@ concept FieldTuple = impl::FieldTuple<FT, Model>::value;
 
 } // namespace concepts
 
-template <typename T, typename Model, auto Accessor> struct Field {
+template <typename T, auto Accessor> struct Field {
     using type = T;
-    using model = Model;
 
     static constexpr auto accessor{Accessor};
 };

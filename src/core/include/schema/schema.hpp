@@ -43,7 +43,7 @@ struct Schema {
     [[nodiscard]] static auto validate(const model &obj) -> bool {
         return std::apply(
             [&](auto... rules) -> bool {
-                return (decltype(rules)::check(obj) && ...);
+                return (decltype(rules)::template check<model>(obj) && ...);
             },
             rules{});
     }
@@ -53,7 +53,7 @@ struct Schema {
     [[nodiscard]] static auto validateAffectedRules(const model &obj) -> bool {
         return std::apply(
             [&](auto... rules) -> bool {
-                return (decltype(rules)::check(obj) && ...);
+                return (decltype(rules)::template check<model>(obj) && ...);
             },
             typename meta::RulesForField<Field, rules>::type{});
     }
