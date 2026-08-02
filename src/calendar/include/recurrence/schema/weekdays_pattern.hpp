@@ -41,8 +41,13 @@ using ValidFirstWeek =
 
 using ValidInterval =
     Rule<[](const rec::WeekdaysPattern &weekdaysPattern) -> bool {
-        return dt::schema::interval::Schema::validate(
-            fields::Interval::accessor(weekdaysPattern));
+        const auto value{fields::Interval::accessor(weekdaysPattern)};
+
+        if (!dt::schema::interval::Schema::validate(value)) {
+            return false;
+        }
+
+        return value.onlyContainsUnit(dt::Interval::WEEK);
     },
          fields::Interval>;
 
