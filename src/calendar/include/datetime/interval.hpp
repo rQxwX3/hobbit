@@ -19,6 +19,8 @@ class Interval {
         static constexpr auto className{std::string_view{"dt::Interval"}};
 
         enum class Code : uint8_t {
+            InvalidCtorArgs,
+
             InvalidMonthHandling,
 
             ISO8601FailedToParse,
@@ -30,6 +32,10 @@ class Interval {
         [[nodiscard]] static constexpr auto getMessage(Code code)
             -> std::string {
             switch (code) {
+            case Code::InvalidCtorArgs:
+                return generateMessage(
+                    "cannot instantiate valid object from provided arguments");
+
             case Code::InvalidMonthHandling:
                 return generateMessage("provided month handling is invalid");
 
@@ -95,7 +101,7 @@ class Interval {
     };
 
   public:
-    static constexpr value_t maxValue{std::numeric_limits<value_t>::max()};
+    static constexpr auto maxValue{std::numeric_limits<value_t>::max()};
 
     [[nodiscard]] static constexpr auto isValidValue(std::uint64_t value)
         -> bool {
@@ -110,7 +116,17 @@ class Interval {
 
     static constexpr auto defaultMonthHandling{MonthHandling::WrapAround};
 
-  public:
+    static constexpr auto isValidMonthHandling(Interval::MonthHandling value)
+        -> bool {
+        switch (value) {
+        case Interval::MonthHandling::WrapAround:
+        case Interval::MonthHandling::PreserveRelative:
+            return true;
+        }
+
+        return false;
+    }
+
   public:
     static constexpr auto units{
         std::array<Unit, Unit::COUNT_>{Unit::YEAR, Unit::MONTH, Unit::WEEK,
@@ -130,6 +146,8 @@ class Interval {
 
   public:
     [[nodiscard]] auto ok() const -> bool;
+
+    template <typename Field> [[nodiscard]] auto fieldOK() const -> bool;
 
   public:
     [[nodiscard]] auto convertUnitsDownwards() const -> Interval;

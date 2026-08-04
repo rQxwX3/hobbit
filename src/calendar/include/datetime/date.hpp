@@ -5,8 +5,7 @@
 
 #include <datetime/constants.hpp>
 #include <datetime/interval.hpp>
-
-#include <model.hpp>
+#include <error.hpp>
 
 namespace clndr::dt {
 class Date {
@@ -18,22 +17,32 @@ class Date {
     using duration_t = std::chrono::days;
 
   public:
-    enum class Error : uint8_t {
-        InvalidInterval,
-        MissingFieldTypeSpecialization
-    };
+    struct Error : core::err::Base<Error> {
+        static constexpr auto className{std::string_view{"dt::Date"}};
 
-  public:
-    [[nodiscard]] static constexpr auto errorMessage(Error error)
-        -> std::string {
-        switch (error) {
-        case Error::InvalidInterval:
-            return "Date: cannot perform addition with non-date interval";
+        enum class Code : uint8_t {
+            InvalidInterval,
+            InvalidCtorArgs,
+        };
 
-        default:
-            std::unreachable();
+        [[nodiscard]] static constexpr auto getMessage(Code code)
+            -> std::string {
+            switch (code) {
+            case Code::InvalidInterval:
+                return generateMessage(
+                    "cannot perform addition with non-date interval");
+
+            case Code::InvalidCtorArgs:
+                return generateMessage(
+                    "cannot instantiate valid object from provided arguments");
+
+            default:
+                std::unreachable();
+            }
         }
-    }
+
+        static_assert(core::err::Concept<Error>);
+    };
 
   private:
     /* order must not be changed */
@@ -42,22 +51,15 @@ class Date {
     day_t day_;
 
   public:
-    // struct Schema {
-    //     enum class FieldID : core::FieldID { year, month, day, count_ };
-    //
-    //     using fields = core::Fields<
-    //         core::Field<year_t, static_cast<core::FieldID>(FieldID::year),
-    //                     "year">,
-    //         core::Field<month_t, static_cast<core::FieldID>(FieldID::month),
-    //                     "month">,
-    //         core::Field<day_t, static_cast<core::FieldID>(FieldID::day),
-    //                     "day">>;
-    // };
-
-  public:
     Date();
 
     Date(year_t year, month_t month, day_t day);
+
+  public:
+    [[nodiscard]] auto ok() const -> bool;
+
+  public:
+    [[nodiscard]] auto next(const Date &date) -> Date;
 
   public:
     [[nodiscard]] auto getYear() const -> year_t;
@@ -67,8 +69,6 @@ class Date {
     [[nodiscard]] auto getDay() const -> day_t;
 
   public:
-    [[nodiscard]] auto ok() const -> bool;
-
     [[nodiscard]] auto toDuration() const -> duration_t;
 
     [[nodiscard]] auto toYMD() const -> std::chrono::year_month_day;

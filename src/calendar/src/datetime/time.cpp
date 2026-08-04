@@ -1,14 +1,25 @@
+#include <datetime/schema/time.hpp>
 #include <datetime/time.hpp>
-#include <schema/time.hpp>
 
 namespace clndr::dt {
-Time::Time(hour_t hour, minute_t minute) : hour_{hour}, minute_{minute} {}
+Time::Time(hour_t hour, minute_t minute) : hour_{hour}, minute_{minute} {
+    if (!ok()) {
+        throw std::runtime_error(
+            Error::getMessage(Error::Code::InvalidCtorArgs));
+    }
+}
+
+[[nodiscard]] auto Time::midnight() -> Time { return {0, 0}; }
+
+[[nodiscard]] auto Time::ok() const -> bool {
+    return schema::time::Schema::validate(*this);
+}
 
 [[nodiscard]] auto Time::getHour() const -> hour_t { return hour_; }
 
 [[nodiscard]] auto Time::getMinute() const -> minute_t { return minute_; }
 
 [[nodiscard]] auto Time::toDuration() const -> duration_t {
-    return duration_t((hour_ * Interval::minutesInHour) + minute_);
+    return duration_t((hour_ * constants::minutesInHour) + minute_);
 }
 } // namespace clndr::dt

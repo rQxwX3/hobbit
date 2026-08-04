@@ -1,6 +1,6 @@
 #include <datetime/date.hpp>
 #include <datetime/datetime.hpp>
-#include <schema/date.hpp>
+#include <datetime/schema/date.hpp>
 
 namespace clndr::dt {
 Date::Date()
@@ -9,15 +9,26 @@ Date::Date()
       day_{DateTime::now().getDate().getDay()} {}
 
 Date::Date(year_t year, month_t month, day_t day)
-    : year_{year}, month_{month}, day_{day} {}
+    : year_{year}, month_{month}, day_{day} {
+    if (!ok()) {
+        throw std::runtime_error(
+            Error::getMessage(Error::Code::InvalidCtorArgs));
+    }
+}
+
+[[nodiscard]] auto Date::ok() const -> bool {
+    return schema::date::Schema::validate(*this);
+}
+
+[[nodiscard]] auto Date::next(const Date &date) -> Date {
+    return date + Interval::days(1);
+}
 
 [[nodiscard]] auto Date::getYear() const -> year_t { return year_; }
 
 [[nodiscard]] auto Date::getMonth() const -> month_t { return month_; }
 
 [[nodiscard]] auto Date::getDay() const -> day_t { return day_; }
-
-[[nodiscard]] auto Date::ok() const -> bool { return clndr::schema::Date:: }
 
 [[nodiscard]] auto Date::toDuration() const -> duration_t {
     auto ymd{std::chrono::year_month_day(std::chrono::year(year_),
@@ -81,7 +92,8 @@ Date::Date(year_t year, month_t month, day_t day)
     auto addWeeksAndDays([](year_month_day &ymd, Interval::value_t weeks,
                             Interval::value_t days) -> void {
         auto sysdays{sys_days(ymd)};
-        sysdays += std::chrono::days((weeks * Interval::daysInWeek) + days);
+        sysdays +=
+            std::chrono::days((weeks * dt::constants::daysInWeek) + days);
 
         ymd = year_month_day(sysdays);
     });

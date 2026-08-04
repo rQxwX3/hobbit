@@ -3,8 +3,6 @@
 #include <algorithm>
 #include <datetime/schema/date.hpp>
 #include <datetime/week.hpp>
-#include <schema/fields.hpp>
-#include <schema/rules.hpp>
 #include <schema/schema.hpp>
 
 namespace clndr::dt::schema::week {

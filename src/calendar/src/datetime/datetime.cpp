@@ -1,11 +1,21 @@
 #include <datetime/datetime.hpp>
+#include <datetime/schema/datetime.hpp>
 
 namespace clndr::dt {
 using std::chrono::system_clock;
 
 DateTime::DateTime() : value_{DateTime::now().value_} {}
 
-DateTime::DateTime(value_t value) : value_{value} {}
+DateTime::DateTime(value_t value) : value_{value} {
+    if (!ok()) {
+        throw std::runtime_error(
+            Error::getMessage(Error::Code::InvalidCtorArgs));
+    }
+}
+
+[[nodiscard]] auto DateTime::ok() const -> bool {
+    return schema::datetime::Schema::validate(*this);
+}
 
 DateTime::DateTime(Date date, Time time)
     : value_{duration_t(date.toDuration() + time.toDuration())} {
@@ -93,10 +103,9 @@ DateTime::DateTime(Date date, Time time)
     auto dateInDays{floor<days>(value_)};
     auto timeOfDay{value_ - dateInDays};
 
-    auto date{getDate()};
-    date = date + interval;
-
+    auto date{getDate() + interval};
     auto timepoint{sys_days(date.toYMD()) + timeOfDay};
+
     addHoursAndMinutes(timepoint, interval[Unit::HOUR], interval[Unit::MINUTE]);
 
     return {timepoint};
@@ -121,6 +130,6 @@ auto DateTime::operator+=(const Interval &interval) -> DateTime & {
     -> Interval {
     auto minutesDiff{DateTime::diff(dt1, dt2)[Interval::Unit::MINUTE]};
 
-    return Interval::days(minutesDiff / Interval::minutesInDay);
+    return Interval::days(minutesDiff / constants::minutesInDay);
 }
 }; // namespace clndr::dt

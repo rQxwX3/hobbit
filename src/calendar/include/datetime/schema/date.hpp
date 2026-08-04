@@ -1,8 +1,6 @@
 #pragma once
 
 #include <datetime/date.hpp>
-#include <schema/fields.hpp>
-#include <schema/rules.hpp>
 #include <schema/schema.hpp>
 
 namespace clndr::dt::schema::date {
@@ -27,7 +25,6 @@ using all = Fields<Year, Month, Day>;
 
 namespace rules {
 using namespace core::schema::rules;
-
 using ValidYearMonth = Rule<[](const dt::Date &date) -> bool {
     auto ymd{std::chrono::year_month_day(
         std::chrono::year(fields::Year::accessor(date)),

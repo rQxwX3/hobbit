@@ -8,16 +8,35 @@
 
 namespace clndr::dt {
 Interval::Interval(MonthHandling monthHandling)
-    : units_{array_t{}}, monthHandling_{monthHandling} {}
+    : units_{array_t{}}, monthHandling_{monthHandling} {
+    if (!fieldOK<schema::interval::fields::MonthHandling>()) {
+        throw std::runtime_error(
+            Error::getMessage(Error::Code::InvalidMonthHandling));
+    }
+}
 
 Interval::Interval(array_t unitsArray, MonthHandling monthHandling)
-    : units_{unitsArray}, monthHandling_{monthHandling} {}
+    : units_{unitsArray}, monthHandling_{monthHandling} {
+    if (!ok()) {
+        throw std::runtime_error(
+            Error::getMessage(Error::Code::InvalidCtorArgs));
+    }
+}
 
 Interval::Interval(const struct_t &unitsStruct, MonthHandling monthHandling)
-    : units_{unitsStruct.toArray()}, monthHandling_{monthHandling} {};
+    : units_{unitsStruct.toArray()}, monthHandling_{monthHandling} {
+    if (!ok()) {
+        throw std::runtime_error(
+            Error::getMessage(Error::Code::InvalidCtorArgs));
+    }
+};
 
 [[nodiscard]] auto Interval::ok() const -> bool {
-    return clndr::dt::schema::Interval::validate(*this);
+    return schema::interval::Schema::validate(*this);
+}
+
+template <typename Field> [[nodiscard]] auto Interval::fieldOK() const -> bool {
+    return schema::interval::Schema::validateAffectedRules<Field>(*this);
 }
 
 [[nodiscard]] auto Interval::convertUnitsDownwards() const -> Interval {
@@ -91,6 +110,11 @@ Interval::Interval(const struct_t &unitsStruct, MonthHandling monthHandling)
 
 auto Interval::setMonthHandling(MonthHandling monthHandling) -> void {
     monthHandling_ = monthHandling;
+
+    if (!fieldOK<schema::interval::fields::MonthHandling>()) {
+        throw std::runtime_error(
+            Error::getMessage(Error::Code::InvalidMonthHandling));
+    }
 }
 
 auto Interval::addUnit(Unit unit, value_t value) -> void {

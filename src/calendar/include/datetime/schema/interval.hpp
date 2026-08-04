@@ -1,12 +1,9 @@
 #include <datetime/interval.hpp>
-#include <schema/fields.hpp>
-#include <schema/rules.hpp>
 #include <schema/schema.hpp>
 
 namespace clndr::dt::schema::interval {
 namespace fields {
 using namespace core::schema::fields;
-
 using MonthHandling =
     Field<dt::Interval::MonthHandling,
           [](const dt::Interval &interval) -> dt::Interval::MonthHandling {
@@ -23,7 +20,6 @@ using all = Fields<MonthHandling, Array>;
 
 namespace rules {
 using namespace core::schema::rules;
-
 using ValidMonthHandling = Rule<[](const dt::Interval &interval) -> bool {
     const auto value{fields::MonthHandling::accessor(interval)};
 
@@ -35,5 +31,5 @@ using ValidMonthHandling = Rule<[](const dt::Interval &interval) -> bool {
 using all = Rules<ValidMonthHandling>;
 }; // namespace rules
 
-using schema = core::schema::Schema<dt::Interval, fields::all, rules::all>;
+using Schema = core::schema::Schema<dt::Interval, fields::all, rules::all>;
 }; // namespace clndr::dt::schema::interval

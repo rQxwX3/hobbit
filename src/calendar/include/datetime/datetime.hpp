@@ -19,9 +19,11 @@ class DateTime {
 
   public:
     struct Error : core::err::Base<Error> {
-        static constexpr auto className{std::string_view{"DateTime"}};
+        static constexpr auto className{std::string_view{"dt::DateTime"}};
 
         enum class Code : uint8_t {
+            InvalidCtorArgs,
+
             FailedToValidateDate,
             FailedToValidateTime,
 
@@ -35,23 +37,28 @@ class DateTime {
         [[nodiscard]] static constexpr auto getMessage(Code code)
             -> std::string {
             switch (code) {
+            case Code::InvalidCtorArgs:
+                return generateMessage(
+                    "cannot instantiate valid object from provided arguments");
+
             case Code::FailedToValidateDate:
-                return "failed to validate provided Date";
+                return generateMessage("failed to validate provided Date");
 
             case Code::FailedToValidateTime:
-                return "failed to validate provided Time";
+                return generateMessage("failed to validate provided Time");
 
             case Code::ISO8601RegexMismatch:
-                return "provided input doesn't match regex";
+                return generateMessage("provided input doesn't match regex");
 
             case Code::ISO8601UnitNotMatched:
-                return "provided input doesn't contain required unit(s)";
+                return generateMessage(
+                    "provided input doesn't contain required unit(s)");
 
             case Code::ISO8601InvalidDate:
-                return "provided input contains invalid Date";
+                return generateMessage("provided input contains invalid Date");
 
             case Code::ISO8601InvalidTime:
-                return "provided input contains invalid Time";
+                return generateMessage("provided input contains invalid Time");
 
             default:
                 std::unreachable();
@@ -64,6 +71,9 @@ class DateTime {
   private:
     value_t value_;
 
+  public:
+    [[nodiscard]] auto ok() const -> bool;
+
   private:
     [[nodiscard]] auto getDaysSinceEpoch() const -> Date::duration_t;
 
@@ -74,7 +84,7 @@ class DateTime {
 
     DateTime(value_t value);
 
-    DateTime(Date date, Time time = Time(0, 0));
+    DateTime(Date date, Time time = Time::midnight());
 
   public:
     [[nodiscard]] static auto now() -> DateTime;

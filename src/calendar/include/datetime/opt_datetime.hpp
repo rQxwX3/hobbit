@@ -1,18 +1,17 @@
 #pragma once
 
-#include <array>
+#include <optional>
 
-#include <datetime/constants.hpp>
-#include <datetime/date.hpp>
+#include <datetime/datetime.hpp>
 
 namespace clndr::dt {
-class Week {
+class OptDateTime {
   public:
-    using array_t = std::array<Date, constants::weekdaysCount>;
+    using value_t = std::optional<DateTime>;
 
   public:
     struct Error : core::err::Base<Error> {
-        static constexpr auto className{std::string_view{"dt::Week"}};
+        static constexpr auto className{std::string_view{"dt::OptDateTime"}};
 
         enum class Code : uint8_t {
             InvalidCtorArgs,
@@ -35,20 +34,23 @@ class Week {
     };
 
   private:
-    array_t array_;
+    value_t value_;
 
   public:
-    Week(Date date);
-
-    Week(array_t array);
+    OptDateTime(value_t optDateTime);
 
   public:
     [[nodiscard]] auto ok() const -> bool;
 
   public:
-    [[nodiscard]] auto toArray() const -> array_t;
+    [[nodiscard]] auto hasValue() const -> bool;
+
+    [[nodiscard]] auto getValue() const -> DateTime;
+
+    [[nodiscard]] auto getOptional() const -> value_t;
 
   public:
-    [[nodiscard]] auto operator[](constants::Weekday wd) const -> Date;
+    [[nodiscard]] auto operator==(const OptDateTime &other) const
+        -> bool = default;
 };
 } // namespace clndr::dt
