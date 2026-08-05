@@ -9,30 +9,6 @@ class OptDateTime {
   public:
     using value_t = std::optional<DateTime>;
 
-  public:
-    struct Error : core::err::Base<Error> {
-        static constexpr auto className{std::string_view{"dt::OptDateTime"}};
-
-        enum class Code : uint8_t {
-            InvalidCtorArgs,
-        };
-
-        [[nodiscard]] static constexpr auto getMessage(Code code)
-            -> std::string {
-            switch (code) {
-
-            case Code::InvalidCtorArgs:
-                return generateMessage(
-                    "cannot instantiate valid object from provided arguments");
-
-            default:
-                std::unreachable();
-            }
-        }
-
-        static_assert(core::err::Concept<Error>);
-    };
-
   private:
     value_t value_;
 

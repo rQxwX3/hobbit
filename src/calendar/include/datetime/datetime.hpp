@@ -9,64 +9,11 @@
 #include <datetime/interval.hpp>
 #include <datetime/time.hpp>
 
-#include <error.hpp>
-
 namespace clndr::dt {
 class DateTime {
   public:
     using duration_t = std::chrono::minutes;
     using value_t = std::chrono::sys_time<duration_t>;
-
-  public:
-    struct Error : core::err::Base<Error> {
-        static constexpr auto className{std::string_view{"dt::DateTime"}};
-
-        enum class Code : uint8_t {
-            InvalidCtorArgs,
-
-            FailedToValidateDate,
-            FailedToValidateTime,
-
-            ISO8601RegexMismatch,
-            ISO8601UnitNotMatched,
-
-            ISO8601InvalidDate,
-            ISO8601InvalidTime,
-        };
-
-        [[nodiscard]] static constexpr auto getMessage(Code code)
-            -> std::string {
-            switch (code) {
-            case Code::InvalidCtorArgs:
-                return generateMessage(
-                    "cannot instantiate valid object from provided arguments");
-
-            case Code::FailedToValidateDate:
-                return generateMessage("failed to validate provided Date");
-
-            case Code::FailedToValidateTime:
-                return generateMessage("failed to validate provided Time");
-
-            case Code::ISO8601RegexMismatch:
-                return generateMessage("provided input doesn't match regex");
-
-            case Code::ISO8601UnitNotMatched:
-                return generateMessage(
-                    "provided input doesn't contain required unit(s)");
-
-            case Code::ISO8601InvalidDate:
-                return generateMessage("provided input contains invalid Date");
-
-            case Code::ISO8601InvalidTime:
-                return generateMessage("provided input contains invalid Time");
-
-            default:
-                std::unreachable();
-            }
-        }
-    };
-
-    static_assert(core::err::Concept<Error>);
 
   private:
     value_t value_;

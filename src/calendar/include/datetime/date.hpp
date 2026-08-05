@@ -5,7 +5,6 @@
 
 #include <datetime/constants.hpp>
 #include <datetime/interval.hpp>
-#include <error.hpp>
 
 namespace clndr::dt {
 class Date {
@@ -15,34 +14,6 @@ class Date {
     using day_t = uint8_t;
 
     using duration_t = std::chrono::days;
-
-  public:
-    struct Error : core::err::Base<Error> {
-        static constexpr auto className{std::string_view{"dt::Date"}};
-
-        enum class Code : uint8_t {
-            InvalidInterval,
-            InvalidCtorArgs,
-        };
-
-        [[nodiscard]] static constexpr auto getMessage(Code code)
-            -> std::string {
-            switch (code) {
-            case Code::InvalidInterval:
-                return generateMessage(
-                    "cannot perform addition with non-date interval");
-
-            case Code::InvalidCtorArgs:
-                return generateMessage(
-                    "cannot instantiate valid object from provided arguments");
-
-            default:
-                std::unreachable();
-            }
-        }
-
-        static_assert(core::err::Concept<Error>);
-    };
 
   private:
     /* order must not be changed */

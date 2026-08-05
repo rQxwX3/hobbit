@@ -15,50 +15,6 @@
 namespace clndr::dt {
 class Interval {
   public:
-    struct Error : core::err::Base<Error> {
-        static constexpr auto className{std::string_view{"dt::Interval"}};
-
-        enum class Code : uint8_t {
-            InvalidCtorArgs,
-
-            InvalidMonthHandling,
-
-            ISO8601FailedToParse,
-            NaturalLanguageFailedToParse,
-
-            InvalidComparison,
-        };
-
-        [[nodiscard]] static constexpr auto getMessage(Code code)
-            -> std::string {
-            switch (code) {
-            case Code::InvalidCtorArgs:
-                return generateMessage(
-                    "cannot instantiate valid object from provided arguments");
-
-            case Code::InvalidMonthHandling:
-                return generateMessage("provided month handling is invalid");
-
-            case Code::ISO8601FailedToParse:
-                return generateMessage("failed to parse from ISO8601");
-
-            case Code::NaturalLanguageFailedToParse:
-                return generateMessage("failed to parse from natural language");
-
-            case Code::InvalidComparison:
-                return generateMessage(
-                    "cannot compare intervals if one of them contains both "
-                    "months and minutes after downward conversion");
-
-            default:
-                std::unreachable();
-            }
-        }
-    };
-
-    static_assert(core::err::Concept<Error>);
-
-  public:
     using Unit = enum : uint8_t {
         YEAR,
         MONTH,
@@ -207,7 +163,7 @@ class Interval {
 
   public:
     [[nodiscard]] static auto fromNaturalLanguage(const std::string &input)
-        -> std::expected<Interval, Error::Code>;
+        -> std::expected<Interval, core::error::code_t>;
 
     [[nodiscard]] auto toNaturalLanguage() const -> std::string;
 };

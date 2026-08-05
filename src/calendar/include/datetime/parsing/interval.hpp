@@ -16,53 +16,12 @@ concept IntervalParserConcept =
     requires(T parser, const std::string &s, const Interval &u) {
         {
             parser.parse(s)
-        } -> std::same_as<std::expected<Interval, typename T::Error::Code>>;
+        } -> std::same_as<std::expected<Interval, core::error::code_t>>;
 
         { parser.format(u) } -> std::convertible_to<std::string>;
     };
 
 class NaturalLanguageParser {
-  public:
-    struct Error : core::err::Base<Error> {
-        static constexpr auto className{
-            std::string_view{"dt::parsing::IntervalPattern"}};
-
-        enum class Code : uint8_t {
-            RegexMismatch,
-            UnitBucketNotFound,
-            ParsingMatchedUnit,
-            InvalidUnitValue,
-            FailedToParseUnit,
-        };
-
-        [[nodiscard]] static constexpr auto getMessage(Code error)
-            -> std::string {
-            switch (error) {
-            case Code::RegexMismatch:
-                return generateMessage("provided input didn't match regex");
-
-            case Code::UnitBucketNotFound:
-                return generateMessage("unit bucket(s) not initialized");
-
-            case Code::ParsingMatchedUnit:
-                return generateMessage(
-                    "provided input contains the same unit more than once");
-
-            case Code::InvalidUnitValue:
-                return generateMessage("provided input contains invalid value "
-                                       "(possible overflow)");
-
-            case Code::FailedToParseUnit:
-                return generateMessage("couldn't parse one or more units");
-
-            default:
-                std::unreachable();
-            }
-        }
-    };
-
-    static_assert(core::err::Concept<Error>);
-
   private:
     class UnitBucket {
       private:
@@ -176,7 +135,7 @@ class NaturalLanguageParser {
 
   private:
     [[nodiscard]] static auto getBucketOfUnit(const std::string &unitString)
-        -> std::expected<UnitBucket, Error::Code>;
+        -> std::expected<UnitBucket, core::error::code_t>;
 
     static auto parseUnit(const std::string &unit, Interval::value_t value,
                           Interval &interval, matchedBuckets_t &matchedBuckets)
@@ -194,35 +153,10 @@ class NaturalLanguageParser {
     [[nodiscard]] auto static format(const Interval &interval) -> std::string;
 
     [[nodiscard]] static auto parse(const std::string &input)
-        -> std::expected<Interval, Error::Code>;
+        -> std::expected<Interval, core::error::code_t>;
 };
 
-class ISO8601IntervalParser {
-  public:
-    struct Error : core::err::Base<Error> {
-        static constexpr auto className{
-            std::string_view{"dt::parsing::IntervalPattern"}};
-
-        enum class Code : uint8_t { RegexMismatch, InvalidUnitValue };
-
-        [[nodiscard]] static constexpr auto getMessage(Code error)
-            -> std::string {
-            switch (error) {
-            case Code::RegexMismatch:
-                return generateMessage("provided input didn't match regex");
-
-            case Code::InvalidUnitValue:
-                return generateMessage("provided input contains invalid value "
-                                       "(possible overflow)");
-
-            default:
-                std::unreachable();
-            }
-        }
-    };
-
-    static_assert(core::err::Concept<Error>);
-
+class ISO8601Parser {
   private:
     using Unit = Interval::Unit;
 
@@ -248,9 +182,9 @@ class ISO8601IntervalParser {
 
   public:
     [[nodiscard]] static auto parse(const std::string &input)
-        -> std::expected<Interval, Error::Code>;
+        -> std::expected<Interval, core::error::code_t>;
 
-    [[nodiscard]] auto static format(const Interval &interval) -> std::string;
+    [[nodiscard]] static auto format(const Interval &interval) -> std::string;
 };
 
 template <typename Parser>
@@ -258,7 +192,7 @@ template <typename Parser>
 class IntervalParser {
   public:
     [[nodiscard]] static auto parse(const std::string &input)
-        -> std::expected<Interval, typename Parser::Error> {
+        -> std::expected<Interval, core::error::code_t> {
         return Parser::parse(input);
     }
 

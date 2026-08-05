@@ -10,30 +10,6 @@ class Week {
   public:
     using array_t = std::array<Date, constants::weekdaysCount>;
 
-  public:
-    struct Error : core::err::Base<Error> {
-        static constexpr auto className{std::string_view{"dt::Week"}};
-
-        enum class Code : uint8_t {
-            InvalidCtorArgs,
-        };
-
-        [[nodiscard]] static constexpr auto getMessage(Code code)
-            -> std::string {
-            switch (code) {
-
-            case Code::InvalidCtorArgs:
-                return generateMessage(
-                    "cannot instantiate valid object from provided arguments");
-
-            default:
-                std::unreachable();
-            }
-        }
-
-        static_assert(core::err::Concept<Error>);
-    };
-
   private:
     array_t array_;
 
