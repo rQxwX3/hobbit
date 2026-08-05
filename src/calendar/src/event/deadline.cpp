@@ -1,9 +1,19 @@
 #include <event/deadline.hpp>
 #include <event/error/deadline.hpp>
+#include <event/schema/deadline.hpp>
 
 namespace clndr::ev {
 Deadline::Deadline(underlying_type_t type)
-    : type_{validateUnderlyingType(std::move(type))} {}
+    : type_{validateUnderlyingType(std::move(type))} {
+    if (!ok()) {
+        throw std::invalid_argument(
+            std::string(error::deadline::InvalidCtorArgs::msg));
+    }
+}
+
+[[nodiscard]] auto Deadline::ok() const -> bool {
+    return schema::deadline::Schema::validate(*this);
+}
 
 [[nodiscard]] auto Deadline::validateUnderlyingType(underlying_type_t type)
     -> underlying_type_t {
