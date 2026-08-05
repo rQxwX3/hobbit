@@ -1,4 +1,5 @@
 #include <event/deadline.hpp>
+#include <event/error/deadline.hpp>
 
 namespace clndr::ev {
 Deadline::Deadline(underlying_type_t type)
@@ -12,7 +13,8 @@ Deadline::Deadline(underlying_type_t type)
         return type;
     }
 
-    throw std::invalid_argument(errorMessage(Error::InvalidUnderlyingType));
+    throw std::invalid_argument(
+        std::string(error::deadline::InvalidUnderlyingType::msg));
 }
 
 [[nodiscard]] auto Deadline::null() -> Deadline { return {std::monostate()}; }
@@ -46,12 +48,14 @@ Deadline::Deadline(underlying_type_t type)
         return Type::Null;
     }
 
-    throw std::runtime_error(errorMessage(Error::RTInvalidUnderlyingType));
+    throw std::runtime_error(
+        std::string(error::deadline::RTInvalidUnderlyingType::msg));
 }
 
 [[nodiscard]] auto Deadline::getInterval() const -> dt::Interval {
     if (getType() != Type::Interval) {
-        throw std::runtime_error(errorMessage(Error::IntervalBadAccess));
+        throw std::runtime_error(
+            std::string(error::deadline::IntervalBadAccess::msg));
     }
 
     return std::get<dt::Interval>(type_);
@@ -59,7 +63,8 @@ Deadline::Deadline(underlying_type_t type)
 
 [[nodiscard]] auto Deadline::getDateTime() const -> dt::DateTime {
     if (getType() != Type::DateTime) {
-        throw std::runtime_error(errorMessage(Error::DateTimeBadAccess));
+        throw std::runtime_error(
+            std::string(error::deadline::DateTimeBadAccess::msg));
     }
 
     return std::get<dt::DateTime>(type_);

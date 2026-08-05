@@ -19,39 +19,6 @@ class Deadline {
     using underlying_type_t =
         std::variant<dt::Interval, dt::DateTime, std::monostate>;
 
-  public:
-    enum class Error : uint8_t {
-        InvalidUnderlyingType,
-        RTInvalidUnderlyingType,
-
-        IntervalBadAccess,
-        DateTimeBadAccess,
-    };
-
-  public:
-    [[nodiscard]] static constexpr auto errorMessage(Error error)
-        -> std::string {
-        switch (error) {
-
-        case Error::InvalidUnderlyingType:
-            return "Deadline: provided value is not of a valid deadline type";
-
-        case Error::RTInvalidUnderlyingType:
-            return "Deadline: invalid object state (invalid underlying type)";
-
-        case Error::IntervalBadAccess:
-            return "Deadline: attempted to access interval in a non-interval "
-                   "instance";
-
-        case Error::DateTimeBadAccess:
-            return "Deadline: attempted to access datetime in a non-datetime "
-                   "instance";
-
-        default:
-            std::unreachable();
-        }
-    }
-
   private:
     underlying_type_t type_;
 
