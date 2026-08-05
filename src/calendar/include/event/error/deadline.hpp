@@ -7,6 +7,8 @@ namespace clndr::ev::error::deadline {
 using namespace core::error;
 
 enum class Code : code_t {
+    InvalidCtorArgs,
+
     InvalidUnderlyingType,
     RTInvalidUnderlyingType,
 
@@ -15,6 +17,10 @@ enum class Code : code_t {
 };
 
 static constexpr auto className{core::FixedString("ev::Deadline")};
+
+using InvalidCtorArgs =
+    Error<Code::InvalidCtorArgs, className,
+          "cannot instantiate valid object from provided arguments">;
 
 using InvalidUnderlyingType =
     Error<Code::InvalidUnderlyingType, className,

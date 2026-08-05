@@ -13,6 +13,15 @@ class Instance {
     bool completed_;
 
   public:
+    Instance(core::uuid_t templateUUID, dt::DateTime datetime, bool completed);
+
+    Instance(core::uuid_t uuid, core::uuid_t templateUUID,
+             dt::DateTime datetime, bool completed);
+
+  public:
+    [[nodiscard]] auto ok() const -> bool;
+
+  public:
     [[nodiscard]] auto getUUID() const -> core::uuid_t;
 
     [[nodiscard]] auto getTemplateUUID() const -> core::uuid_t;
@@ -20,11 +29,5 @@ class Instance {
     [[nodiscard]] auto getDateTime() const -> dt::DateTime;
 
     [[nodiscard]] auto isCompleted() const -> bool;
-
-  public:
-    Instance(core::uuid_t templateUUID, dt::DateTime datetime, bool completed);
-
-    Instance(core::uuid_t uuid, core::uuid_t templateUUID,
-             dt::DateTime datetime, bool completed);
 };
 }; // namespace clndr::ev
