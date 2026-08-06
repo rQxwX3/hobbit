@@ -11,45 +11,11 @@
 namespace clndr::ev {
 class Template {
   public:
-    enum class Error : uint8_t {
-        TitleEmpty,
-
-        RecurrenceIncompatibleWithDeadline,
-
-        DeadlineIncompatibleWithRecurrence,
-        DeadlineBeforeStartDateTime,
-    };
-
-  public:
     static auto
     rethrowRecurrenceInvalidArgumentException(const std::exception &exception)
         -> void {
         throw std::invalid_argument("task::Template: " +
                                     std::string(exception.what()));
-    }
-
-  public:
-    [[nodiscard]] static constexpr auto errorMessage(Error error)
-        -> std::string {
-        switch (error) {
-        case Error::TitleEmpty:
-            return "task::Template: Template's title cannot be empty";
-
-        case Error::RecurrenceIncompatibleWithDeadline:
-            return "task::Template: a Template with DateTime deadline cannot "
-                   "be recurrent";
-
-        case Error::DeadlineIncompatibleWithRecurrence:
-            return "task::Template: provided Deadline is not compatible with "
-                   "Template's recurrence pattern";
-
-        case Error::DeadlineBeforeStartDateTime:
-            return "task::Template: Template's deadline cannot appear before "
-                   "its datetime";
-
-        default:
-            std::unreachable();
-        }
     }
 
   private:
@@ -63,6 +29,11 @@ class Template {
     Template(std::string title,
              rec::Recurrence recurrence = rec::Recurrence::null(),
              ev::Deadline deadline = ev::Deadline::null());
+
+  public:
+    [[nodiscard]] auto ok() const -> bool;
+
+    template <typename Field> [[nodiscard]] auto fieldOK() const -> bool;
 
   public:
     [[nodiscard]] auto happensOnDate(dt::Date date) const -> bool;
@@ -93,46 +64,6 @@ class Template {
     auto setStartDateTime(const dt::DateTime &startDateTime) -> void;
 
     auto setEndDateTime(const dt::OptDateTime &endDateTime) -> void;
-
-  public:
-    struct Validator {
-        // TODO: add validation for UUID
-
-        struct Validated {};
-
-        static auto title(const std::string &title) -> void;
-
-        static auto
-        recurrenceCompatibleWithDeadline(const rec::Recurrence &recurrence,
-                                         const ev::Deadline &deadline) -> void;
-
-        static auto
-        deadlineCompatibleWithRecurrence(const ev::Deadline &deadline,
-                                         const rec::Recurrence &recurrence)
-            -> void;
-
-        struct Return {
-            [[nodiscard]] static auto title(const std::string &title)
-                -> std::string;
-
-            [[nodiscard]] static auto
-            recurrence(const rec::Recurrence &recurrence,
-                       const ev::Deadline &deadline) -> rec::Recurrence;
-
-            [[nodiscard]] static auto
-            deadline(const ev::Deadline &deadline,
-                     const rec::Recurrence &recurrence) -> ev::Deadline;
-        };
-    };
-
-  public:
-    [[nodiscard]] static auto fromValidated(core::uuid_t uuid,
-                                            std::string title,
-                                            rec::Recurrence recurrence,
-                                            ev::Deadline deadline) -> Template;
-
-    Template(Validator::Validated, core::uuid_t uuid, std::string title,
-             rec::Recurrence recurrence, ev::Deadline deadline);
 
   public:
     struct JSON {
