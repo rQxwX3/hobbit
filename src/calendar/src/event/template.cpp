@@ -34,7 +34,8 @@ auto Template::setTitle(const std::string &title) -> void {
     title_ = title;
 
     if (!fieldOK<schema::templ::fields::Title>()) {
-        throw std::invalid_argument(std::string(error::templ::EmptyTitle::msg));
+        throw std::invalid_argument(
+            std::string(error::templ::InvalidTitle::msg));
     }
 }
 
@@ -60,8 +61,8 @@ auto Template::setStartDateTime(const dt::DateTime &startDateTime) -> void {
     recurrence_.setStartDateTime(startDateTime);
 
     if (!fieldOK<schema::templ::fields::Recurrence>()) {
-        throw std::invalid_argument(std::string(
-            error::templ::InvalidRecurrenceDeadlineCombination::msg));
+        throw std::invalid_argument(
+            std::string(error::templ::InvalidStartDateTime::msg));
     }
 }
 
@@ -69,8 +70,8 @@ auto Template::setEndDateTime(const dt::OptDateTime &endDateTime) -> void {
     recurrence_.setEndDateTime(endDateTime);
 
     if (!fieldOK<schema::templ::fields::Recurrence>()) {
-        throw std::invalid_argument(std::string(
-            error::templ::InvalidRecurrenceDeadlineCombination::msg));
+        throw std::invalid_argument(
+            std::string(error::templ::InvalidEndDateTime::msg));
     }
 }
 
