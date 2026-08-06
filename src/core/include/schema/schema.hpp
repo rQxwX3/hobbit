@@ -1,5 +1,6 @@
 #pragma once
 
+#include <error.hpp>
 #include <schema/fields.hpp>
 #include <schema/rules.hpp>
 
@@ -40,7 +41,7 @@ struct Schema {
     using fields = Fields;
     using rules = Rules;
 
-    [[nodiscard]] static auto validate(const model &obj) -> bool {
+    [[nodiscard]] static auto checkAllRules(const model &obj) -> bool {
         return std::apply(
             [&](auto... rules) -> bool {
                 return (decltype(rules)::template check<model>(obj) && ...);
@@ -50,10 +51,28 @@ struct Schema {
 
     template <typename Field>
         requires core::concepts::TupleContains<Field, fields>
-    [[nodiscard]] static auto validateAffectedRules(const model &obj) -> bool {
+    [[nodiscard]] static auto checkAffectedRules(const model &obj) -> bool {
         return std::apply(
             [&](auto... rules) -> bool {
                 return (decltype(rules)::template check<model>(obj) && ...);
+            },
+            typename meta::RulesForField<Field, rules>::type{});
+    }
+
+    [[nodiscard]] static auto validateAllRules(const model &obj) -> bool {
+        return std::apply(
+            [&](auto... rules) -> void {
+                (decltype(rules)::template validate<model>(obj) && ...);
+            },
+            rules{});
+    }
+
+    template <typename Field>
+        requires core::concepts::TupleContains<Field, fields>
+    [[nodiscard]] static auto validateAffectedRules(const model &obj) -> bool {
+        return std::apply(
+            [&](auto... rules) -> void {
+                (decltype(rules)::template validate<model>(obj) && ...);
             },
             typename meta::RulesForField<Field, rules>::type{});
     }

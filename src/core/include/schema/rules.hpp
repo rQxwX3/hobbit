@@ -3,6 +3,7 @@
 #include <concepts>
 
 #include <concepts.hpp>
+#include <error.hpp>
 #include <schema/fields.hpp>
 
 namespace core::schema::rules {
@@ -33,22 +34,34 @@ concept RuleContainsField =
     core::concepts::TupleContains<Field, typename ModelRule::fields>;
 } // namespace concepts
 
-template <auto Checker, typename... Fields> struct Rule {
+template <auto Checker, typename Error, typename... Fields> struct Rule {
     using fields = std::tuple<Fields...>;
 
     template <typename Model>
     static constexpr auto check(const Model &obj) -> bool {
         return Checker(obj);
     }
+
+    template <typename Model> static constexpr auto validate(const Model &obj) {
+        if (!check(obj)) {
+            throw Error();
+        }
+    }
 };
 
-template <auto Checker, typename... Fields>
-struct Rule<Checker, std::tuple<Fields...>> {
+template <auto Checker, typename Error, typename... Fields>
+struct Rule<Checker, Error, std::tuple<Fields...>> {
     using fields = std::tuple<Fields...>;
 
     template <typename Model>
     static constexpr auto check(const Model &obj) -> bool {
         return Checker(obj);
+    }
+
+    template <typename Model> static constexpr auto validate(const Model &obj) {
+        if (!check(obj)) {
+            throw Error();
+        }
     }
 };
 
