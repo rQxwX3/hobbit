@@ -34,7 +34,9 @@ concept RuleContainsField =
     core::concepts::TupleContains<Field, typename ModelRule::fields>;
 } // namespace concepts
 
-template <auto Checker, typename Error, typename... Fields> struct Rule {
+template <auto Checker, typename Error, typename... Fields>
+    requires core::error::Concept<Error>
+struct Rule {
     using fields = std::tuple<Fields...>;
 
     template <typename Model>
@@ -44,12 +46,13 @@ template <auto Checker, typename Error, typename... Fields> struct Rule {
 
     template <typename Model> static constexpr auto validate(const Model &obj) {
         if (!check(obj)) {
-            throw Error();
+            throw Error{};
         }
     }
 };
 
 template <auto Checker, typename Error, typename... Fields>
+    requires core::error::Concept<Error>
 struct Rule<Checker, Error, std::tuple<Fields...>> {
     using fields = std::tuple<Fields...>;
 
@@ -60,7 +63,7 @@ struct Rule<Checker, Error, std::tuple<Fields...>> {
 
     template <typename Model> static constexpr auto validate(const Model &obj) {
         if (!check(obj)) {
-            throw Error();
+            throw Error{};
         }
     }
 };
