@@ -1,4 +1,5 @@
 #include <datetime/datetime.hpp>
+#include <datetime/error/datetime.hpp>
 #include <datetime/schema/datetime.hpp>
 
 namespace clndr::dt {
@@ -8,8 +9,8 @@ DateTime::DateTime() : value_{DateTime::now().value_} {}
 
 DateTime::DateTime(value_t value) : value_{value} {
     if (!ok()) {
-        throw std::runtime_error(
-            Error::getMessage(Error::Code::InvalidCtorArgs));
+        throw std::invalid_argument(
+            std::string(error::datetime::InvalidCtorArgs::msg));
     }
 }
 
@@ -21,12 +22,12 @@ DateTime::DateTime(Date date, Time time)
     : value_{duration_t(date.toDuration() + time.toDuration())} {
     if (!date.ok()) {
         throw std::invalid_argument(
-            Error::getMessage(Error::Code::FailedToValidateDate));
+            std::string(error::datetime::FailedToValidateDate::msg));
     }
 
     if (!time.ok()) {
         throw std::invalid_argument(
-            Error::getMessage(Error::Code::FailedToValidateTime));
+            std::string(error::datetime::FailedToValidateTime::msg));
     }
 }
 

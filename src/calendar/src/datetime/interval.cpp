@@ -1,4 +1,5 @@
 #include <datetime/datetime.hpp>
+#include <datetime/error/interval.hpp>
 #include <datetime/interval.hpp>
 #include <datetime/parsing/interval.hpp>
 #include <datetime/schema/interval.hpp>
@@ -10,24 +11,24 @@ namespace clndr::dt {
 Interval::Interval(MonthHandling monthHandling)
     : units_{array_t{}}, monthHandling_{monthHandling} {
     if (!fieldOK<schema::interval::fields::MonthHandling>()) {
-        throw std::runtime_error(
-            Error::getMessage(Error::Code::InvalidMonthHandling));
+        throw std::invalid_argument(
+            std::string(error::interval::InvalidCtorArgs::msg));
     }
 }
 
 Interval::Interval(array_t unitsArray, MonthHandling monthHandling)
     : units_{unitsArray}, monthHandling_{monthHandling} {
     if (!ok()) {
-        throw std::runtime_error(
-            Error::getMessage(Error::Code::InvalidCtorArgs));
+        throw std::invalid_argument(
+            std::string(error::interval::InvalidCtorArgs::msg));
     }
 }
 
 Interval::Interval(const struct_t &unitsStruct, MonthHandling monthHandling)
     : units_{unitsStruct.toArray()}, monthHandling_{monthHandling} {
     if (!ok()) {
-        throw std::runtime_error(
-            Error::getMessage(Error::Code::InvalidCtorArgs));
+        throw std::invalid_argument(
+            std::string(error::interval::InvalidCtorArgs::msg));
     }
 };
 
@@ -113,7 +114,7 @@ auto Interval::setMonthHandling(MonthHandling monthHandling) -> void {
 
     if (!fieldOK<schema::interval::fields::MonthHandling>()) {
         throw std::runtime_error(
-            Error::getMessage(Error::Code::InvalidMonthHandling));
+            std::string(error::interval::InvalidMonthHandling::msg));
     }
 }
 
@@ -188,7 +189,7 @@ auto Interval::addUnit(Unit unit, value_t value) -> void {
 
     if (lhsIsMixed || rhsIsMixed) {
         throw std::logic_error(
-            Error::getMessage(Error::Code::InvalidComparison));
+            std::string(error::interval::InvalidComparison::msg));
     }
 
     if (auto cmp{lhs[Unit::MONTH] <=> rhs[Unit::MONTH]};
@@ -220,13 +221,14 @@ auto Interval::addUnit(Unit unit, value_t value) -> void {
 }
 
 [[nodiscard]] auto Interval::fromNaturalLanguage(const std::string &input)
-    -> std::expected<Interval, Error::Code> {
+    -> std::expected<Interval, core::error::code_t> {
     auto interval{
         dt::parsing::IntervalParser<dt::parsing::NaturalLanguageParser>::parse(
             input)};
 
     if (!interval) {
-        return std::unexpected(Error::Code::NaturalLanguageFailedToParse);
+        return std::unexpected(
+            error::interval::NaturalLanguageFailedToParse::code);
     }
 
     return interval.value();

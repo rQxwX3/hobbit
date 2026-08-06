@@ -1,5 +1,6 @@
 #include <datetime/date.hpp>
 #include <datetime/datetime.hpp>
+#include <datetime/error/date.hpp>
 #include <datetime/schema/date.hpp>
 
 namespace clndr::dt {
@@ -11,8 +12,8 @@ Date::Date()
 Date::Date(year_t year, month_t month, day_t day)
     : year_{year}, month_{month}, day_{day} {
     if (!ok()) {
-        throw std::runtime_error(
-            Error::getMessage(Error::Code::InvalidCtorArgs));
+        throw std::invalid_argument(
+            std::string(error::date::InvalidCtorArgs::msg));
     }
 }
 

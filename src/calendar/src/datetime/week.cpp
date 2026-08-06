@@ -1,4 +1,5 @@
 #include <datetime/datetime.hpp>
+#include <datetime/error/week.hpp>
 #include <datetime/interval.hpp>
 #include <datetime/schema/week.hpp>
 #include <datetime/week.hpp>
@@ -14,14 +15,14 @@ Week::Week(Date date) {
 
     if (!ok()) {
         throw std::invalid_argument(
-            Error::getMessage(Error::Code::InvalidCtorArgs));
+            std::string(error::week::InvalidCtorArgs::msg));
     }
 }
 
 Week::Week(array_t array) : array_{array} {
     if (!ok()) {
         throw std::invalid_argument(
-            Error::getMessage(Error::Code::InvalidCtorArgs));
+            std::string(error::week::InvalidCtorArgs::msg));
     }
 }
 

@@ -1,3 +1,4 @@
+#include <datetime/error/opt_datetime.hpp>
 #include <datetime/opt_datetime.hpp>
 #include <datetime/schema/opt_datetime.hpp>
 
@@ -5,8 +6,8 @@ namespace clndr::dt {
 OptDateTime::OptDateTime(std::optional<DateTime> optDateTime)
     : value_{optDateTime} {
     if (!ok()) {
-        throw std::runtime_error(
-            Error::getMessage(Error::Code::InvalidCtorArgs));
+        throw std::invalid_argument(
+            std::string(error::optdatetime::InvalidCtorArgs::msg));
     }
 }
 

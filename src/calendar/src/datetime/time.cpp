@@ -1,11 +1,12 @@
+#include <datetime/error/time.hpp>
 #include <datetime/schema/time.hpp>
 #include <datetime/time.hpp>
 
 namespace clndr::dt {
 Time::Time(hour_t hour, minute_t minute) : hour_{hour}, minute_{minute} {
     if (!ok()) {
-        throw std::runtime_error(
-            Error::getMessage(Error::Code::InvalidCtorArgs));
+        throw std::invalid_argument(
+            std::string(error::time::InvalidCtorArgs::msg));
     }
 }
 
