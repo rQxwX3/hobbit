@@ -11,6 +11,8 @@ namespace clndr::rec {
     return {};
 }
 
+[[nodiscard]] auto NullPattern::ok() const -> bool { return true; }
+
 [[nodiscard]] auto NullPattern::happensOnDate(dt::Date date,
                                               dt::DateTime start) const
     -> bool {

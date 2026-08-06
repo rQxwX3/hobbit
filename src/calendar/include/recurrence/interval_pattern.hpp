@@ -1,40 +1,19 @@
 #pragma once
 
-#include <error.hpp>
 #include <recurrence/pattern.hpp>
 
 namespace clndr::rec {
 class IntervalPattern : public Pattern {
-  public:
-    struct Error : core::err::Base<Error> {
-        static constexpr auto className{
-            std::string_view{"recurrence::IntervalPattern"}};
-
-        enum class Code : uint8_t {
-            InvalidInterval,
-        };
-
-        [[nodiscard]] static constexpr auto getMessageForCode(Code code)
-            -> std::string {
-            switch (code) {
-            case Code::InvalidInterval:
-                return generateMessage("cannot instantiate from zero "
-                                       "Interval");
-
-            default:
-                std::unreachable();
-            }
-        }
-    };
-
-  public:
-    static auto validateInterval(const dt::Interval &interval) -> dt::Interval;
-
   private:
     dt::Interval interval_;
 
   public:
     IntervalPattern(dt::Interval interval);
+
+  public:
+    [[nodiscard]] auto ok() const -> bool;
+
+    template <typename Field> [[nodiscard]] auto fieldOK() const -> bool;
 
   public:
     [[nodiscard]] auto getOccurrencesOfDate(dt::Date date,

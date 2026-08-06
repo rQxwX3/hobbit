@@ -20,8 +20,9 @@ namespace rules {
 using namespace core::schema::rules;
 using ValidInterval =
     Rule<[](const rec::IntervalPattern &intervalPattern) -> bool {
-        return dt::schema::interval::Schema::validate(
-            fields::Interval::accessor(intervalPattern));
+        const auto value{fields::Interval::accessor(intervalPattern)};
+
+        return dt::schema::interval::Schema::validate(value) && !value.isZero();
     },
          fields::Interval>;
 

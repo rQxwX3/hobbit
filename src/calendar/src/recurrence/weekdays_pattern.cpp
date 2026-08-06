@@ -1,40 +1,40 @@
-#include <codec/json/interval.hpp>
-#include <codec/json/week.hpp>
+#include <recurrence/error/weekdays_pattern.hpp>
+#include <recurrence/schema/weekdays_pattern.hpp>
 #include <recurrence/weekdays_pattern.hpp>
 
 namespace clndr::rec {
-auto WeekdaysPattern::validateInterval(const dt::Interval &interval)
-    -> dt::Interval {
-    if (!interval.onlyContainsUnit(dt::Interval::Unit::WEEK)) {
-        throw std::invalid_argument(
-            Error::getMessageForCode(Error::Code::InvalidInterval));
-    }
-
-    return interval;
-}
-
-auto WeekdaysPattern::validateSelectedWeekdays(
-    const rec::SelectedWeekdays &selectedWDs) -> rec::SelectedWeekdays {
-    if (selectedWDs.isEmpty()) {
-        throw std::invalid_argument(
-            Error::getMessageForCode(Error::Code::EmptyWeek));
-    }
-
-    return selectedWDs;
-}
 WeekdaysPattern::WeekdaysPattern(dt::Date startDate,
                                  rec::SelectedWeekdays selectedWDs,
                                  dt::Interval interval)
     : firstWeek_{dt::Week(
-          getFirstOccurrence(startDate, validateSelectedWeekdays(selectedWDs))
-              .getDate())},
-      interval_{validateInterval(interval)}, selectedWeekdays_{selectedWDs} {}
+          getFirstOccurrence(startDate, selectedWDs).getDate())},
+      interval_{interval}, selectedWeekdays_{selectedWDs} {
+    if (!ok()) {
+        throw std::invalid_argument(
+            std::string(error::weekdays_pattern::InvalidCtorArgs::msg));
+    }
+}
 
 WeekdaysPattern::WeekdaysPattern(dt::Week firstWeek,
                                  rec::SelectedWeekdays selectedWDs,
                                  dt::Interval interval)
-    : firstWeek_{firstWeek}, interval_{validateInterval(interval)},
-      selectedWeekdays_{validateSelectedWeekdays(selectedWDs)} {}
+    : firstWeek_{firstWeek}, interval_{interval},
+      selectedWeekdays_{selectedWDs} {
+    if (!ok()) {
+        throw std::invalid_argument(
+            std::string(error::weekdays_pattern::InvalidCtorArgs::msg));
+    }
+}
+
+[[nodiscard]] auto WeekdaysPattern::ok() const -> bool {
+    return schema::weekdays_pattern::Schema::validate(*this);
+}
+
+template <typename Field>
+[[nodiscard]] auto WeekdaysPattern::fieldOK() const -> bool {
+    return schema::weekdays_pattern::Schema::validateAffectedRules<Field>(
+        *this);
+}
 
 [[nodiscard]] auto WeekdaysPattern::getInterval() const -> dt::Interval {
     return interval_;

@@ -8,6 +8,12 @@
 namespace clndr::rec::schema::recurrence {
 namespace fields {
 using namespace core::schema::fields;
+using Pattern =
+    Field<rec::Recurrence::pattern_t,
+          [](const rec::Recurrence &recurrence) -> rec::Recurrence::pattern_t {
+              return recurrence.getPattern();
+          }>;
+
 using StartDateTime =
     Field<dt::DateTime, [](const rec::Recurrence &recurrence) -> dt::DateTime {
         return recurrence.getStartDateTime();
@@ -19,11 +25,19 @@ using EndDateTime =
               return recurrence.getEndDateTime();
           }>;
 
-using all = Fields<StartDateTime, EndDateTime>;
+using all = Fields<Pattern, StartDateTime, EndDateTime>;
 }; // namespace fields
 
 namespace rules {
 using namespace core::schema::rules;
+using ValidPattern = Rule<[](const rec::Recurrence &recurrence) -> bool {
+    const auto value{fields::Pattern::accessor(recurrence)};
+
+    return std::visit([](auto &pattern) -> bool { return pattern.ok(); },
+                      value);
+},
+                          fields::Pattern>;
+
 using ValidStartDateTime = Rule<[](const rec::Recurrence &recurrence) -> bool {
     return dt::schema::datetime::Schema::validate(
         fields::StartDateTime::accessor(recurrence));
@@ -48,7 +62,8 @@ using ValidStartEndRelation =
     },
          fields::StartDateTime, fields::EndDateTime>;
 
-using all = Rules<ValidStartDateTime, ValidEndDateTime, ValidStartEndRelation>;
+using all = Rules<ValidPattern, ValidStartDateTime, ValidEndDateTime,
+                  ValidStartEndRelation>;
 }; // namespace rules
 
 using Schema = core::schema::Schema<rec::Recurrence, fields::all, rules::all>;

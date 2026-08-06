@@ -6,39 +6,6 @@
 
 namespace clndr::rec {
 class WeekdaysPattern : public Pattern {
-  public:
-    struct Error {
-        static constexpr auto className{
-            std::string_view{"recurrence::WeekdaysPattern"}};
-
-        enum class Code : uint8_t {
-            InvalidInterval,
-            EmptyWeek,
-        };
-
-        [[nodiscard]] static constexpr auto
-        generateMessage(const std::string &message) -> std::string {
-            return static_cast<std::string>(className) + ": " + message;
-        }
-
-        [[nodiscard]] static constexpr auto getMessageForCode(Code code)
-            -> std::string {
-            switch (code) {
-            case Code::InvalidInterval:
-                return "recurrence::WeekdayPattern: provided Interval contains "
-                       "units other than week";
-
-            case Code::EmptyWeek:
-                return "recurrence::WeekdayPattern: cannot construct pattern "
-                       "from "
-                       "empty Week object";
-
-            default:
-                std::unreachable();
-            }
-        }
-    };
-
   private:
     /* don't change the order */
     dt::Week firstWeek_;
@@ -53,6 +20,11 @@ class WeekdaysPattern : public Pattern {
                     dt::Interval interval);
 
   public:
+    [[nodiscard]] auto ok() const -> bool;
+
+    template <typename Field> [[nodiscard]] auto fieldOK() const -> bool;
+
+  public:
     [[nodiscard]] auto
     getOccurrencesOfDate(dt::Date date,
                          dt::DateTime start = dt::DateTime::now()) const
@@ -61,12 +33,6 @@ class WeekdaysPattern : public Pattern {
     [[nodiscard]] auto
     happensOnDate(dt::Date date, dt::DateTime start = dt::DateTime::now()) const
         -> bool override;
-
-  public:
-    static auto validateInterval(const dt::Interval &interval) -> dt::Interval;
-
-    static auto validateSelectedWeekdays(const SelectedWeekdays &selectedWDs)
-        -> SelectedWeekdays;
 
   private:
     [[nodiscard]] static auto getFirstOccurrence(dt::Date startDate,

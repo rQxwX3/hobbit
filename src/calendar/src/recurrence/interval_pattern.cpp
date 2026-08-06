@@ -1,20 +1,25 @@
-#include <codec/json/interval.hpp>
 #include <datetime/interval.hpp>
+#include <recurrence/error/interval_pattern.hpp>
 #include <recurrence/interval_pattern.hpp>
+#include <recurrence/schema/interval_pattern.hpp>
 
 namespace clndr::rec {
-auto IntervalPattern::validateInterval(const dt::Interval &interval)
-    -> dt::Interval {
-    if (interval.isZero()) {
+IntervalPattern::IntervalPattern(dt::Interval interval) : interval_{interval} {
+    if (!fieldOK<schema::interval_pattern::fields::Interval>()) {
         throw std::invalid_argument(
-            Error::getMessageForCode(Error::Code::InvalidInterval));
+            std::string(error::interval_pattern::InvalidInterval::msg));
     }
-
-    return interval;
 }
 
-IntervalPattern::IntervalPattern(dt::Interval interval)
-    : interval_{validateInterval(interval)} {}
+[[nodiscard]] auto IntervalPattern::ok() const -> bool {
+    return schema::interval_pattern::Schema::validate(*this);
+}
+
+template <typename Field>
+[[nodiscard]] auto IntervalPattern::fieldOK() const -> bool {
+    return schema::interval_pattern::Schema::validateAffectedRules<Field>(
+        *this);
+}
 
 [[nodiscard]] auto IntervalPattern::getInterval() const -> dt::Interval {
     return interval_;

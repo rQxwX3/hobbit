@@ -1,29 +1,33 @@
-#include <codec/iso8601/datetime.hpp>
-#include <codec/iso8601/opt_datetime.hpp>
+#include <recurrence/error/recurrence.hpp>
 #include <recurrence/recurrence.hpp>
+#include <recurrence/schema/recurrence.hpp>
 
 namespace clndr::rec {
-Recurrence::Recurrence(Validator::Validated /*unused*/, pattern_t pattern,
-                       dt::DateTime startDateTime, dt::OptDateTime endDateTime)
-    : pattern_{std::move(pattern)}, startDateTime_{startDateTime},
-      endDateTime_{endDateTime} {}
-
-[[nodiscard]] auto Recurrence::fromValidated(pattern_t pattern,
-                                             dt::DateTime startDateTime,
-                                             dt::OptDateTime endDateTime)
-    -> Recurrence {
-    return Recurrence(Validator::Validated{}, std::move(pattern), startDateTime,
-                      endDateTime);
-}
-
 Recurrence::Recurrence(pattern_t pattern, dt::DateTime startDateTime,
                        dt::OptDateTime endDateTime)
     : pattern_{std::move(pattern)}, startDateTime_{startDateTime},
-      endDateTime_{
-          Validator::Return::endAfterStart(endDateTime, startDateTime)} {}
+      endDateTime_{endDateTime} {
+    if (!ok()) {
+        throw std::invalid_argument(
+            std::string(error::recurrence::InvalidCtorArgs::msg));
+    }
+}
+
+[[nodiscard]] auto Recurrence::ok() const -> bool {
+    return schema::recurrence::Schema::validate(*this);
+}
+
+template <typename Field>
+[[nodiscard]] auto Recurrence::fieldOK() const -> bool {
+    return schema::recurrence::Schema::validateAffectedRules<Field>(*this);
+}
 
 [[nodiscard]] auto Recurrence::null(dt::DateTime startDateTime) -> Recurrence {
     return {NullPattern(), startDateTime, dt::OptDateTime(std::nullopt)};
+}
+
+[[nodiscard]] auto Recurrence::getPattern() const -> pattern_t {
+    return pattern_;
 }
 
 [[nodiscard]] auto Recurrence::getPatternType() const -> PatternType {
@@ -52,16 +56,29 @@ Recurrence::Recurrence(pattern_t pattern, dt::DateTime startDateTime,
 
 auto Recurrence::setPatternType(pattern_t pattern) -> void {
     pattern_ = std::move(pattern);
+
+    if (!fieldOK<schema::recurrence::fields::Pattern>()) {
+        throw std::invalid_argument(
+            std::string(error::recurrence::InvalidPattern::msg));
+    }
 }
 
 auto Recurrence::setStartDateTime(dt::DateTime startDateTime) -> void {
-    startDateTime_ =
-        Validator::Return::startBeforeEnd(startDateTime, getEndDateTime());
+    startDateTime_ = startDateTime;
+
+    if (!fieldOK<schema::recurrence::fields::StartDateTime>()) {
+        throw std::invalid_argument(
+            std::string(error::recurrence::InvalidStart::msg));
+    }
 }
 
 auto Recurrence::setEndDateTime(dt::OptDateTime endDateTime) -> void {
-    endDateTime_ =
-        Validator::Return::endAfterStart(endDateTime, getStartDateTime());
+    endDateTime_ = endDateTime;
+
+    if (!fieldOK<schema::recurrence::fields::EndDateTime>()) {
+        throw std::invalid_argument(
+            std::string(error::recurrence::InvalidEnd::msg));
+    }
 }
 
 [[nodiscard]] auto Recurrence::isIntervalPattern() const -> bool {
@@ -74,6 +91,10 @@ auto Recurrence::setEndDateTime(dt::OptDateTime endDateTime) -> void {
 
 [[nodiscard]] auto Recurrence::isNullPattern() const -> bool {
     return getPatternType() == PatternType::Null;
+}
+
+[[nodiscard]] auto Recurrence::getNullPattern() const -> NullPattern {
+    return std::get<NullPattern>(pattern_);
 }
 
 [[nodiscard]] auto Recurrence::getIntervalPattern() const -> IntervalPattern {
@@ -99,31 +120,5 @@ auto Recurrence::setEndDateTime(dt::OptDateTime endDateTime) -> void {
             return pattern.getOccurrencesOfDate(date, startDateTime_);
         },
         pattern_);
-}
-
-/* ------- Validator ------- */
-auto Recurrence::Validator::endAfterStart(dt::OptDateTime end,
-                                          dt::DateTime start) -> void {
-    if (end.hasValue() && end.getValue() <= start) {
-        throw std::invalid_argument(
-            Error::errorMessage(Error::Code::EndBeforeStart));
-    }
-}
-
-[[nodiscard]] auto Recurrence::Validator::Return::endAfterStart(
-    dt::OptDateTime end, dt::DateTime start) -> dt::OptDateTime {
-    Validator::endAfterStart(end, start);
-
-    return end;
-}
-
-[[nodiscard]] auto Recurrence::Validator::Return::startBeforeEnd(
-    dt::DateTime start, dt::OptDateTime end) -> dt::DateTime {
-    if (end.hasValue() && start >= end.getValue()) {
-        throw std::invalid_argument(
-            Error::errorMessage(Error::Code::StartAfterEnd));
-    }
-
-    return start;
 }
 } // namespace clndr::rec

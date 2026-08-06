@@ -10,6 +10,9 @@ class NullPattern : public Pattern {
     NullPattern() = default;
 
   public:
+    [[nodiscard]] auto ok() const -> bool;
+
+  public:
     [[nodiscard]] auto getOccurrencesOfDate(dt::Date date,
                                             dt::DateTime start) const
         -> occurrences_t override;

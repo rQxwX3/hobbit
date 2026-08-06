@@ -9,9 +9,6 @@
 
 #include <nlohmann/json.hpp>
 
-#include <array>
-#include <expected>
-#include <string_view>
 #include <variant>
 
 namespace clndr::rec {
@@ -19,38 +16,6 @@ class Recurrence {
   public:
     using pattern_t =
         std::variant<NullPattern, IntervalPattern, WeekdaysPattern>;
-
-  private:
-    struct Error : core::err::Base<Error> {
-        static constexpr auto className{std::string_view{"rec::Recurrence"}};
-
-        enum class Code : uint8_t {
-            UnsupportedPatternType,
-
-            EndBeforeStart,
-            StartAfterEnd,
-        };
-
-        [[nodiscard]] static constexpr auto errorMessage(Code code)
-            -> std::string {
-            switch (code) {
-            case Code::UnsupportedPatternType:
-                return generateMessage(
-                    "invalid object state (unsupported pattern type)");
-
-            case Code::EndBeforeStart:
-                return generateMessage(
-                    "end DateTime cannot appear before start DateTime");
-
-            case Code::StartAfterEnd:
-                return generateMessage(
-                    "start DateTime cannot appear after end DateTime");
-
-            default:
-                std::unreachable();
-            }
-        }
-    };
 
   public:
     enum class PatternType : uint8_t {
@@ -69,6 +34,11 @@ class Recurrence {
                dt::OptDateTime endDateTime);
 
   public:
+    [[nodiscard]] auto ok() const -> bool;
+
+    template <typename Field> [[nodiscard]] auto fieldOK() const -> bool;
+
+  public:
     [[nodiscard]] static auto
     null(dt::DateTime startDateTime = dt::DateTime::now()) -> Recurrence;
 
@@ -80,6 +50,8 @@ class Recurrence {
 
   public:
     [[nodiscard]] auto getPatternType() const -> PatternType;
+
+    [[nodiscard]] auto getPattern() const -> pattern_t;
 
     [[nodiscard]] auto getStartDateTime() const -> dt::DateTime;
 
@@ -100,6 +72,8 @@ class Recurrence {
     [[nodiscard]] auto isNullPattern() const -> bool;
 
   public:
+    [[nodiscard]] auto getNullPattern() const -> NullPattern;
+
     [[nodiscard]] auto getIntervalPattern() const -> IntervalPattern;
 
     [[nodiscard]] auto getWeekdaysPattern() const -> WeekdaysPattern;
@@ -107,32 +81,5 @@ class Recurrence {
   public:
     [[nodiscard]] auto operator==(const Recurrence &recurrence) const
         -> bool = default;
-
-  public:
-    struct Validator {
-        struct Validated {};
-
-        static auto endAfterStart(dt::OptDateTime end, dt::DateTime start)
-            -> void;
-
-        struct Return {
-            [[nodiscard]] static auto endAfterStart(dt::OptDateTime end,
-                                                    dt::DateTime start)
-                -> dt::OptDateTime;
-
-            [[nodiscard]] static auto startBeforeEnd(dt::DateTime start,
-                                                     dt::OptDateTime end)
-                -> dt::DateTime;
-        };
-    };
-
-  public:
-    Recurrence(Validator::Validated, pattern_t pattern,
-               dt::DateTime startDateTime, dt::OptDateTime endDateTime);
-
-    [[nodiscard]] static auto fromValidated(pattern_t pattern,
-                                            dt::DateTime startDateTime,
-                                            dt::OptDateTime endDateTime)
-        -> Recurrence;
 };
 } // namespace clndr::rec
