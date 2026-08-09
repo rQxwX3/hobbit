@@ -8,36 +8,41 @@
 #include <string>
 
 namespace clndr::dt {
+Interval::Interval() = default;
+
 Interval::Interval(MonthHandling monthHandling)
-    : units_{array_t{}}, monthHandling_{monthHandling} {
-    if (!fieldOK<schema::interval::fields::MonthHandling>()) {
-        throw std::invalid_argument(
-            std::string(error::interval::InvalidCtorArgs::msg));
-    }
+    : array_{array_t{}}, monthHandling_{monthHandling} {
+    schema::interval::Schema::validateAllRules(*this);
 }
 
 Interval::Interval(array_t unitsArray, MonthHandling monthHandling)
-    : units_{unitsArray}, monthHandling_{monthHandling} {
-    if (!ok()) {
-        throw std::invalid_argument(
-            std::string(error::interval::InvalidCtorArgs::msg));
-    }
+    : array_{unitsArray}, monthHandling_{monthHandling} {
+    schema::interval::Schema::validateAllRules(*this);
 }
 
 Interval::Interval(const struct_t &unitsStruct, MonthHandling monthHandling)
-    : units_{unitsStruct.toArray()}, monthHandling_{monthHandling} {
-    if (!ok()) {
-        throw std::invalid_argument(
-            std::string(error::interval::InvalidCtorArgs::msg));
-    }
+    : array_{unitsStruct.toArray()}, monthHandling_{monthHandling} {
+    schema::interval::Schema::validateAllRules(*this);
 };
 
-[[nodiscard]] auto Interval::ok() const -> bool {
-    return schema::interval::Schema::validate(*this);
+[[nodiscard]] auto Interval::getArray() const -> array_t { return array_; }
+
+[[nodiscard]] auto Interval::getMonthHandling() const -> MonthHandling {
+    return monthHandling_;
 }
 
-template <typename Field> [[nodiscard]] auto Interval::fieldOK() const -> bool {
-    return schema::interval::Schema::validateAffectedRules<Field>(*this);
+auto Interval::setArray(array_t array) -> void {
+    array_ = array;
+
+    schema::interval::Schema::validateAffectedRules<
+        schema::interval::fields::Array>(*this);
+}
+
+auto Interval::setMonthHandling(MonthHandling monthHandling) -> void {
+    monthHandling_ = monthHandling;
+
+    schema::interval::Schema::validateAffectedRules<
+        schema::interval::fields::MonthHandling>(*this);
 }
 
 [[nodiscard]] auto Interval::convertUnitsDownwards() const -> Interval {
@@ -46,8 +51,8 @@ template <typename Field> [[nodiscard]] auto Interval::fieldOK() const -> bool {
     auto convertDownwards{
         [&copy](Unit from, Unit to, value_t conversionRatio) -> void {
             assert(from < to);
-            copy.units_[to] += copy.units_[from] * conversionRatio;
-            copy.units_[from] = 0;
+            copy.array_[to] += copy.array_[from] * conversionRatio;
+            copy.array_[from] = 0;
         }};
 
     convertDownwards(Unit::YEAR, Unit::MONTH, dt::constants::monthsInYear);
@@ -89,15 +94,13 @@ template <typename Field> [[nodiscard]] auto Interval::fieldOK() const -> bool {
     return fromUnit(Unit::MINUTE, value);
 }
 
-[[nodiscard]] auto Interval::getArray() const -> array_t { return units_; }
-
 [[nodiscard]] auto Interval::getNonZeroUnitValuePairs() const
     -> std::vector<unitValuePair_t> {
     std::vector<unitValuePair_t> result;
     result.reserve(Unit::COUNT_);
 
     for (const auto unit : Interval::units) {
-        if (auto value{units_[unit]}; value) {
+        if (auto value{array_[unit]}; value) {
             result.emplace_back(unit, value);
         }
     }
@@ -105,39 +108,26 @@ template <typename Field> [[nodiscard]] auto Interval::fieldOK() const -> bool {
     return result;
 }
 
-[[nodiscard]] auto Interval::getMonthHandling() const -> MonthHandling {
-    return monthHandling_;
-}
-
-auto Interval::setMonthHandling(MonthHandling monthHandling) -> void {
-    monthHandling_ = monthHandling;
-
-    if (!fieldOK<schema::interval::fields::MonthHandling>()) {
-        throw std::runtime_error(
-            std::string(error::interval::InvalidMonthHandling::msg));
-    }
-}
-
 auto Interval::addUnit(Unit unit, value_t value) -> void {
-    units_[unit] += value;
+    array_[unit] += value;
 }
 
 [[nodiscard]] auto Interval::getUnitsStruct() const -> struct_t {
-    return struct_t::fromArray(units_);
+    return struct_t::fromArray(array_);
 }
 
 [[nodiscard]] auto Interval::isZero() const -> bool {
-    return std::ranges::all_of(units_.begin(), units_.end(),
+    return std::ranges::all_of(array_.begin(), array_.end(),
                                [](auto value) -> bool { return value == 0; });
 }
 
 [[nodiscard]] auto Interval::onlyContainsUnit(Unit onlyUnit) const -> bool {
     for (const auto unit : Interval::units) {
-        if (unit == onlyUnit && units_[unit] == 0) {
+        if (unit == onlyUnit && array_[unit] == 0) {
             return false;
         }
 
-        if (unit != onlyUnit && units_[unit] != 0) {
+        if (unit != onlyUnit && array_[unit] != 0) {
             return false;
         }
     }
@@ -217,7 +207,7 @@ auto Interval::addUnit(Unit unit, value_t value) -> void {
 }
 
 [[nodiscard]] auto Interval::operator[](Unit unit) const -> value_t {
-    return units_[unit];
+    return array_[unit];
 }
 
 [[nodiscard]] auto Interval::fromNaturalLanguage(const std::string &input)

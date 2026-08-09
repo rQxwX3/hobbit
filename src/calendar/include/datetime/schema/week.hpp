@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <datetime/error/week.hpp>
 #include <datetime/schema/date.hpp>
 #include <datetime/week.hpp>
 #include <schema/schema.hpp>
@@ -10,7 +11,7 @@ namespace fields {
 using namespace core::schema::fields;
 using Array =
     Field<dt::Week::array_t, [](const dt::Week &week) -> dt::Week::array_t {
-        return week.toArray();
+        return week.getArray();
     }>;
 
 using all = Fields<Array>;
@@ -19,16 +20,16 @@ using all = Fields<Array>;
 namespace rules {
 using namespace core::schema::rules;
 using ValidArray = Rule<[](const dt::Week &week) -> bool {
-    const auto array{week.toArray()};
+    const auto array{fields::Array::accessor(week)};
 
     return std::ranges::all_of(
                array,
                [](const dt::Date &date) -> bool {
-                   return clndr::dt::schema::date::Schema::validate(date);
+                   return clndr::dt::schema::date::Schema::checkAllRules(date);
                }) &&
            std::ranges::is_sorted(array.begin(), array.end());
 },
-                        fields::Array>;
+                        error::week::InvalidArray, fields::Array>;
 
 using all = Rules<ValidArray>;
 }; // namespace rules

@@ -7,12 +7,17 @@ namespace clndr::dt::error::time {
 using namespace core::error;
 
 enum class Code : code_t {
-    InvalidCtorArgs,
+    InvalidHour,
+    InvalidMinute,
 };
 
 static constexpr auto className{core::FixedString{"dt::Time"}};
 
-using InvalidCtorArgs = core::error::Error<
-    Code::InvalidCtorArgs, className,
-    "cannot instantiate valid object from provided arguments">;
+using InvalidHour = core::error::Error<
+    Code::InvalidHour, std::invalid_argument, className,
+    "cannot instantiate valid object with provided hour value">;
+
+using InvalidMinute = core::error::Error<
+    Code::InvalidMinute, std::invalid_argument, className,
+    "cannot instantiate valid object with provided minute value">;
 }; // namespace clndr::dt::error::time

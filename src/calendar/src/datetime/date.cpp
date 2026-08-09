@@ -11,18 +11,7 @@ Date::Date()
 
 Date::Date(year_t year, month_t month, day_t day)
     : year_{year}, month_{month}, day_{day} {
-    if (!ok()) {
-        throw std::invalid_argument(
-            std::string(error::date::InvalidCtorArgs::msg));
-    }
-}
-
-[[nodiscard]] auto Date::ok() const -> bool {
-    return schema::date::Schema::validate(*this);
-}
-
-[[nodiscard]] auto Date::next(const Date &date) -> Date {
-    return date + Interval::days(1);
+    schema::date::Schema::validateAllRules(*this);
 }
 
 [[nodiscard]] auto Date::getYear() const -> year_t { return year_; }
@@ -30,6 +19,31 @@ Date::Date(year_t year, month_t month, day_t day)
 [[nodiscard]] auto Date::getMonth() const -> month_t { return month_; }
 
 [[nodiscard]] auto Date::getDay() const -> day_t { return day_; }
+
+auto Date::setYear(year_t year) -> void {
+    year_ = year;
+
+    schema::date::Schema::validateAffectedRules<schema::date::fields::Year>(
+        *this);
+}
+
+auto Date::setMonth(month_t month) -> void {
+    month_ = month;
+
+    schema::date::Schema::validateAffectedRules<schema::date::fields::Month>(
+        *this);
+}
+
+auto Date::setDay(day_t day) -> void {
+    day_ = day;
+
+    schema::date::Schema::validateAffectedRules<schema::date::fields::Day>(
+        *this);
+}
+
+[[nodiscard]] auto Date::next(const Date &date) -> Date {
+    return date + Interval::days(1);
+}
 
 [[nodiscard]] auto Date::toDuration() const -> duration_t {
     auto ymd{std::chrono::year_month_day(std::chrono::year(year_),

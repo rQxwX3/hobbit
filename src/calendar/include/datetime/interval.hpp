@@ -3,7 +3,6 @@
 #include <array>
 #include <cstdint>
 #include <expected>
-#include <limits>
 #include <string>
 #include <utility>
 #include <vector>
@@ -27,7 +26,7 @@ class Interval {
 
     static constexpr auto unitsCount{size_t{Unit::COUNT_}};
 
-    using value_t = std::uint32_t;
+    using value_t = uint32_t;
     using unitValuePair_t = std::pair<Unit, value_t>;
 
     using array_t = std::array<value_t, Unit::COUNT_>;
@@ -57,20 +56,13 @@ class Interval {
     };
 
   public:
-    static constexpr auto maxValue{std::numeric_limits<value_t>::max()};
-
-    [[nodiscard]] static constexpr auto isValidValue(std::uint64_t value)
-        -> bool {
-        return value < maxValue;
-    }
-
-  public:
     enum class MonthHandling : uint8_t {
         WrapAround,
         PreserveRelative,
     };
 
     static constexpr auto defaultMonthHandling{MonthHandling::WrapAround};
+    static constexpr auto maxValue{std::numeric_limits<value_t>::max()};
 
     static constexpr auto isValidMonthHandling(Interval::MonthHandling value)
         -> bool {
@@ -89,10 +81,12 @@ class Interval {
                                        Unit::DAY, Unit::HOUR, Unit::MINUTE}};
 
   private:
-    array_t units_;
+    array_t array_;
     MonthHandling monthHandling_;
 
   public:
+    Interval();
+
     Interval(MonthHandling = defaultMonthHandling);
 
     explicit Interval(array_t array, MonthHandling = defaultMonthHandling);
@@ -101,9 +95,14 @@ class Interval {
                       MonthHandling = defaultMonthHandling);
 
   public:
-    [[nodiscard]] auto ok() const -> bool;
+    [[nodiscard]] auto getArray() const -> array_t;
 
-    template <typename Field> [[nodiscard]] auto fieldOK() const -> bool;
+    [[nodiscard]] auto getMonthHandling() const -> MonthHandling;
+
+  public:
+    auto setArray(array_t array) -> void;
+
+    auto setMonthHandling(MonthHandling monthHandling) -> void;
 
   public:
     [[nodiscard]] auto convertUnitsDownwards() const -> Interval;
@@ -128,17 +127,10 @@ class Interval {
     auto addUnit(Unit unit, value_t value) -> void;
 
   public:
-    [[nodiscard]] auto getArray() const -> array_t;
-
     [[nodiscard]] auto getUnitsStruct() const -> struct_t;
 
     [[nodiscard]] auto getNonZeroUnitValuePairs() const
         -> std::vector<unitValuePair_t>;
-
-    [[nodiscard]] auto getMonthHandling() const -> MonthHandling;
-
-  public:
-    auto setMonthHandling(MonthHandling monthHandling) -> void;
 
   public:
     [[nodiscard]] auto isZero() const -> bool;

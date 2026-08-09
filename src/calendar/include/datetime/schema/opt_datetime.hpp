@@ -1,5 +1,6 @@
 #pragma once
 
+#include <datetime/error/opt_datetime.hpp>
 #include <datetime/opt_datetime.hpp>
 #include <datetime/schema/datetime.hpp>
 #include <schema/schema.hpp>
@@ -25,9 +26,9 @@ using ValidValue = Rule<[](const dt::OptDateTime &opt_datetime) -> bool {
         return true;
     }
 
-    return schema::datetime::Schema::validate(value.value());
+    return schema::datetime::Schema::checkAllRules(value.value());
 },
-                        fields::Value>;
+                        error::opt_datetime::InvalidValue, fields::Value>;
 
 using all = Rules<ValidValue>;
 }; // namespace rules

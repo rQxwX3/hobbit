@@ -1,6 +1,7 @@
 #pragma once
 
 #include <datetime/date.hpp>
+#include <datetime/error/date.hpp>
 #include <schema/schema.hpp>
 
 namespace clndr::dt::schema::date {
@@ -33,7 +34,7 @@ using ValidYearMonth = Rule<[](const dt::Date &date) -> bool {
 
     return ymd.ok();
 },
-                            fields::all>;
+                            error::date::InvalidYearMonthDay, fields::all>;
 
 using all = Rules<ValidYearMonth>;
 }; // namespace rules

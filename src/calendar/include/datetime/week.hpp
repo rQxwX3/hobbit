@@ -14,15 +14,17 @@ class Week {
     array_t array_;
 
   public:
+    Week();
+
     Week(Date date);
 
     Week(array_t array);
 
   public:
-    [[nodiscard]] auto ok() const -> bool;
+    [[nodiscard]] auto getArray() const -> array_t;
 
   public:
-    [[nodiscard]] auto toArray() const -> array_t;
+    auto setArray(array_t array) -> void;
 
   public:
     [[nodiscard]] auto operator[](constants::Weekday wd) const -> Date;

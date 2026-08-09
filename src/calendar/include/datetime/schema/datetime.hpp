@@ -1,37 +1,31 @@
 #pragma once
 
 #include <datetime/datetime.hpp>
-#include <datetime/schema/date.hpp>
-#include <datetime/schema/time.hpp>
+#include <datetime/error/datetime.hpp>
 #include <schema/schema.hpp>
 
 namespace clndr::dt::schema::datetime {
 namespace fields {
 using namespace core::schema::fields;
-using Date = Field<dt::Date, [](const dt::DateTime &datetime) -> dt::Date {
-    return datetime.getDate();
-}>;
+using Value = Field<dt::DateTime::value_t,
+                    [](const dt::DateTime &datetime) -> dt::DateTime::value_t {
+                        return datetime.getValue();
+                    }>;
 
-using Time = Field<dt::Time, [](const dt::DateTime &datetime) -> dt::Time {
-    return datetime.getTime();
-}>;
-
-using all = Fields<Date, Time>;
+using all = Fields<Value>;
 }; // namespace fields
 
 namespace rules {
 using namespace core::schema::rules;
-using ValidDate = Rule<[](const dt::DateTime &datetime) -> bool {
-    return dt::schema::date::Schema::validate(fields::Date::accessor(datetime));
-},
-                       fields::Date>;
+using ValidValue = Rule<[](const dt::DateTime &datetime) -> bool {
+    const auto value{fields::Value::accessor(datetime)};
 
-using ValidTime = Rule<[](const dt::DateTime &datetime) -> bool {
-    return dt::schema::time::Schema::validate(fields::Time::accessor(datetime));
+    return (std::numeric_limits<dt::DateTime::value_t>::min() <= value) &&
+           (value <= std::numeric_limits<dt::DateTime::value_t>::max());
 },
-                       fields::Time>;
+                        error::datetime::InvalidValue, fields::Value>;
 
-using all = Rules<ValidDate, ValidTime>;
+using all = Rules<ValidValue>;
 }; // namespace rules
 
 using Schema = core::schema::Schema<dt::DateTime, fields::all, rules::all>;

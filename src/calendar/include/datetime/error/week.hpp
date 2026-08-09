@@ -7,12 +7,12 @@ namespace clndr::dt::error::week {
 using namespace core::error;
 
 enum class Code : code_t {
-    InvalidCtorArgs,
+    InvalidArray,
 };
 
 static constexpr auto className{core::FixedString{"dt::Week"}};
 
-using InvalidCtorArgs =
-    Error<Code::InvalidCtorArgs, className,
-          "cannot instantiate valid object from provided arguments">;
+using InvalidArray =
+    Error<Code::InvalidArray, std::invalid_argument, className,
+          "cannot instantiate valid object with provided dt::Date array">;
 }; // namespace clndr::dt::error::week

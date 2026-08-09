@@ -7,7 +7,7 @@ namespace clndr::dt::error::interval {
 using namespace core::error;
 
 enum class Code : code_t {
-    InvalidCtorArgs,
+    InvalidArray,
     InvalidMonthHandling,
     ISO8601FailedToParse,
     NaturalLanguageFailedToParse,
@@ -16,22 +16,23 @@ enum class Code : code_t {
 
 static constexpr auto className{core::FixedString{"dt::Interval"}};
 
-using InvalidCtorArgs =
-    Error<Code::InvalidCtorArgs, className,
-          "cannot instantiate valid object from provided arguments">;
+using InvalidArray = Error<Code::InvalidArray, std::invalid_argument, className,
+                           "provided dt::Interval::array_t value is invalid">;
 
-using InvalidMonthHandling = Error<Code::InvalidMonthHandling, className,
-                                   "provided month handling is invalid">;
+using InvalidMonthHandling =
+    Error<Code::InvalidMonthHandling, std::invalid_argument, className,
+          "provided dt::Interval::MonthHandling value is invalid">;
 
-using ISO8601FailedToParse = Error<Code::ISO8601FailedToParse, className,
-                                   "failed to parse from ISO8601">;
+using ISO8601FailedToParse =
+    Error<Code::ISO8601FailedToParse, std::runtime_error, className,
+          "failed to parse from ISO8601">;
 
 using NaturalLanguageFailedToParse =
-    Error<Code::NaturalLanguageFailedToParse, className,
+    Error<Code::NaturalLanguageFailedToParse, std::runtime_error, className,
           "failed to parse from natural language">;
 
 using InvalidComparison =
-    Error<Code::InvalidComparison, className,
-          "cannot compare intervals if one of them contains both "
-          "months and minutes after downward conversion">;
+    Error<Code::InvalidComparison, std::logic_error, className,
+          "cannot compare intervals one of which contains both "
+          "month and minute values after downward conversion">;
 }; // namespace clndr::dt::error::interval

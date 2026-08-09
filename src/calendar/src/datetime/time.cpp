@@ -3,22 +3,31 @@
 #include <datetime/time.hpp>
 
 namespace clndr::dt {
+Time::Time() = default;
+
 Time::Time(hour_t hour, minute_t minute) : hour_{hour}, minute_{minute} {
-    if (!ok()) {
-        throw std::invalid_argument(
-            std::string(error::time::InvalidCtorArgs::msg));
-    }
-}
-
-[[nodiscard]] auto Time::midnight() -> Time { return {0, 0}; }
-
-[[nodiscard]] auto Time::ok() const -> bool {
-    return schema::time::Schema::validate(*this);
+    schema::time::Schema::validateAllRules(*this);
 }
 
 [[nodiscard]] auto Time::getHour() const -> hour_t { return hour_; }
 
 [[nodiscard]] auto Time::getMinute() const -> minute_t { return minute_; }
+
+auto Time::setHour(hour_t hour) -> void {
+    hour_ = hour;
+
+    schema::time::Schema::validateAffectedRules<schema::time::fields::Hour>(
+        *this);
+}
+
+auto Time::setMinute(minute_t minute) -> void {
+    minute_ = minute;
+
+    schema::time::Schema::validateAffectedRules<schema::time::fields::Minute>(
+        *this);
+}
+
+[[nodiscard]] auto Time::midnight() -> Time { return {0, 0}; }
 
 [[nodiscard]] auto Time::toDuration() const -> duration_t {
     return duration_t((hour_ * constants::minutesInHour) + minute_);

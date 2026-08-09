@@ -19,14 +19,6 @@ class DateTime {
     value_t value_;
 
   public:
-    [[nodiscard]] auto ok() const -> bool;
-
-  private:
-    [[nodiscard]] auto getDaysSinceEpoch() const -> Date::duration_t;
-
-    [[nodiscard]] auto getMinutesSinceMidnight() const -> Time::duration_t;
-
-  public:
     DateTime();
 
     DateTime(value_t value);
@@ -34,7 +26,10 @@ class DateTime {
     DateTime(Date date, Time time = Time::midnight());
 
   public:
-    [[nodiscard]] static auto now() -> DateTime;
+    [[nodiscard]] auto getValue() const -> value_t;
+
+  public:
+    auto setValue(value_t value) -> void;
 
   public:
     [[nodiscard]] auto getDate() const -> Date;
@@ -43,7 +38,13 @@ class DateTime {
 
     [[nodiscard]] auto getWeekday() const -> constants::Weekday;
 
-    [[nodiscard]] auto getValue() const -> value_t;
+  private:
+    [[nodiscard]] auto getDaysSinceEpoch() const -> Date::duration_t;
+
+    [[nodiscard]] auto getMinutesSinceMidnight() const -> Time::duration_t;
+
+  public:
+    [[nodiscard]] static auto now() -> DateTime;
 
   public:
     [[nodiscard]] static auto equalDate(DateTime dt1, DateTime dt2) -> bool;

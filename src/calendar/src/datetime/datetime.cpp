@@ -1,6 +1,8 @@
 #include <datetime/datetime.hpp>
 #include <datetime/error/datetime.hpp>
+#include <datetime/schema/date.hpp>
 #include <datetime/schema/datetime.hpp>
+#include <datetime/schema/time.hpp>
 
 namespace clndr::dt {
 using std::chrono::system_clock;
@@ -8,27 +10,29 @@ using std::chrono::system_clock;
 DateTime::DateTime() : value_{DateTime::now().value_} {}
 
 DateTime::DateTime(value_t value) : value_{value} {
-    if (!ok()) {
-        throw std::invalid_argument(
-            std::string(error::datetime::InvalidCtorArgs::msg));
-    }
-}
-
-[[nodiscard]] auto DateTime::ok() const -> bool {
-    return schema::datetime::Schema::validate(*this);
+    schema::datetime::Schema::validateAllRules(*this);
 }
 
 DateTime::DateTime(Date date, Time time)
     : value_{duration_t(date.toDuration() + time.toDuration())} {
-    if (!date.ok()) {
+    if (schema::date::Schema::checkAllRules(date)) {
         throw std::invalid_argument(
             std::string(error::datetime::FailedToValidateDate::msg));
     }
 
-    if (!time.ok()) {
+    if (schema::time::Schema::checkAllRules(time)) {
         throw std::invalid_argument(
             std::string(error::datetime::FailedToValidateTime::msg));
     }
+}
+
+[[nodiscard]] auto DateTime::getValue() const -> value_t { return value_; }
+
+auto DateTime::setValue(value_t value) -> void {
+    value_ = value;
+
+    schema::datetime::Schema::validateAffectedRules<
+        schema::datetime::fields::Value>(*this);
 }
 
 [[nodiscard]] auto DateTime::getDaysSinceEpoch() const -> Date::duration_t {
@@ -73,8 +77,6 @@ DateTime::DateTime(Date date, Time time)
 [[nodiscard]] auto DateTime::getWeekday() const -> constants::Weekday {
     return getDate().getWeekday();
 }
-
-[[nodiscard]] auto DateTime::getValue() const -> value_t { return value_; }
 
 [[nodiscard]] auto DateTime::equalDate(DateTime dt1, DateTime dt2) -> bool {
     return dt1.getDaysSinceEpoch() == dt2.getDaysSinceEpoch();

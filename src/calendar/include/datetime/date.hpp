@@ -27,17 +27,21 @@ class Date {
     Date(year_t year, month_t month, day_t day);
 
   public:
-    [[nodiscard]] auto ok() const -> bool;
-
-  public:
-    [[nodiscard]] auto next(const Date &date) -> Date;
-
-  public:
     [[nodiscard]] auto getYear() const -> year_t;
 
     [[nodiscard]] auto getMonth() const -> month_t;
 
     [[nodiscard]] auto getDay() const -> day_t;
+
+  public:
+    auto setYear(year_t year) -> void;
+
+    auto setMonth(month_t month) -> void;
+
+    auto setDay(day_t day) -> void;
+
+  public:
+    [[nodiscard]] auto next(const Date &date) -> Date;
 
   public:
     [[nodiscard]] auto toDuration() const -> duration_t;
@@ -53,6 +57,4 @@ class Date {
 
     auto operator+=(const Interval &interval) -> Date &;
 };
-
-// static_assert(core::model::Concept<Date>);
 } // namespace clndr::dt

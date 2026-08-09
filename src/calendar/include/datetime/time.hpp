@@ -19,18 +19,22 @@ class Time {
     minute_t minute_;
 
   public:
+    Time();
+
     Time(hour_t hour, minute_t minute);
-
-  public:
-    [[nodiscard]] auto ok() const -> bool;
-
-  public:
-    [[nodiscard]] static auto midnight() -> Time;
 
   public:
     [[nodiscard]] auto getHour() const -> hour_t;
 
     [[nodiscard]] auto getMinute() const -> minute_t;
+
+  public:
+    auto setHour(hour_t hour) -> void;
+
+    auto setMinute(minute_t minute) -> void;
+
+  public:
+    [[nodiscard]] static auto midnight() -> Time;
 
   public:
     [[nodiscard]] auto toDuration() const -> duration_t;

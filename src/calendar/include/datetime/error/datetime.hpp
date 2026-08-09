@@ -7,7 +7,7 @@ namespace clndr::dt::error::datetime {
 using namespace core::error;
 
 enum class Code : code_t {
-    InvalidCtorArgs,
+    InvalidValue,
     FailedToValidateDate,
     FailedToValidateTime,
     ISO8601RegexMismatch,
@@ -18,26 +18,31 @@ enum class Code : code_t {
 
 static constexpr auto className{core::FixedString{"dt::DateTime"}};
 
-using InvalidCtorArgs =
-    Error<Code::InvalidCtorArgs, className,
-          "cannot instantiate valid object from provided arguments">;
+using InvalidValue =
+    Error<Code::InvalidValue, std::invalid_argument, className,
+          "cannot instantiate valid object from provided value">;
 
-using FailedToValidateDate = Error<Code::FailedToValidateDate, className,
-                                   "failed to validate provided Date">;
+using FailedToValidateDate =
+    Error<Code::FailedToValidateDate, std::invalid_argument, className,
+          "failed to validate provided Date">;
 
-using FailedToValidateTime = Error<Code::FailedToValidateTime, className,
-                                   "failed to validate provided Time">;
+using FailedToValidateTime =
+    Error<Code::FailedToValidateTime, std::invalid_argument, className,
+          "failed to validate provided Time">;
 
-using ISO8601RegexMismatch = Error<Code::ISO8601RegexMismatch, className,
-                                   "provided input doesn't match regex">;
+using ISO8601RegexMismatch =
+    Error<Code::ISO8601RegexMismatch, std::invalid_argument, className,
+          "provided input doesn't match regex">;
 
 using ISO8601UnitNotMatched =
-    Error<Code::ISO8601UnitNotMatched, className,
+    Error<Code::ISO8601UnitNotMatched, std::invalid_argument, className,
           "provided input doesn't contain required unit(s)">;
 
-using ISO8601InvalidDate = Error<Code::ISO8601InvalidDate, className,
-                                 "provided input contains invalid Date">;
+using ISO8601InvalidDate =
+    Error<Code::ISO8601InvalidDate, std::invalid_argument, className,
+          "provided input contains invalid dt::Date">;
 
-using ISO8601InvalidTime = Error<Code::ISO8601InvalidTime, className,
-                                 "provided input contains invalid Time">;
+using ISO8601InvalidTime =
+    Error<Code::ISO8601InvalidTime, std::invalid_argument, className,
+          "provided input contains invalid dt::Time">;
 }; // namespace clndr::dt::error::datetime

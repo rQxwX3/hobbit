@@ -1,6 +1,7 @@
 #pragma once
 
 #include <datetime/constants.hpp>
+#include <datetime/error/time.hpp>
 #include <datetime/time.hpp>
 #include <schema/schema.hpp>
 
@@ -28,7 +29,7 @@ using ValidHour = Rule<[](const dt::Time &time) -> bool {
     return (dt::constants::minHourValue <= value) &&
            (value <= dt::constants::maxHourValue);
 },
-                       fields::Hour>;
+                       error::time::InvalidHour, fields::Hour>;
 
 using ValidMinute = Rule<[](const dt::Time &time) -> bool {
     const auto value{fields::Minute::accessor(time)};
@@ -36,7 +37,7 @@ using ValidMinute = Rule<[](const dt::Time &time) -> bool {
     return (dt::constants::minMinuteValue <= value) &&
            (value <= dt::constants::maxMinuteValue);
 },
-                         fields::Minute>;
+                         error::time::InvalidMinute, fields::Minute>;
 
 using all = Rules<ValidHour, ValidMinute>;
 }; // namespace rules

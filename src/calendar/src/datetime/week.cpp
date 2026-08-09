@@ -13,24 +13,14 @@ Week::Week(Date date) {
         dt += Interval::days(1);
     }
 
-    if (!ok()) {
-        throw std::invalid_argument(
-            std::string(error::week::InvalidCtorArgs::msg));
-    }
+    schema::week::Schema::validateAllRules(*this);
 }
 
 Week::Week(array_t array) : array_{array} {
-    if (!ok()) {
-        throw std::invalid_argument(
-            std::string(error::week::InvalidCtorArgs::msg));
-    }
+    schema::week::Schema::validateAllRules(*this);
 }
 
-[[nodiscard]] auto Week::ok() const -> bool {
-    return schema::week::Schema::validate(*this);
-}
-
-[[nodiscard]] auto Week::toArray() const -> array_t { return array_; }
+[[nodiscard]] auto Week::getArray() const -> array_t { return array_; }
 
 [[nodiscard]] auto Week::operator[](constants::Weekday wd) const -> Date {
     return array_[static_cast<size_t>(wd)];
