@@ -26,14 +26,11 @@ class Template {
     rec::Recurrence recurrence_;
 
   public:
+    Template();
+
     Template(std::string title,
              rec::Recurrence recurrence = rec::Recurrence::null(),
              ev::Deadline deadline = ev::Deadline::null());
-
-  public:
-    [[nodiscard]] auto ok() const -> bool;
-
-    template <typename Field> [[nodiscard]] auto fieldOK() const -> bool;
 
   public:
     [[nodiscard]] auto happensOnDate(dt::Date date) const -> bool;

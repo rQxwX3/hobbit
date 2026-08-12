@@ -23,14 +23,9 @@ class Deadline {
     underlying_type_t type_;
 
   public:
+    Deadline();
+
     Deadline(underlying_type_t underlyingType);
-
-  public:
-    [[nodiscard]] auto ok() const -> bool;
-
-  private:
-    [[nodiscard]] static auto validateUnderlyingType(underlying_type_t type)
-        -> underlying_type_t;
 
   public:
     [[nodiscard]] static auto null() -> Deadline;

@@ -3,29 +3,9 @@
 #include <event/schema/deadline.hpp>
 
 namespace clndr::ev {
-Deadline::Deadline(underlying_type_t type)
-    : type_{validateUnderlyingType(std::move(type))} {
-    if (!ok()) {
-        throw std::invalid_argument(
-            std::string(error::deadline::InvalidCtorArgs::msg));
-    }
-}
+Deadline::Deadline() = default;
 
-[[nodiscard]] auto Deadline::ok() const -> bool {
-    return schema::deadline::Schema::validate(*this);
-}
-
-[[nodiscard]] auto Deadline::validateUnderlyingType(underlying_type_t type)
-    -> underlying_type_t {
-    if (std::holds_alternative<dt::Interval>(type) ||
-        std::holds_alternative<dt::DateTime>(type) ||
-        std::holds_alternative<std::monostate>(type)) {
-        return type;
-    }
-
-    throw std::invalid_argument(
-        std::string(error::deadline::InvalidUnderlyingType::msg));
-}
+Deadline::Deadline(underlying_type_t type) : type_{type} {}
 
 [[nodiscard]] auto Deadline::null() -> Deadline { return {std::monostate()}; }
 
@@ -58,25 +38,14 @@ Deadline::Deadline(underlying_type_t type)
         return Type::Null;
     }
 
-    throw std::runtime_error(
-        std::string(error::deadline::RTInvalidUnderlyingType::msg));
+    std::unreachable();
 }
 
 [[nodiscard]] auto Deadline::getInterval() const -> dt::Interval {
-    if (getType() != Type::Interval) {
-        throw std::runtime_error(
-            std::string(error::deadline::IntervalBadAccess::msg));
-    }
-
     return std::get<dt::Interval>(type_);
 }
 
 [[nodiscard]] auto Deadline::getDateTime() const -> dt::DateTime {
-    if (getType() != Type::DateTime) {
-        throw std::runtime_error(
-            std::string(error::deadline::DateTimeBadAccess::msg));
-    }
-
     return std::get<dt::DateTime>(type_);
 }
 

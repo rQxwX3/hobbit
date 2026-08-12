@@ -11,8 +11,4 @@ enum class Code : code_t {
 };
 
 static constexpr auto className{core::FixedString("ev::Instance")};
-
-using InvalidCtorArgs =
-    Error<Code::InvalidCtorArgs, className,
-          "cannot instantiate valid object from provided arguments">;
 }; // namespace clndr::ev::error::instance

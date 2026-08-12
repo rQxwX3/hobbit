@@ -6,14 +6,8 @@ namespace clndr::ev {
 Template::Template(std::string title, rec::Recurrence recurrence,
                    Deadline deadline)
     : uuid_{core::generateUUID()}, title_{std::move(title)},
-      recurrence_{std::move(recurrence)}, deadline_{deadline} {}
-
-[[nodiscard]] auto Template::ok() const -> bool {
-    return schema::templ::Schema::validate(*this);
-}
-
-template <typename Field> [[nodiscard]] auto Template::fieldOK() const -> bool {
-    return schema::templ::Schema::validateAffectedRules<Field>(*this);
+      recurrence_{std::move(recurrence)}, deadline_{deadline} {
+    schema::templ::Schema::validateAllRules(*this);
 }
 
 [[nodiscard]] auto Template::getUUID() const -> core::uuid_t { return uuid_; }
@@ -33,46 +27,36 @@ template <typename Field> [[nodiscard]] auto Template::fieldOK() const -> bool {
 auto Template::setTitle(const std::string &title) -> void {
     title_ = title;
 
-    if (!fieldOK<schema::templ::fields::Title>()) {
-        throw std::invalid_argument(
-            std::string(error::templ::InvalidTitle::msg));
-    }
+    schema::templ::Schema::validateAffectedRules<schema::templ::fields::Title>(
+        *this);
 }
 
 auto Template::setDeadline(const Deadline &deadline) -> void {
     deadline_ = deadline;
 
-    if (!fieldOK<schema::templ::fields::Deadline>()) {
-        throw std::invalid_argument(
-            std::string(error::templ::InvalidDeadline::msg));
-    }
+    schema::templ::Schema::validateAffectedRules<
+        schema::templ::fields::Deadline>(*this);
 }
 
 auto Template::setRecurrence(const rec::Recurrence &recurrence) -> void {
     recurrence_ = recurrence;
 
-    if (!fieldOK<schema::templ::fields::Recurrence>()) {
-        throw std::invalid_argument(
-            std::string(error::templ::InvalidRecurrence::msg));
-    }
+    schema::templ::Schema::validateAffectedRules<
+        schema::templ::fields::Recurrence>(*this);
 }
 
 auto Template::setStartDateTime(const dt::DateTime &startDateTime) -> void {
     recurrence_.setStartDateTime(startDateTime);
 
-    if (!fieldOK<schema::templ::fields::Recurrence>()) {
-        throw std::invalid_argument(
-            std::string(error::templ::InvalidStartDateTime::msg));
-    }
+    schema::templ::Schema::validateAffectedRules<
+        schema::templ::fields::Recurrence>(*this);
 }
 
 auto Template::setEndDateTime(const dt::OptDateTime &endDateTime) -> void {
     recurrence_.setEndDateTime(endDateTime);
 
-    if (!fieldOK<schema::templ::fields::Recurrence>()) {
-        throw std::invalid_argument(
-            std::string(error::templ::InvalidEndDateTime::msg));
-    }
+    schema::templ::Schema::validateAffectedRules<
+        schema::templ::fields::Recurrence>(*this);
 }
 
 [[nodiscard]] auto Template::generateInstancesForDate(dt::Date date) const

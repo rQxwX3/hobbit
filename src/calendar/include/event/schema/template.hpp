@@ -1,5 +1,6 @@
 #pragma once
 
+#include <event/error/template.hpp>
 #include <event/schema/deadline.hpp>
 #include <event/template.hpp>
 #include <recurrence/schema/recurrence.hpp>
@@ -30,40 +31,27 @@ using namespace core::schema::rules;
 using ValidTitle = Rule<[](const ev::Template &templ) -> bool {
     return !fields::Title::accessor(templ).empty();
 },
-                        fields::Title>;
+                        error::templ::InvalidTitle, fields::Title>;
 
-using ValidDeadline = Rule<[](const ev::Template &templ) -> bool {
-    return ev::schema::deadline::Schema::validate(
-        fields::Deadline::accessor(templ));
-},
-                           fields::Deadline>;
-
-using ValidRecurrence = Rule<[](const ev::Template &templ) -> bool {
-    return rec::schema::recurrence::Schema::validate(
-        fields::Recurrence::accessor(templ));
-},
-                             fields::Recurrence>;
-
-using ValidDeadlineRecurrenceRelation =
+using ValidRecurrenceDeadlineRelationship =
     Rule<[](const ev::Template &templ) -> bool {
-        const auto deadlineValue{fields::Deadline::accessor(templ)};
-        const auto recurrenceValue{fields::Recurrence::accessor(templ)};
+        const auto deadline{fields::Deadline::accessor(templ)};
+        const auto recurrence{fields::Recurrence::accessor(templ)};
 
-        if (recurrenceValue.isNullPattern()) {
-            if (deadlineValue.isDateTime()) {
-                return recurrenceValue.getStartDateTime() <
-                       deadlineValue.getDateTime();
+        if (recurrence.isNullPattern()) {
+            if (deadline.isDateTime()) {
+                return recurrence.getStartDateTime() < deadline.getDateTime();
             }
 
             return true;
         }
 
-        return !deadlineValue.isDateTime();
+        return !deadline.isDateTime();
     },
-         fields::Deadline, fields::Recurrence>;
+         error::templ::InvalidRecurrenceDeadlineRelationship, fields::Deadline,
+         fields::Recurrence>;
 
-using all = Rules<ValidTitle, ValidDeadline, ValidRecurrence,
-                  ValidDeadlineRecurrenceRelation>;
+using all = Rules<ValidRecurrenceDeadlineRelationship>;
 }; // namespace rules
 
 using Schema = core::schema::Schema<ev::Template, fields::all, rules::all>;

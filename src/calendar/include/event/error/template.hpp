@@ -8,33 +8,17 @@ using namespace core::error;
 
 enum class Code : code_t {
     InvalidTitle,
-    InvalidDeadline,
-    InvalidRecurrence,
-    InvalidEndDateTime,
-    InvalidStartDateTime,
+    InvalidRecurrenceDeadlineRelationship,
+    InvalidRecurrenceEndDateTimeRelationship,
 };
 
 static constexpr auto className{core::FixedString{"ev::Template"}};
 
-using InvalidTitle =
-    Error<Code::InvalidTitle, className, "provided title is not valid (empty)">;
+using InvalidTitle = Error<Code::InvalidTitle, std::invalid_argument, className,
+                           "provided title is not valid (empty)">;
 
-using InvalidDeadline = Error<Code::InvalidDeadline, className,
-                              "provided ev::Deadline is not valid/not "
-                              "compatible object's rec::Recurrence">;
-
-using InvalidRecurrence =
-    Error<Code::InvalidRecurrence, className,
-          "provided rec::Recurrence is not valid/not compatible with object's "
-          "ev::Deadline">;
-
-using InvalidEndDateTime =
-    Error<Code::InvalidEndDateTime, className,
-          "provided dt::OptDateTime end datetime is not valid/not compatible "
-          "with object's dt::DateTime start datetime">;
-
-using InvalidStartDateTime =
-    Error<Code::InvalidStartDateTime, className,
-          "provided dt::DateTime start datetime is not valid/not compatible "
-          "with object's dt::OptDateTime end datetime">;
+using InvalidRecurrenceDeadlineRelationship =
+    Error<Code::InvalidRecurrenceDeadlineRelationship, std::invalid_argument,
+          className,
+          "invalid combination of rec::Recurrence and ev::Deadline values">;
 }; // namespace clndr::ev::error::templ

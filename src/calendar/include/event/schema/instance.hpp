@@ -21,13 +21,7 @@ using all = Fields<DateTime>;
 namespace rules {
 using namespace core::schema::rules;
 
-using ValidDateTime = Rule<[](const ev::Instance &instance) -> bool {
-    return dt::schema::datetime::Schema::validate(
-        fields::DateTime::accessor(instance));
-},
-                           fields::DateTime>;
-
-using all = Rules<ValidDateTime>;
+using all = Rules<>;
 }; // namespace rules
 
 using Schema = core::schema::Schema<ev::Instance, fields::all, rules::all>;

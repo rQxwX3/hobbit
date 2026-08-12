@@ -8,7 +8,6 @@
 namespace clndr::ev::schema::deadline {
 namespace fields {
 using namespace core::schema::fields;
-
 using UnderlyingType =
     Field<ev::Deadline::underlying_type_t,
           [](const ev::Deadline &deadline) -> ev::Deadline::underlying_type_t {
