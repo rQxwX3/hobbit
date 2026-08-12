@@ -12,6 +12,7 @@ enum class Code : code_t {
 
 static constexpr auto className{core::FixedString{"rec::IntervalPattern"}};
 
-using InvalidInterval = Error<Code::InvalidInterval, className,
-                              "cannot instantiate from zero Interval">;
+using InvalidInterval =
+    Error<Code::InvalidInterval, std::invalid_argument, className,
+          "cannot instantiate from zero dt::Interval">;
 }; // namespace clndr::rec::error::interval_pattern

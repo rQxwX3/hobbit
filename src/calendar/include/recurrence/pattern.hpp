@@ -5,28 +5,36 @@
 
 #include <nlohmann/json.hpp>
 
-namespace clndr::rec {
-class Pattern {
+namespace clndr::rec::pattern {
+enum class Type : uint8_t {
+    Null,
+    Interval,
+    Weekdays,
+};
+
+class Base {
   public:
     using occurrence_t = dt::DateTime;
     using occurrences_t = std::vector<occurrence_t>;
 
   public:
-    Pattern() = default;
+    Base() = default;
 
   public:
-    Pattern(const Pattern &) = default;
-    auto operator=(const Pattern &) -> Pattern & = default;
+    Base(const Base &) = default;
+    auto operator=(const Base &) -> Base & = default;
 
-    Pattern(Pattern &&) = delete;
-    auto operator=(Pattern &&) -> Pattern & = delete;
+    Base(Base &&) = delete;
+    auto operator=(Base &&) -> Base & = delete;
 
-    [[nodiscard]] auto operator==(const Pattern &other) const -> bool = default;
-
-  public:
-    virtual ~Pattern() = default;
+    [[nodiscard]] auto operator==(const Base &other) const -> bool = default;
 
   public:
+    virtual ~Base() = default;
+
+  public:
+    [[nodiscard]] virtual auto getType() const -> Type = 0;
+
     [[nodiscard]] virtual auto getOccurrencesOfDate(dt::Date date,
                                                     dt::DateTime start) const
         -> occurrences_t = 0;
@@ -35,4 +43,10 @@ class Pattern {
                                              dt::DateTime start) const
         -> bool = 0;
 };
-} // namespace clndr::rec
+
+template <typename P>
+concept Concept = requires {
+    std::same_as<decltype(P::type), Type>;
+    std::derived_from<P, Base>;
+};
+} // namespace clndr::rec::pattern

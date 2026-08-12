@@ -1,6 +1,10 @@
 #include <recurrence/null_pattern.hpp>
 
 namespace clndr::rec {
+[[nodiscard]] auto NullPattern::getType() const -> pattern::Type {
+    return type;
+}
+
 [[nodiscard]] auto NullPattern::getOccurrencesOfDate(dt::Date date,
                                                      dt::DateTime start) const
     -> occurrences_t {
@@ -10,8 +14,6 @@ namespace clndr::rec {
 
     return {};
 }
-
-[[nodiscard]] auto NullPattern::ok() const -> bool { return true; }
 
 [[nodiscard]] auto NullPattern::happensOnDate(dt::Date date,
                                               dt::DateTime start) const

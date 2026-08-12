@@ -2,6 +2,7 @@
 
 #include <datetime/schema/datetime.hpp>
 #include <datetime/schema/opt_datetime.hpp>
+#include <recurrence/error/recurrence.hpp>
 #include <recurrence/recurrence.hpp>
 #include <schema/schema.hpp>
 
@@ -30,26 +31,36 @@ using all = Fields<Pattern, StartDateTime, EndDateTime>;
 
 namespace rules {
 using namespace core::schema::rules;
-using ValidPattern = Rule<[](const rec::Recurrence &recurrence) -> bool {
-    const auto value{fields::Pattern::accessor(recurrence)};
+using ValidPatternEndDateTimeRelationship =
+    Rule<[](const rec::Recurrence &recurrence) -> bool {
+        const auto endDT{fields::EndDateTime::accessor(recurrence)};
+        const auto patternType{std::visit(
+            [](auto &&pattern) -> clndr::rec::pattern::Type {
+                return pattern.getType();
+            },
+            fields::Pattern::accessor(recurrence))};
 
-    return std::visit([](auto &pattern) -> bool { return pattern.ok(); },
-                      value);
-},
-                          fields::Pattern>;
+        return !endDT.hasValue() ||
+               patternType != clndr::rec::pattern::Type::Null;
+    },
+         error::recurrence::InvalidPattern, fields::Pattern,
+         fields::EndDateTime>;
 
-using ValidStartDateTime = Rule<[](const rec::Recurrence &recurrence) -> bool {
-    return dt::schema::datetime::Schema::validate(
-        fields::StartDateTime::accessor(recurrence));
-},
-                                fields::StartDateTime>;
+using ValidStartDateTime =
+    Rule<[](const rec::Recurrence &recurrence) -> bool {
+        return dt::schema::datetime::Schema::checkAllRules(
+            fields::StartDateTime::accessor(recurrence));
+    },
+         error::recurrence::InvalidStart, fields::StartDateTime>;
 
-using ValidEndDateTime = Rule<[](const rec::Recurrence &recurrence) -> bool {
-    return dt::schema::opt_datetime::Schema::validate(
-        fields::EndDateTime::accessor(recurrence));
-},
-                              fields::EndDateTime>;
-using ValidStartEndRelation =
+using ValidEndDateTime =
+    Rule<[](const rec::Recurrence &recurrence) -> bool {
+        return dt::schema::opt_datetime::Schema::checkAllRules(
+            fields::EndDateTime::accessor(recurrence));
+    },
+         error::recurrence::InvalidEnd, fields::EndDateTime>;
+
+using ValidStartEndRelationship =
     Rule<[](const rec::Recurrence &recurrence) -> bool {
         const auto startValue{fields::StartDateTime::accessor(recurrence)};
         const auto endValue{fields::EndDateTime::accessor(recurrence)};
@@ -60,10 +71,11 @@ using ValidStartEndRelation =
 
         return startValue < endValue.getValue();
     },
-         fields::StartDateTime, fields::EndDateTime>;
+         error::recurrence::InvalidStartEndRelationship, fields::StartDateTime,
+         fields::EndDateTime>;
 
-using all = Rules<ValidPattern, ValidStartDateTime, ValidEndDateTime,
-                  ValidStartEndRelation>;
+using all = Rules<ValidPatternEndDateTimeRelationship, ValidStartDateTime,
+                  ValidEndDateTime, ValidStartEndRelationship>;
 }; // namespace rules
 
 using Schema = core::schema::Schema<rec::Recurrence, fields::all, rules::all>;

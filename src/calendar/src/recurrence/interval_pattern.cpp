@@ -4,21 +4,12 @@
 #include <recurrence/schema/interval_pattern.hpp>
 
 namespace clndr::rec {
-IntervalPattern::IntervalPattern(dt::Interval interval) : interval_{interval} {
-    if (!fieldOK<schema::interval_pattern::fields::Interval>()) {
-        throw std::invalid_argument(
-            std::string(error::interval_pattern::InvalidInterval::msg));
-    }
-}
+IntervalPattern::IntervalPattern() = default;
 
-[[nodiscard]] auto IntervalPattern::ok() const -> bool {
-    return schema::interval_pattern::Schema::validate(*this);
-}
+IntervalPattern::IntervalPattern(dt::Interval interval) : interval_{interval} {}
 
-template <typename Field>
-[[nodiscard]] auto IntervalPattern::fieldOK() const -> bool {
-    return schema::interval_pattern::Schema::validateAffectedRules<Field>(
-        *this);
+[[nodiscard]] auto IntervalPattern::getType() const -> pattern::Type {
+    return type;
 }
 
 [[nodiscard]] auto IntervalPattern::getInterval() const -> dt::Interval {

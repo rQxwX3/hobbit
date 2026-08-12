@@ -7,19 +7,7 @@ Recurrence::Recurrence(pattern_t pattern, dt::DateTime startDateTime,
                        dt::OptDateTime endDateTime)
     : pattern_{std::move(pattern)}, startDateTime_{startDateTime},
       endDateTime_{endDateTime} {
-    if (!ok()) {
-        throw std::invalid_argument(
-            std::string(error::recurrence::InvalidCtorArgs::msg));
-    }
-}
-
-[[nodiscard]] auto Recurrence::ok() const -> bool {
-    return schema::recurrence::Schema::validate(*this);
-}
-
-template <typename Field>
-[[nodiscard]] auto Recurrence::fieldOK() const -> bool {
-    return schema::recurrence::Schema::validateAffectedRules<Field>(*this);
+    schema::recurrence::Schema::validateAllRules(*this);
 }
 
 [[nodiscard]] auto Recurrence::null(dt::DateTime startDateTime) -> Recurrence {
@@ -30,22 +18,6 @@ template <typename Field>
     return pattern_;
 }
 
-[[nodiscard]] auto Recurrence::getPatternType() const -> PatternType {
-    if (std::holds_alternative<NullPattern>(pattern_)) {
-        return PatternType::Null;
-    }
-
-    if (std::holds_alternative<IntervalPattern>(pattern_)) {
-        return PatternType::Interval;
-    }
-
-    if (std::holds_alternative<WeekdaysPattern>(pattern_)) {
-        return PatternType::Weekdays;
-    }
-
-    std::unreachable();
-}
-
 [[nodiscard]] auto Recurrence::getStartDateTime() const -> dt::DateTime {
     return startDateTime_;
 }
@@ -54,7 +26,7 @@ template <typename Field>
     return endDateTime_;
 }
 
-auto Recurrence::setPatternType(pattern_t pattern) -> void {
+auto Recurrence::setPattern(pattern_t pattern) -> void {
     pattern_ = std::move(pattern);
 
     if (!fieldOK<schema::recurrence::fields::Pattern>()) {

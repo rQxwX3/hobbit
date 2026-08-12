@@ -17,26 +17,30 @@ class Recurrence {
     using pattern_t =
         std::variant<NullPattern, IntervalPattern, WeekdaysPattern>;
 
-  public:
-    enum class PatternType : uint8_t {
-        Null,
-        Interval,
-        Weekdays,
-    };
-
   private:
     pattern_t pattern_;
     dt::DateTime startDateTime_;
     dt::OptDateTime endDateTime_;
 
   public:
+    Recurrence();
+
     Recurrence(pattern_t pattern, dt::DateTime startDateTime,
                dt::OptDateTime endDateTime);
 
   public:
-    [[nodiscard]] auto ok() const -> bool;
+    [[nodiscard]] auto getPattern() const -> pattern_t;
 
-    template <typename Field> [[nodiscard]] auto fieldOK() const -> bool;
+    [[nodiscard]] auto getStartDateTime() const -> dt::DateTime;
+
+    [[nodiscard]] auto getEndDateTime() const -> dt::OptDateTime;
+
+  public:
+    auto setPattern(pattern_t pattern) -> void;
+
+    auto setStartDateTime(dt::DateTime startDateTime) -> void;
+
+    auto setEndDateTime(dt::OptDateTime endDateTime) -> void;
 
   public:
     [[nodiscard]] static auto
@@ -47,22 +51,6 @@ class Recurrence {
         -> std::vector<dt::DateTime>;
 
     [[nodiscard]] auto happensOnDate(dt::Date date) const -> bool;
-
-  public:
-    [[nodiscard]] auto getPatternType() const -> PatternType;
-
-    [[nodiscard]] auto getPattern() const -> pattern_t;
-
-    [[nodiscard]] auto getStartDateTime() const -> dt::DateTime;
-
-    [[nodiscard]] auto getEndDateTime() const -> dt::OptDateTime;
-
-  public:
-    auto setPatternType(pattern_t pattern) -> void;
-
-    auto setStartDateTime(dt::DateTime startDateTime) -> void;
-
-    auto setEndDateTime(dt::OptDateTime endDateTime) -> void;
 
   public:
     [[nodiscard]] auto isIntervalPattern() const -> bool;

@@ -3,16 +3,15 @@
 #include <recurrence/weekdays_pattern.hpp>
 
 namespace clndr::rec {
+WeekdaysPattern::WeekdaysPattern() = default;
+
 WeekdaysPattern::WeekdaysPattern(dt::Date startDate,
                                  rec::SelectedWeekdays selectedWDs,
                                  dt::Interval interval)
     : firstWeek_{dt::Week(
           getFirstOccurrence(startDate, selectedWDs).getDate())},
       interval_{interval}, selectedWeekdays_{selectedWDs} {
-    if (!ok()) {
-        throw std::invalid_argument(
-            std::string(error::weekdays_pattern::InvalidCtorArgs::msg));
-    }
+    schema::weekdays_pattern::Schema::validateAllRules(*this);
 }
 
 WeekdaysPattern::WeekdaysPattern(dt::Week firstWeek,
@@ -20,20 +19,11 @@ WeekdaysPattern::WeekdaysPattern(dt::Week firstWeek,
                                  dt::Interval interval)
     : firstWeek_{firstWeek}, interval_{interval},
       selectedWeekdays_{selectedWDs} {
-    if (!ok()) {
-        throw std::invalid_argument(
-            std::string(error::weekdays_pattern::InvalidCtorArgs::msg));
-    }
+    schema::weekdays_pattern::Schema::validateAllRules(*this);
 }
 
-[[nodiscard]] auto WeekdaysPattern::ok() const -> bool {
-    return schema::weekdays_pattern::Schema::validate(*this);
-}
-
-template <typename Field>
-[[nodiscard]] auto WeekdaysPattern::fieldOK() const -> bool {
-    return schema::weekdays_pattern::Schema::validateAffectedRules<Field>(
-        *this);
+[[nodiscard]] auto WeekdaysPattern::getType() const -> pattern::Type {
+    return type;
 }
 
 [[nodiscard]] auto WeekdaysPattern::getInterval() const -> dt::Interval {

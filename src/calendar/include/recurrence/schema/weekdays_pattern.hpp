@@ -2,6 +2,7 @@
 
 #include <datetime/schema/interval.hpp>
 #include <datetime/schema/week.hpp>
+#include <recurrence/error/weekdays_pattern.hpp>
 #include <recurrence/weekdays_pattern.hpp>
 #include <schema/fields.hpp>
 #include <schema/rules.hpp>
@@ -32,32 +33,21 @@ using all = Fields<FirstWeek, Interval, SelectedWeekdays>;
 
 namespace rules {
 using namespace core::schema::rules;
-using ValidFirstWeek =
-    Rule<[](const rec::WeekdaysPattern &weekdaysPattern) -> bool {
-        return dt::schema::week::Schema::validate(
-            fields::FirstWeek::accessor(weekdaysPattern));
-    },
-         fields::FirstWeek>;
-
 using ValidInterval =
     Rule<[](const rec::WeekdaysPattern &weekdaysPattern) -> bool {
-        const auto value{fields::Interval::accessor(weekdaysPattern)};
-
-        if (!dt::schema::interval::Schema::validate(value)) {
-            return false;
-        }
-
-        return value.onlyContainsUnit(dt::Interval::WEEK);
+        return fields::Interval::accessor(weekdaysPattern)
+            .onlyContainsUnit(dt::Interval::WEEK);
     },
-         fields::Interval>;
+         error::weekdays_pattern::InvalidInterval, fields::Interval>;
 
 using ValidSelectedWeekdays =
     Rule<[](const rec::WeekdaysPattern &weekdaysPattern) -> bool {
         return !fields::SelectedWeekdays::accessor(weekdaysPattern).isEmpty();
     },
+         error::weekdays_pattern::InvalidSelectedWeekdays,
          fields::SelectedWeekdays>;
 
-using all = Rules<ValidFirstWeek, ValidInterval, ValidSelectedWeekdays>;
+using all = Rules<ValidInterval, ValidSelectedWeekdays>;
 }; // namespace rules
 
 using Schema =

@@ -7,7 +7,6 @@ namespace clndr::rec::error::recurrence {
 using namespace core::error;
 
 enum class Code : code_t {
-    InvalidCtorArgs,
     InvalidPattern,
     InvalidStart,
     InvalidEnd,
@@ -16,22 +15,18 @@ enum class Code : code_t {
 
 static constexpr auto className{core::FixedString{"rec::Recurrence"}};
 
-using InvalidCtorArgs =
-    Error<Code::InvalidCtorArgs, className,
-          "cannot instantiate valid object from provided arguments">;
-
-using InvalidPattern =
-    Error<Code::InvalidCtorArgs, className, "provided rec::Pattern is invalid">;
+using InvalidPattern = Error<Code::InvalidPattern, std::invalid_argument,
+                             className, "provided rec::Pattern is invalid">;
 
 using InvalidStart =
-    Error<Code::InvalidStart, className,
+    Error<Code::InvalidStart, std::invalid_argument, className,
           "provided dt::DateTime object is not a valid start datetime">;
 
 using InvalidEnd =
-    Error<Code::InvalidStart, className,
+    Error<Code::InvalidStart, std::invalid_argument, className,
           "provided dt::DateTime object is not a valid end datetime">;
 
 using InvalidStartEndRelationship =
-    Error<Code::InvalidStartEndRelationship, className,
+    Error<Code::InvalidStartEndRelationship, std::invalid_argument, className,
           "invalid start-end datetime relationship">;
 }; // namespace clndr::rec::error::recurrence

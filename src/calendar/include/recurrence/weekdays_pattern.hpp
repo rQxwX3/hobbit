@@ -5,7 +5,10 @@
 #include <recurrence/selected_weekdays.hpp>
 
 namespace clndr::rec {
-class WeekdaysPattern : public Pattern {
+class WeekdaysPattern : public pattern::Base {
+  public:
+    static constexpr auto type{pattern::Type::Weekdays};
+
   private:
     /* don't change the order */
     dt::Week firstWeek_;
@@ -13,6 +16,8 @@ class WeekdaysPattern : public Pattern {
     SelectedWeekdays selectedWeekdays_;
 
   public:
+    WeekdaysPattern();
+
     WeekdaysPattern(dt::Date startDate, rec::SelectedWeekdays selectedWDs,
                     dt::Interval interval);
 
@@ -20,9 +25,13 @@ class WeekdaysPattern : public Pattern {
                     dt::Interval interval);
 
   public:
-    [[nodiscard]] auto ok() const -> bool;
+    [[nodiscard]] auto getType() const -> pattern::Type override;
 
-    template <typename Field> [[nodiscard]] auto fieldOK() const -> bool;
+    [[nodiscard]] auto getInterval() const -> dt::Interval;
+
+    [[nodiscard]] auto getFirstWeek() const -> dt::Week;
+
+    [[nodiscard]] auto getSelectedWeekdays() const -> SelectedWeekdays;
 
   public:
     [[nodiscard]] auto
@@ -38,12 +47,7 @@ class WeekdaysPattern : public Pattern {
     [[nodiscard]] static auto getFirstOccurrence(dt::Date startDate,
                                                  SelectedWeekdays selectedWDs)
         -> dt::DateTime;
-
-  public:
-    [[nodiscard]] auto getInterval() const -> dt::Interval;
-
-    [[nodiscard]] auto getFirstWeek() const -> dt::Week;
-
-    [[nodiscard]] auto getSelectedWeekdays() const -> SelectedWeekdays;
 };
+
+static_assert(pattern::Concept<WeekdaysPattern>);
 } // namespace clndr::rec

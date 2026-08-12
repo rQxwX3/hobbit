@@ -1,6 +1,7 @@
 #pragma once
 
 #include <datetime/schema/interval.hpp>
+#include <recurrence/error/interval_pattern.hpp>
 #include <recurrence/interval_pattern.hpp>
 #include <schema/schema.hpp>
 
@@ -22,9 +23,10 @@ using ValidInterval =
     Rule<[](const rec::IntervalPattern &intervalPattern) -> bool {
         const auto value{fields::Interval::accessor(intervalPattern)};
 
-        return dt::schema::interval::Schema::validate(value) && !value.isZero();
+        return dt::schema::interval::Schema::checkAllRules(value) &&
+               !value.isZero();
     },
-         fields::Interval>;
+         error::interval_pattern::InvalidInterval, fields::Interval>;
 
 using all = Rules<ValidInterval>;
 }; // namespace rules

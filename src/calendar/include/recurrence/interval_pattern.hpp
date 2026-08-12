@@ -3,17 +3,22 @@
 #include <recurrence/pattern.hpp>
 
 namespace clndr::rec {
-class IntervalPattern : public Pattern {
+class IntervalPattern : public pattern::Base {
+  public:
+    static constexpr auto type{pattern::Type::Interval};
+
   private:
     dt::Interval interval_;
 
   public:
+    IntervalPattern();
+
     IntervalPattern(dt::Interval interval);
 
   public:
-    [[nodiscard]] auto ok() const -> bool;
+    [[nodiscard]] auto getType() const -> pattern::Type override;
 
-    template <typename Field> [[nodiscard]] auto fieldOK() const -> bool;
+    [[nodiscard]] auto getInterval() const -> dt::Interval;
 
   public:
     [[nodiscard]] auto getOccurrencesOfDate(dt::Date date,
@@ -24,9 +29,6 @@ class IntervalPattern : public Pattern {
         -> bool override;
 
   public:
-    [[nodiscard]] auto getInterval() const -> dt::Interval;
-
-  public:
     [[nodiscard]] auto getFirstOccurrenceOfDate(dt::Date date,
                                                 dt::DateTime start) const
         -> std::optional<occurrence_t>;
@@ -34,4 +36,6 @@ class IntervalPattern : public Pattern {
   public:
     [[nodiscard]] auto operator==(const IntervalPattern &other) const -> bool;
 };
+
+static_assert(pattern::Concept<IntervalPattern>);
 } // namespace clndr::rec
