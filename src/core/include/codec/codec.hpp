@@ -8,20 +8,38 @@
 
 namespace core::codec {
 namespace concepts {
-template <typename T, typename Model, typename Representation>
-concept Codec =
-    err::Concept<typename T::Error> && requires(Model obj, Representation rep) {
-        requires fields::concepts::FieldTuple<typename T::fields>;
-
-        { T::encode(obj) } -> std::same_as<Representation>;
+namespace impl {
+template <typename Field, typename Codec>
+concept FieldProcessedByCodec =
+    requires(Field::type value, Field::format representation) {
         {
-            T::decode(rep)
-        } -> std::same_as<std::expected<Model, typename T::Error::Code>>;
+            Codec::template encode<Field>(value)
+        } -> std::same_as<typename Field::format>;
+
+        {
+            Codec::template decode<Field>(representation)
+        } -> std::same_as<typename Field::type>;
+
+        { Codec::format } -> std::same_as<typename Field::format>;
     };
 
-}; // namespace concepts
+template <typename Codec, typename... Fields>
+consteval auto fieldsProcessedByCodec(std::tuple<Fields...> * /*unused*/)
+    -> bool {
+    return (FieldProcessedByCodec<Fields, Codec> && ...);
+}
+}; // namespace impl
 
-template <typename FT> struct Codec {
-    using fields = FT;
-};
+template <typename Codec>
+concept ProcessesEachField = impl::fieldsProcessedByCodec<Codec>(
+    static_cast<typename Codec::fields *>(nullptr));
+
+template <typename T, typename Model, typename Format>
+concept Codec = requires(Model obj, Format format) {
+    { T::encode(obj) } -> std::same_as<Format>;
+    {
+        T::decode(format)
+    } -> std::same_as<std::expected<Model, typename T::Error::Code>>;
+} && ProcessesEachField<T>;
+}; // namespace concepts
 }; // namespace core::codec

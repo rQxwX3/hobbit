@@ -1,34 +1,21 @@
 #pragma once
 
+#include <codec/processor.hpp>
 #include <concepts.hpp>
-
 #include <fixed_string.hpp>
 
 namespace core::codec::fields {
-template <typename Type, FixedString Name, auto Validator> struct Field {
-    using type = Type;
-
+template <FixedString Name, typename Type, typename Format, typename Accessor,
+          typename Encoder, typename Decoder>
+    requires processor::Concept<Encoder, Type, Format> &&
+             processor::Concept<Decoder, Format, Type>
+struct Field {
     static constexpr auto name{Name};
-    static constexpr auto validator{Validator};
+
+    using accessor = Accessor;
+    using encoder = Encoder;
+    using decoder = Decoder;
 };
 
-namespace concepts {
-template <typename F>
-concept Field = requires(F::type value) {
-    { F::name };
-    { F::validator(value) } -> std::same_as<bool>;
-};
-
-namespace impl {
-template <typename FT> struct FieldTuple : std::bool_constant<false> {};
-
-template <typename... Fs>
-    requires(sizeof...(Fs) > 0)
-struct FieldTuple<std::tuple<Fs...>>
-    : std::bool_constant<(concepts::Field<Fs> && ...)> {};
-} // namespace impl
-
-template <typename FT>
-concept FieldTuple = impl::FieldTuple<FT>::value;
-}; // namespace concepts
+template <typename... Fs> using Fields = std::tuple<Fs...>;
 }; // namespace core::codec::fields
