@@ -11,16 +11,14 @@ namespace concepts {
 namespace impl {
 template <typename Field, typename Codec>
 concept FieldProcessedByCodec =
-    requires(Field::type value, Field::format representation) {
+    requires(Codec::model model, Codec::representation representation) {
         {
-            Codec::template encode<Field>(value)
-        } -> std::same_as<typename Field::format>;
+            Codec::template encode<Field>(model)
+        } -> std::same_as<typename Field::representationType>;
 
         {
             Codec::template decode<Field>(representation)
-        } -> std::same_as<typename Field::type>;
-
-        { Codec::format } -> std::same_as<typename Field::format>;
+        } -> std::same_as<typename Field::modelType>;
     };
 
 template <typename Codec, typename... Fields>
@@ -28,18 +26,22 @@ consteval auto fieldsProcessedByCodec(std::tuple<Fields...> * /*unused*/)
     -> bool {
     return (FieldProcessedByCodec<Fields, Codec> && ...);
 }
-}; // namespace impl
 
 template <typename Codec>
 concept ProcessesEachField = impl::fieldsProcessedByCodec<Codec>(
     static_cast<typename Codec::fields *>(nullptr));
+}; // namespace impl
 
-template <typename T, typename Model, typename Format>
-concept Codec = requires(Model obj, Format format) {
-    { T::encode(obj) } -> std::same_as<Format>;
+template <typename T, typename Model, typename Representation>
+concept Codec = requires(Model obj, Representation format) {
+    { T::model } -> std::same_as<Model>;
+    { T::representation } -> std::same_as<Representation>;
+
+    { T::encode(obj) } -> std::same_as<typename T::representation>;
     {
         T::decode(format)
-    } -> std::same_as<std::expected<Model, typename T::Error::Code>>;
-} && ProcessesEachField<T>;
+    }
+    -> std::same_as<std::expected<typename T::model, typename T::Error::Code>>;
+} && impl::ProcessesEachField<T>;
 }; // namespace concepts
 }; // namespace core::codec
